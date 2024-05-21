@@ -1,4 +1,3 @@
-/* eslint-disable react/no-array-index-key */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable react/no-unstable-nested-components */
 import PropTypes from 'prop-types';
@@ -9,26 +8,47 @@ import Pagination from '@components/common/grid/Pagination';
 import { useAlertContext } from '@components/common/modal/Alert';
 import { Checkbox } from '@components/common/form/fields/Checkbox';
 import { Card } from '@components/admin/cms/Card';
-import CategoryNameRow from '@components/admin/catalog/categoryGrid/rows/CategoryName';
-import StatusRow from '@components/common/grid/rows/StatusRow';
+import CurrencyNameRow from '@components/admin/catalog/currencyGrid/rows/CurrencyName';
+import GroupRow from '@components/admin/catalog/currencyGrid/rows/GroupRow';
+import BasicRow from '@components/common/grid/rows/BasicRow';
 import YesNoRow from '@components/common/grid/rows/YesNoRow';
 import SortableHeader from '@components/common/grid/headers/Sortable';
+import TextRow from '@components/common/grid/rows/TextRow';
 import { Form } from '@components/common/form/Form';
 import { Field } from '@components/common/form/Field';
+import { toast } from 'react-toastify';
 
-function Actions({ categories = [], selectedIds = [] }) {
+function Actions({ currencies = [], selectedIds = [] }) {
   const { openAlert, closeAlert } = useAlertContext();
   const [isLoading, setIsLoading] = useState(false);
 
-  const deleteCategories = async () => {
+  console.log('to currencies');
+  const deleteCurrencies = async () => {
     setIsLoading(true);
-    const promises = categories
-      .filter((category) => selectedIds.includes(category.uuid))
-      .map((category) => axios.delete(category.deleteApi));
-    await Promise.all(promises);
-    setIsLoading(false);
-    // Refresh the page
-    window.location.reload();
+    try {
+      const promises = currencies.filter((currency) =>
+        selectedIds.includes(currency.id)
+      );
+      // .map((currency) =>
+      //   axios.delete(currency.deleteApi, {
+      //     validateStatus: () => true
+      //   })
+      // );
+      const responses = await Promise.allSettled(promises);
+      setIsLoading(false);
+      responses.forEach((response) => {
+        // Get the axios response status code
+        const { status } = response.value;
+        if (status !== 200) {
+          throw new Error(response.value.data.error.message);
+        }
+      });
+      // Refresh the page
+      window.location.reload();
+    } catch (e) {
+      setIsLoading(false);
+      toast.error(e.message);
+    }
   };
 
   const actions = [
@@ -36,7 +56,7 @@ function Actions({ categories = [], selectedIds = [] }) {
       name: 'Delete',
       onAction: () => {
         openAlert({
-          heading: `Delete ${selectedIds.length} categories`,
+          heading: `Delete ${selectedIds.length} currencies`,
           content: <div>Can&apos;t be undone</div>,
           primaryAction: {
             title: 'Cancel',
@@ -46,7 +66,7 @@ function Actions({ categories = [], selectedIds = [] }) {
           secondaryAction: {
             title: 'Delete',
             onAction: async () => {
-              await deleteCategories();
+              await deleteCurrencies();
             },
             variant: 'critical',
             isLoading
@@ -65,9 +85,8 @@ function Actions({ categories = [], selectedIds = [] }) {
             <a href="#" className="font-semibold pt-075 pb-075 pl-15 pr-15">
               {selectedIds.length} selected
             </a>
-            {actions.map((action, index) => (
+            {actions.map((action) => (
               <a
-                key={index}
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
@@ -87,17 +106,19 @@ function Actions({ categories = [], selectedIds = [] }) {
 
 Actions.propTypes = {
   selectedIds: PropTypes.arrayOf(PropTypes.string).isRequired,
-  categories: PropTypes.arrayOf(
+  currencies: PropTypes.arrayOf(
     PropTypes.shape({
-      uuid: PropTypes.string.isRequired
+      uuid: PropTypes.string.isRequired,
+      deleteApi: PropTypes.string.isRequired
     })
   ).isRequired
 };
 
-export default function CategoryGrid({
-  categories: { items: categories, total, currentFilters = [] }
-}) {
-  console.log('categories: ', categories);
+export default function CurrencyGrid(props) {
+  const { getCurrencies } = props;
+  const { items: currencies, total, currentFilters = [] } = getCurrencies;
+
+  console.log('items', currencies);
 
   const page = currentFilters.find((filter) => filter.key === 'page')
     ? currentFilters.find((filter) => filter.key === 'page').value
@@ -154,25 +175,23 @@ export default function CategoryGrid({
             <th className="align-bottom">
               <Checkbox
                 onChange={(e) => {
-                  if (e.target.checked) {
-                    setSelectedRows(categories.map((c) => c.uuid));
-                  } else {
-                    setSelectedRows([]);
-                  }
+                  if (e.target.checked)
+                    setSelectedRows(currencies.map((a) => a.id));
+                  else setSelectedRows([]);
                 }}
               />
             </th>
             <Area
               className=""
-              id="categoryGridHeader"
+              id="currencyGridHeader"
               noOuter
               coreComponents={[
                 {
                   component: {
                     default: () => (
                       <SortableHeader
-                        title="Category Name"
-                        name="name"
+                        name="code"
+                        title="Currency Code"
                         currentFilters={currentFilters}
                       />
                     )
@@ -183,25 +202,25 @@ export default function CategoryGrid({
                   component: {
                     default: () => (
                       <SortableHeader
-                        name="status"
-                        title="Status"
+                        name="rate"
+                        title="Rate"
                         currentFilters={currentFilters}
                       />
                     )
                   },
-                  sortOrder: 25
+                  sortOrder: 20
                 },
                 {
                   component: {
                     default: () => (
                       <SortableHeader
-                        name="include_in_nav"
-                        title="Include In Menu"
+                        name="signature"
+                        title="Signature"
                         currentFilters={currentFilters}
                       />
                     )
                   },
-                  sortOrder: 30
+                  sortOrder: 25
                 }
               ]}
             />
@@ -209,50 +228,53 @@ export default function CategoryGrid({
         </thead>
         <tbody>
           <Actions
-            categories={categories}
+            currencies={currencies}
             selectedIds={selectedRows}
             setSelectedRows={setSelectedRows}
           />
-          {categories.map((c) => (
-            <tr key={c.categoryId}>
-              <td style={{ width: '2rem' }}>
+          {currencies.map((a) => (
+            <tr key={a.id}>
+              <td>
                 <Checkbox
-                  isChecked={selectedRows.includes(c.uuid)}
+                  isChecked={selectedRows.includes(a.id)}
                   onChange={(e) => {
-                    if (e.target.checked)
-                      setSelectedRows(selectedRows.concat([c.uuid]));
-                    else
-                      setSelectedRows(selectedRows.filter((r) => r !== c.uuid));
+                    if (e.target.checked) {
+                      setSelectedRows(selectedRows.concat([a.id]));
+                    } else {
+                      setSelectedRows(selectedRows.filter((r) => r !== a.id));
+                    }
                   }}
                 />
               </td>
               <Area
                 className=""
-                id="categoryGridRow"
-                row={c}
+                id="currencyGridRow"
+                row={a}
                 noOuter
                 coreComponents={[
                   {
                     component: {
-                      default: () => <CategoryNameRow id="name" category={c} />
+                      default: () => (
+                        <CurrencyNameRow
+                          id="code"
+                          name={a.code}
+                          url={a.editUrl}
+                        />
+                      )
                     },
                     sortOrder: 10
                   },
                   {
                     component: {
-                      default: ({ areaProps }) => (
-                        <StatusRow id="status" areaProps={areaProps} />
-                      )
+                      default: () => <TextRow text={`${a.rate}`} />
                     },
-                    sortOrder: 25
+                    sortOrder: 20
                   },
                   {
                     component: {
-                      default: ({ areaProps }) => (
-                        <YesNoRow id="includeInNav" areaProps={areaProps} />
-                      )
+                      default: () => <TextRow text={`${a.signature}`} />
                     },
-                    sortOrder: 30
+                    sortOrder: 25
                   }
                 ]}
               />
@@ -260,9 +282,9 @@ export default function CategoryGrid({
           ))}
         </tbody>
       </table>
-      {categories.length === 0 && (
+      {currencies.length === 0 && (
         <div className="flex w-full justify-center">
-          There is no category to display
+          There is no attribute to display
         </div>
       )}
       <Pagination total={total} limit={limit} page={page} />
@@ -270,22 +292,16 @@ export default function CategoryGrid({
   );
 }
 
-CategoryGrid.propTypes = {
-  categories: PropTypes.shape({
+CurrencyGrid.propTypes = {
+  getCurrencies: PropTypes.shape({
     items: PropTypes.arrayOf(
       PropTypes.shape({
-        categoryId: PropTypes.number.isRequired,
-        uuid: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired,
-        status: PropTypes.number.isRequired,
-        includeInNav: PropTypes.number.isRequired,
-        editUrl: PropTypes.string.isRequired,
-        deleteApi: PropTypes.string.isRequired,
-        path: PropTypes.arrayOf(
-          PropTypes.shape({
-            name: PropTypes.string.isRequired
-          })
-        )
+        id: PropTypes.string.isRequired,
+        code: PropTypes.string.isRequired,
+        rate: PropTypes.number.isRequired,
+        signature: PropTypes.string.isRequired,
+        updatedAt: PropTypes.string.isRequired,
+        createdAt: PropTypes.string.isRequired
       })
     ).isRequired,
     total: PropTypes.number.isRequired,
@@ -295,7 +311,7 @@ CategoryGrid.propTypes = {
         operation: PropTypes.string.isRequired,
         value: PropTypes.string.isRequired
       })
-    )
+    ).isRequired
   }).isRequired
 };
 
@@ -306,18 +322,16 @@ export const layout = {
 
 export const query = `
   query Query($filters: [FilterInput]) {
-    categories (filters: $filters) {
+    getCurrencies (filters: $filters) {
       items {
-        categoryId
-        uuid
-        name
-        status
-        includeInNav
+        id
+        code
+        rate
+        signature
+        createdAt
+        updatedAt
         editUrl
-        deleteApi
-        path {
-          name
-        }
+        updateApi
       }
       total
       currentFilters {

@@ -15,6 +15,7 @@ module.exports.buildResolvers = function buildResolvers(isAdmin = false) {
       path.join(extension.path, 'graphql/types/**/*.resolvers.js')
     );
   });
+
   const resolvers = mergeResolvers(
     typeSources.map((source) =>
       loadFilesSync(source, {

@@ -1,0 +1,11 @@
+{
+    "system": {
+          "extensions": [
+              {
+                  "name": "currency",
+                  "resolve": "extensions/currency",
+                  "enabled": false
+              }
+          ]
+      }
+  }

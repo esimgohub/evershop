@@ -3,27 +3,21 @@ const { OK } = require('@evershop/evershop/src/lib/util/httpStatus');
 
 // eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
-  console.log("delegate ne: ", delegate)
-
-
-  const attribute = await delegate.updateAttribute;
-
-  console.log("updated attribute ne: ", attribute)
-  
+  const currency = await delegate.createCurrency;
   response.status(OK);
   response.json({
     data: {
-      ...attribute,
+      ...currency,
       links: [
         {
-          rel: 'attributeGrid',
-          href: buildUrl('attributeGrid'),
+          rel: 'currencyGrid',
+          href: buildUrl('currencyGrid'),
           action: 'GET',
           types: ['text/xml']
         },
         {
           rel: 'edit',
-          href: buildUrl('attributeEdit', { id: attribute.uuid }),
+          href: buildUrl('currencyEdit', { id: currency.id }),
           action: 'GET',
           types: ['text/xml']
         }
