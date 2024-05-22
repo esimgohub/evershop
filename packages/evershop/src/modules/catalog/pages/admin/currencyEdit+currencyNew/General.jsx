@@ -46,7 +46,7 @@ export default function General(props) {
       props: {
         id: 'signature',
         name: 'signature',
-        label: 'Signature',
+        label: 'Symbol',
         validationRules: ['notEmpty'],
         placeholder: '$',
         type: 'text'

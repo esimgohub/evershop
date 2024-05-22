@@ -1,6 +1,6 @@
 const { error } = require('@evershop/evershop/src/lib/log/logger');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
-const { getValueSync } = require('@evershop/evershop/src/lib/util/registry');
+const { getValue } = require('@evershop/evershop/src/lib/util/registry');
 
 const getIsoCodeFromContext = (context) => {
   return context.cookies?.isoCode || getConfig('shop.currency', 'USD');
@@ -10,7 +10,7 @@ module.exports = {
   Price: {
     value: (rawPrice, _, context) => {
       const isoCode = getIsoCodeFromContext(context);
-      const result = getValueSync(
+      const result = getValue(
         'priceValByExnRatio',
         {
           rawPrice,
@@ -25,7 +25,7 @@ module.exports = {
     },
     text: (rawPrice, __, context) => {
       const isoCode = getIsoCodeFromContext(context);
-      const result = getValueSync(
+      const result = getValue(
         'priceTextByExnRatio',
         {
           rawPrice,

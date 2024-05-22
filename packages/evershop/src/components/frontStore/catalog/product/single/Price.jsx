@@ -2,19 +2,13 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 export function Price({ regular, special }) {
+  console.log('regular: ', regular, 'special: ', special);
+
   return (
     <h4 className="product-single-price">
-      {special.value === regular.value && (
-        <div>
-          <span className="sale-price">{regular.text}</span>
-        </div>
-      )}
-      {special.value < regular.value && (
-        <div>
-          <span className="sale-price">{special.text}</span>{' '}
-          <span className="regular-price">{regular.text}</span>
-        </div>
-      )}
+      <div>
+        <span className="regular-price">{regular.text}</span>
+      </div>
     </h4>
   );
 }

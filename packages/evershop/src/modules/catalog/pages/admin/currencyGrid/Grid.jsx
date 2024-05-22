@@ -203,7 +203,7 @@ export default function CurrencyGrid(props) {
                     default: () => (
                       <SortableHeader
                         name="rate"
-                        title="Rate"
+                        title="Rate (Rely on USD)"
                         currentFilters={currentFilters}
                       />
                     )
@@ -232,54 +232,56 @@ export default function CurrencyGrid(props) {
             selectedIds={selectedRows}
             setSelectedRows={setSelectedRows}
           />
-          {currencies.map((a) => (
-            <tr key={a.id}>
-              <td>
-                <Checkbox
-                  isChecked={selectedRows.includes(a.id)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedRows(selectedRows.concat([a.id]));
-                    } else {
-                      setSelectedRows(selectedRows.filter((r) => r !== a.id));
+          {currencies
+            .filter((c) => c.code !== 'USD')
+            .map((a) => (
+              <tr key={a.id}>
+                <td>
+                  <Checkbox
+                    isChecked={selectedRows.includes(a.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedRows(selectedRows.concat([a.id]));
+                      } else {
+                        setSelectedRows(selectedRows.filter((r) => r !== a.id));
+                      }
+                    }}
+                  />
+                </td>
+                <Area
+                  className=""
+                  id="currencyGridRow"
+                  row={a}
+                  noOuter
+                  coreComponents={[
+                    {
+                      component: {
+                        default: () => (
+                          <CurrencyNameRow
+                            id="code"
+                            name={a.code}
+                            url={a.editUrl}
+                          />
+                        )
+                      },
+                      sortOrder: 10
+                    },
+                    {
+                      component: {
+                        default: () => <TextRow text={`${a.rate}`} />
+                      },
+                      sortOrder: 20
+                    },
+                    {
+                      component: {
+                        default: () => <TextRow text={`${a.signature}`} />
+                      },
+                      sortOrder: 25
                     }
-                  }}
+                  ]}
                 />
-              </td>
-              <Area
-                className=""
-                id="currencyGridRow"
-                row={a}
-                noOuter
-                coreComponents={[
-                  {
-                    component: {
-                      default: () => (
-                        <CurrencyNameRow
-                          id="code"
-                          name={a.code}
-                          url={a.editUrl}
-                        />
-                      )
-                    },
-                    sortOrder: 10
-                  },
-                  {
-                    component: {
-                      default: () => <TextRow text={`${a.rate}`} />
-                    },
-                    sortOrder: 20
-                  },
-                  {
-                    component: {
-                      default: () => <TextRow text={`${a.signature}`} />
-                    },
-                    sortOrder: 25
-                  }
-                ]}
-              />
-            </tr>
-          ))}
+              </tr>
+            ))}
         </tbody>
       </table>
       {currencies.length === 0 && (
