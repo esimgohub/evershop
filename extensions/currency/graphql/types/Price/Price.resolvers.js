@@ -3,6 +3,7 @@ const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const { getValue } = require('@evershop/evershop/src/lib/util/registry');
 
 const getIsoCodeFromContext = (context) => {
+  // TODO: Set currency in context & get it from header of request, not save in cookie anymore.
   return context.cookies?.isoCode || getConfig('shop.currency', 'USD');
 };
 

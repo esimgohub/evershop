@@ -1,5 +1,0 @@
-extend type Currency {
-  editUrl: String
-  updateApi: String!
-  deleteApi: String!
-}

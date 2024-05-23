@@ -1,12 +1,14 @@
-const { select } = require('@evershop/postgres-query-builder');
-const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
+/* eslint-disable no-param-reassign */
+const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 
 module.exports = {
-  Query: {
-    currencies: async (_, { pool }) => {
-      const query = select().from('currency');
-
-      return await pool.query(query);
-    }
-  }
+  Currency: {
+    editUrl: (currency) => {
+      return buildUrl('currencyEdit', { id: currency.id });
+    },
+    updateApi: (currency) =>
+      buildUrl('updateCurrency', { id: currency.id }),
+    deleteApi: (currency) =>
+      buildUrl('deleteCurrency', { id: currency.id })
+  },
 };
