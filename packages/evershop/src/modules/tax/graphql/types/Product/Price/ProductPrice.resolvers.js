@@ -23,7 +23,7 @@ module.exports = {
       if (!taxClassId || !taxConfigDisplay || user) {
         return {
           regular: price,
-          special: price // TODO: implement special price
+          special: price - 20 // TODO: implement special price
         };
       } else {
         const taxRates = await getTaxRates(
@@ -40,7 +40,7 @@ module.exports = {
         const includedTaxPrice = toPrice(price + taxAmount);
         return {
           regular: includedTaxPrice,
-          special: includedTaxPrice // TODO: implement special price
+          special: includedTaxPrice - 20  // TODO: implement special price
         };
       }
     }

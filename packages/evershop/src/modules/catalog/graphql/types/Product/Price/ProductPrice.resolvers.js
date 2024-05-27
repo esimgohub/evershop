@@ -4,7 +4,7 @@ module.exports = {
       const price = parseFloat(product.price);
       return {
         regular: price,
-        special: price // TODO: implement special price
+        special: price - 20 // TODO: implement special price
       };
     }
   }
