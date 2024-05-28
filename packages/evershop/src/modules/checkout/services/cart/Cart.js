@@ -1,3 +1,5 @@
+// eslint-disable-next-line max-classes-per-file
+const { info, error } = require('@evershop/evershop/src/lib/log/logger');
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable max-classes-per-file */
 const {
@@ -43,6 +45,10 @@ class Item extends DataObject {
     return this.getData('uuid');
   }
 
+  getIsActive() {
+    return this.getData('is_active');
+  }
+
   getCart() {
     return this.#cart;
   }
@@ -63,6 +69,171 @@ class Cart extends DataObject {
    */
   getItems() {
     return this.getData('items') ?? [];
+  }
+
+  /**
+   * @returns {Array<Item>}
+   */
+  getActiveItems() {
+    const items = this.getData('items') ?? [];
+    let res;
+    if (items && items.length > 0) {
+      res = items.filter(item => item.getIsActive() === true);
+    } else {
+      res = [...items];
+    }
+    return res;
+  }
+
+  /**
+   * @returns {Array<Item>}
+   */
+  getUnActiveItems() {
+    const items = this.getData('items') ?? [];
+    let res;
+    if (items && items.length > 0) {
+      res = items.filter(item => item.getIsActive() === false);
+    } else {
+      res = [...items];
+    }
+    return res;
+  }
+
+  /**
+   * Set all items in the cart to active.
+   * @returns {Array} Updated items
+   * @throws {Error}
+   */
+  async updateSelectAllItems() {
+    try {
+      const items = this.getItems();
+
+      // Iterate over all items and set is_active to true
+      for (let i = 0; i < items.length; i+=1) {
+        await items[i].setData('is_active', true, true);
+        if (items[i].hasError()) {
+          throw new Error(Object.values(items[i].getErrors())[0]);
+        }
+      }
+
+      // Save the updated items list
+      await this.setData('items', items);
+
+      info('All items set to not active');
+      return items;
+
+    } catch (err) {
+      error(`Failed to set all items to not active: ${err.message}`);
+      throw err;
+    }
+  }
+
+  /**
+   * Set all items in the cart to active.
+   * @returns {Array} Updated items
+   * @throws {Error}
+   */
+  async updateDeselectAllItems() {
+    try {
+      const items = this.getItems();
+
+      // Iterate over all items and set is_active to true
+      for (let i = 0; i < items.length; i+=1) {
+        await items[i].setData('is_active', false);
+        // const a = await items[i].getData('is_active');
+        // const b = 1;
+        // Check for errors after updating is_active
+        if (items[i].hasError()) {
+          throw new Error(Object.values(items[i].getErrors())[0]);
+        }
+      }
+
+      // Save the updated items list
+      await this.setData('items', items, true);
+
+      info('All items set to active');
+      return items;
+
+    } catch (err) {
+      error(`Failed to set all items to active: ${err.message}`);
+      throw err;
+    }
+  }
+
+  /**
+   * Update the quantity and active status of an item.
+   * @param {string||int} uuid
+   * @param {boolean} isActive
+   * @returns {Item}
+   * @throws {Error}
+   */
+  async updateItemSelection(uuid, isActive) {
+    try {
+      const items = this.getItems();
+      const item = this.getItem(uuid);
+
+      if (!item) {
+        throw new Error('Item not found');
+      }
+
+      // Check for errors after updating quantity
+      if (item.hasError()) {
+        throw new Error(Object.values(item.getErrors())[0]);
+      }
+
+      // Update the is_active status
+      await item.setData('is_active', isActive);
+
+      // Check for errors after updating is_active
+      if (item.hasError()) {
+        throw new Error(Object.values(item.getErrors())[0]);
+      }
+
+      // Update the items list with the modified item
+      const updatedItems = items.map(i => (i.getData('uuid') === uuid ? item : i));
+      await this.setData('items', updatedItems);
+
+      info(`is_active to ${isActive}`);
+      return item;
+
+    } catch (err) {
+      error(`Failed to update item: ${err.message}`);
+      throw err;
+    }
+  }
+
+  /**
+   * Update the quantity of an item.
+   * @param {string||int} uuid
+   * @param {number} newQty
+   * @returns {Item}
+   * @throws {Error}
+   */
+  async updateItemQuantity(uuid, newQty) {
+    try {
+      const items = this.getItems();
+      const item = this.getItem(uuid);
+
+      if (!item) {
+        throw new Error('Item not found');
+      }
+
+      await item.setData('qty', newQty);
+
+      if (item.hasError()) {
+        throw new Error(Object.values(item.getErrors())[0]);
+      }
+
+      const updatedItems = items.map(i => (i.getData('uuid') === uuid ? item : i));
+      await this.setData('items', updatedItems);
+
+      info(`Updated quantity for item ${uuid} to ${newQty}`);
+      return item;
+
+    } catch (err) {
+      error(`Failed to update item quantity: ${err.message}`);
+      throw err;
+    }
   }
 
   /**

@@ -22,6 +22,16 @@ module.exports.registerCartItemBaseFields =
         ]
       },
       {
+        key: 'is_active',
+        resolvers: [
+          async function resolver() {
+            const triggeredField = this.getTriggeredField();
+            const requestedValue = this.getRequestedValue();
+            return triggeredField === 'is_active' ? requestedValue : this.getData('is_active');
+          }
+        ]
+      },
+      {
         key: 'uuid',
         resolvers: [
           async function resolver() {
@@ -206,7 +216,7 @@ module.exports.registerCartItemBaseFields =
           async function resolver() {
             return toPrice(
               this.getData('final_price') * this.getData('qty') +
-                this.getData('tax_amount')
+              this.getData('tax_amount')
             );
           }
         ],

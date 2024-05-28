@@ -161,12 +161,13 @@ exports.createOrder = async function createOrder(cart) {
       .execute(connection);
 
     // Save order items
-    const items = cart.getItems();
+    const items = cart.getActiveItems();
     await Promise.all(
       items.map(async (item) => {
+        const { is_active, ...itemData } = item.export(); // Destructure to remove 'is_active'
         await insert('order_item')
           .given({
-            ...item.export(),
+            ...itemData,
             uuid: uuidv4().replace(/-/g, ''),
             order_item_order_id: order.insertId
           })
