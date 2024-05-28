@@ -538,7 +538,7 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
       key: 'payment_method',
       resolvers: [
         async function resolver(paymentMethod) {
-          this.setError('payment_method', 'Payment method is required');
+          // this.setError('payment_method', 'Payment method is required');
           return paymentMethod;
           // Each payment method should handle this field
           // by returning the payment method code and remove this error if the payment method is valid

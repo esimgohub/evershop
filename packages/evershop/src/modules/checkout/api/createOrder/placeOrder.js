@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-const { select, insert } = require('@evershop/postgres-query-builder');
+const { select } = require('@evershop/postgres-query-builder');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const {
@@ -20,17 +20,6 @@ module.exports = async (request, response, delegate, next) => {
     const { cart_id } = request.body;
     // Verify cart
     const cart = await getCartByUUID(cart_id);
-    // const customerId123 = cart.getData('customer_id');
-    // const unPurchasedItems = cart.getUnActiveItems();
-    //
-    // response.status(INVALID_PAYLOAD);
-    // response.json({
-    //   error: {
-    //     message: 'Invalid cart',
-    //     status: INVALID_PAYLOAD
-    //   }
-    // });
-    // return;
     if (!cart) {
       response.status(INVALID_PAYLOAD);
       response.json({
@@ -62,7 +51,6 @@ module.exports = async (request, response, delegate, next) => {
       const newCart = await createNewCart(request.locals.sessionID, {
         customerId
       });
-      const newCartId = newCart.getData('cart_id');
 
       // Add items from the current cart to the new cart with `is_active` set to `false`
       const unPurchasedItems = cart.getUnActiveItems();

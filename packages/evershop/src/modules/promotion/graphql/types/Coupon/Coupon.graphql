@@ -16,62 +16,8 @@ type Coupon {
     freeShipping: Int!
     discountType: String!
     coupon: String!
-    usedTime: Int
-    targetProducts: TargetProducts
-    condition: OrderCondition
-    userCondition: UserCondition
-    buyxGety: [ByXGetY]
-    maxUsesTimePerCoupon: Int
-    maxUsesTimePerCustomer: Int
     startDate: DateTime
     endDate: DateTime
-}
-
-"""
-Represents a signle product used in the condition of a coupon.
-"""
-type MatchProductFilter {
-    key: String!
-    operator: String!
-    value: JSON
-    qty: String
-}
-
-"""
-Represents the target products of a coupon.
-"""
-type TargetProducts {
-    maxQty: String
-    products: [MatchProductFilter]
-}
-
-"""
-Represents the condition of a coupon.
-"""
-type OrderCondition {
-    orderTotal: String
-    orderQty: String
-    requiredProducts: [MatchProductFilter]
-}
-
-"""
-Represents the buy x get y condition of a coupon.
-"""
-type ByXGetY {
-    sku: String!
-    buyQty: String
-    getQty: String
-    maxY: String
-    discount: String
-}
-
-"""
-Represents the user condition of a coupon.
-"""
-type UserCondition {
-    groups: [String]
-    emails: String
-    purchased: String
 }
 
 """

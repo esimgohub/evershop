@@ -89,7 +89,6 @@ export default function AdyenPaymentMethod() {
       environment: 'TEST',
       clientKey: 'test_7WZH6GQVZZHRLLNGX5ORJY4NRYQL6D3Z',
       locale: "en_US",
-      environment: "test",
       showPayButton: true,
       paymentMethodsConfiguration: {
         ideal: {
