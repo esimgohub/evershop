@@ -95,7 +95,7 @@ type PriceRange {
 }
 
 extend type Product {
-  category: Category,
+  categories: [Category]
 }
 
 extend type Query {

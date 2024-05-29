@@ -65,46 +65,56 @@ SKUPriceWeight.defaultProps = {
 };
 
 function Category({ product }) {
-  const [selecting, setSelecting] = React.useState(false);
-  const [category, setCategory] = React.useState(
-    product ? product.category : null
+  const [modifiedCategories, setModifiedCategories] = React.useState(
+    product ? product.categories : []
   );
 
   return (
     <div className="mt-15 relative">
-      <div className="mb-1">Category</div>
-      {category && (
+      <div className="mb-1">Categories</div>
+      {modifiedCategories && (
         <div className="border rounded border-[#c9cccf] mb-1 p-1">
-          {category.path.map((item, index) => (
-            <span key={item.name} className="text-gray-500">
-              {item.name}
-              {index < category.path.length - 1 && ' > '}
-            </span>
+          {modifiedCategories.map((category, index) => (
+            <div>
+              {category.path.map((item, index) => (
+                <span key={item.name} className="text-gray-500">
+                  {item.name}
+                  {index < category.path.length - 1 && ' > '}
+                </span>
+              ))}
+              <span className="text-interactive pl-2">
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                  }}
+                >
+                  Change
+                </a>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+
+                    if (modifiedCategories.length !== 0) {
+                      setModifiedCategories(
+                        modifiedCategories.filter(
+                          (cat) => cat.categoryId !== category.categoryId
+                        )
+                      );
+                    }
+                  }}
+                  className="text-critical ml-2"
+                >
+                  Unassign
+                </a>
+              </span>
+            </div>
           ))}
-          <span className="text-interactive pl-2">
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                setSelecting(true);
-              }}
-            >
-              Change
-            </a>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                setCategory(null);
-              }}
-              className="text-critical ml-2"
-            >
-              Unassign
-            </a>
-          </span>
         </div>
       )}
-      {!selecting && !category && (
+
+      {/* {!selecting && !category && (
         <a
           href="#"
           onClick={(e) => {
@@ -121,22 +131,27 @@ function Category({ product }) {
           <CategoryTree
             selectedCategory={category}
             setSelectedCategory={(cat) => {
-              setCategory(cat);
+              setCategories(cat);
               setSelecting(false);
             }}
           />
         </div>
-      )}
-      {category && (
-        <input type="hidden" name="category_id" value={category?.categoryId} />
-      )}
+      )} */}
+      {modifiedCategories &&
+        modifiedCategories.map((category) => (
+          <input
+            type="hidden"
+            name="category_id"
+            value={category?.categoryId}
+          />
+        ))}
     </div>
   );
 }
 
 Category.propTypes = {
   product: PropTypes.shape({
-    category: PropTypes.shape({
+    categories: PropTypes.shape({
       categoryId: PropTypes.number.isRequired,
       name: PropTypes.string.isRequired,
       path: PropTypes.arrayOf(
@@ -150,7 +165,7 @@ Category.propTypes = {
 
 Category.defaultProps = {
   product: {
-    category: {}
+    categories: []
   }
 };
 
@@ -316,7 +331,7 @@ export const query = `
         value
         unit
       }
-      category {
+      categories {
         categoryId
         path {
           name

@@ -148,15 +148,28 @@ module.exports = {
     }
   },
   Product: {
-    category: async (product, _, { pool }) => {
-      if (!product.categoryId) {
-        return null;
-      } else {
-        const categoryQuery = getCategoriesBaseQuery();
-        categoryQuery.where('category_id', '=', product.categoryId);
-        const category = await categoryQuery.load(pool);
-        return camelCase(category);
+    categories: async (product, _, { pool }) => {
+      const productCategoryQuery = select().from('product_category')
+      
+      productCategoryQuery.innerJoin("category").on(
+        'product_category.category_id',
+        '=',
+        'category.category_id'
+      )
+      
+      productCategoryQuery.innerJoin("category_description").on(
+        'category_description.category_description_category_id',
+        '=',
+        'category.category_id'
+      );
+      productCategoryQuery.where('product_id', '=', product.productId);
+      const productCategoryRecords = await productCategoryQuery.execute(pool);
+
+      if (productCategoryRecords.length === 0) {
+        return [];
       }
+
+      return productCategoryRecords.map((row) => camelCase(row));
     }
   }
 };
