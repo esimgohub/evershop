@@ -1,0 +1,156 @@
+const {
+  commit,
+  getConnection,
+  insert,
+  rollback,
+  select,
+  startTransaction,
+  update
+} = require('@evershop/postgres-query-builder');
+const { v4: uuidv4 } = require('uuid');
+const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
+const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
+
+/* Default validation rules */
+let validationServices = [
+  {
+    id: 'checkCartError',
+    /**
+     *
+     * @param {Cart} cart
+     * @param {*} validationErrors
+     * @returns
+     */
+    func: (cart, validationErrors) => {
+      if (cart.hasError()) {
+        validationErrors.push(cart.error);
+        return false;
+      } else {
+        return true;
+      }
+    }
+  },
+  {
+    id: 'checkEmpty',
+    /**
+     *
+     * @param {Cart} cart
+     * @param {*} validationErrors
+     * @returns
+     */
+    func: (cart, validationErrors) => {
+      const items = cart.getItems();
+      if (items.length === 0) {
+        validationErrors.push('Cart is empty');
+        return false;
+      } else {
+        return true;
+      }
+    }
+  }
+];
+
+const validationErrors = [];
+
+// eslint-disable-next-line no-multi-assign
+module.exports = exports = {};
+// eslint-disable-next-line no-unused-vars
+exports.createOrder = async function createOrder(cart) {
+  // Start creating order
+  const connection = await getConnection(pool);
+  const paymentStatusList = getConfig('oms.order.paymentStatus', {});
+  try {
+    await startTransaction(connection);
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const rule of validationServices) {
+      // eslint-disable-next-line no-await-in-loop
+      if ((await rule.func(cart, validationErrors)) === false) {
+        throw new Error(validationErrors);
+      }
+    }
+
+    // Save order to DB
+    const previous = await select('order_id')
+      .from('order')
+      .orderBy('order_id', 'DESC')
+      .limit(0, 1)
+      .execute(pool);
+
+
+    let defaultPaymentStatus = null;
+    Object.keys(paymentStatusList).forEach((key) => {
+      if (paymentStatusList[key].isDefault) {
+        defaultPaymentStatus = key;
+      }
+    });
+
+    const order = await insert('order')
+      .given({
+        ...cart.exportData(),
+        uuid: uuidv4().replace(/-/g, ''),
+        order_number:
+          10000 + parseInt(previous[0] ? previous[0].order_id : 0, 10) + 1,
+        // FIXME: Must be structured
+        payment_status: defaultPaymentStatus
+      })
+      .execute(connection);
+
+    // Save order items
+    const items = cart.getActiveItems();
+    await Promise.all(
+      items.map(async (item) => {
+        const { is_active, ...itemData } = item.export(); // Destructure to remove 'is_active'
+        await insert('order_item')
+          .given({
+            ...itemData,
+            uuid: uuidv4().replace(/-/g, ''),
+            order_item_order_id: order.insertId
+          })
+          .execute(connection);
+      })
+    );
+
+    // Save order activities
+    await insert('order_activity')
+      .given({
+        order_activity_order_id: order.insertId,
+        comment: 'Order created',
+        customer_notified: 0 // TODO: check config of SendGrid
+      })
+      .execute(connection);
+
+    // Disable the cart
+    await update('cart')
+      .given({ status: 0 })
+      .where('cart_id', '=', cart.getData('cart_id'))
+      .execute(connection);
+    // Load the created order
+    const createdOrder = await select()
+      .from('order')
+      .where('order_id', '=', order.insertId)
+      .load(connection);
+
+    await commit(connection);
+    return createdOrder.uuid;
+  } catch (e) {
+    await rollback(connection);
+    throw e;
+  }
+};
+
+exports.addCreateOrderValidationRule = function addCreateOrderValidationRule(
+  id,
+  func
+) {
+  if (typeof obj !== 'function') {
+    throw new Error('Validator must be a function');
+  }
+
+  validationServices.push({ id, func });
+};
+
+exports.removeCreateOrderValidationRule =
+  function removeCreateOrderValidationRule(id) {
+    validationServices = validationServices.filter((r) => r.id !== id);
+  };

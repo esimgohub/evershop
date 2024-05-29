@@ -23,7 +23,7 @@ module.exports = async (request, response, delegate, next) => {
 
     const data = await checkout.PaymentsApi.paymentMethods({
       channel: "Web",
-      merchantAccount: merchantAccount
+      merchantAccount
     });
 
     response.json(data);

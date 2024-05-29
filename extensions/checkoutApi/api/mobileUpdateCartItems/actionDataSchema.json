@@ -19,6 +19,7 @@
   "required": [
     "action"
   ],
+  "additionalProperties": true,
   "oneOf": [
     {
       "properties": {

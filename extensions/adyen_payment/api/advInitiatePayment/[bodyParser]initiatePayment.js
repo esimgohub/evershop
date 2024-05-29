@@ -1,50 +1,71 @@
-const { Client, Config, CheckoutAPI } = require("@adyen/api-library");
+const { Client, Config, CheckoutAPI } = require('@adyen/api-library');
+const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
+const { INVALID_PAYLOAD, INTERNAL_SERVER_ERROR } = require('@evershop/evershop/src/lib/util/httpStatus');
+const { toPrice } = require('@evershop/evershop/src/modules/checkout/services/toPrice');
 const { getSetting } = require('@evershop/evershop/src/modules/setting/services/setting');
+const { select } = require('packages/postgres-query-builder');
 
-// Adyen Node.js API library boilerplate (configuration, etc.)
-
-// let client;
-// let checkout;
-// async function initializeAdyen() {
-//   const config = new Config();
-//   config.apiKey = await getSetting('adyenApiKey', '');
-//   client = new Client({ config });
-//   client.setEnvironment("TEST");  // change to LIVE for production
-//   checkout = new CheckoutAPI(client);
-// }
-
-// // Immediately invoke the function to initialize Adyen client
-// initializeAdyen().catch(err => {
-//   console.error("Failed to initialize Adyen:", err);
-// });
-
+// Adyen configuration
 const config = new Config();
 config.apiKey = process.env.ADYEN_API_KEY;
 const client = new Client({ config });
-client.setEnvironment("TEST");
+client.setEnvironment('TEST');
 const checkout = new CheckoutAPI(client);
 
+// eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
   // unique ref for the transaction
-  const { order_id: orderRef } = request.body;
+  const { order_uuid: orderRef } = request.body;
+
   try {
+    const order = await select()
+      .from('order')
+      .where('uuid', '=', orderRef)
+      .and('payment_method', '=', 'adyen')
+      .and('payment_status', '=', 'pending')
+      .load(pool);
+
+    if (!order) {
+      response.status(INVALID_PAYLOAD).json({
+        error: {
+          status: INVALID_PAYLOAD,
+          message: 'Invalid order'
+        }
+      });
+      return;
+    }
+
+    const items = await select()
+      .from('order_item')
+      .where('order_item_order_id', '=', order.order_id)
+      .execute(pool);
+
     // Allows for gitpod support
-    const merchantAccount = await getSetting("adyenMerchantAccount", '');
+    const merchantAccount = await getSetting('adyenMerchantAccount', '');
     // ideally the data passed here should be computed based on business logic
     const data = await checkout.PaymentsApi.payments({
-      amount: { currency: "USD", value: 1000 },
+      amount: {
+        currency_code: order.currency,
+        value: toPrice(order.grand_total)
+      },
       reference: orderRef, // required
-      merchantAccount: merchantAccount, // required
-      channel: "iOS", // required
+      merchantAccount, // required
+      channel: 'iOS', // required
       paymentMethod: request.body.paymentMethod,
-      lineItems: [
-        { quantity: 1, amountIncludingTax: 5000, description: "Sunglasses" },
-        { quantity: 1, amountIncludingTax: 5000, description: "Headphones" }
-      ],
+      lineItems: items.map((item) => ({
+        sku: item.product_sku,
+        quantity: item.qty
+      }))
     });
 
     response.json(data);
   } catch (err) {
-    next(err);
+    response.status(INTERNAL_SERVER_ERROR);
+    response.json({
+      error: {
+        message: err.message,
+        status: INTERNAL_SERVER_ERROR
+      }
+    });
   }
 };

@@ -2,11 +2,12 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { useCheckout } from '@components/common/context/checkout';
 import useSWRImmutable from "swr/immutable";
-const getPayIntentsEndpoint = "http://localhost:3010/api/getPaymentMethods";
-const initiatePayEndpoint = "http://localhost:3010/api/initiatePayment";
 import AdyenCheckout from "@adyen/adyen-web";
 import "@adyen/adyen-web/dist/adyen.css";
 import AdyenLogo from '../StripeLogo';
+
+const getPayIntentsEndpoint = "http://localhost:3010/api/getPaymentMethods";
+const initiatePayEndpoint = "http://localhost:3010/api/initiatePayment";
 
 // Calls your server endpoints
 async function callServer(url, orderId, additionalData) {
@@ -14,8 +15,8 @@ async function callServer(url, orderId, additionalData) {
     method: "POST",
     body: JSON.stringify({ ...additionalData, order_id: orderId }),
     headers: {
-      "Content-Type": "application/json",
-    },
+      "Content-Type": "application/json"
+    }
   });
 
   return await res.json();
@@ -37,7 +38,7 @@ const fetcher = async ([url, additionalParam]) => {
   const response = await fetch(url, {
     method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "application/json"
     },
     body: JSON.stringify({ additionalParam })
   });
@@ -92,7 +93,7 @@ export default function AdyenPaymentMethod() {
       showPayButton: true,
       paymentMethodsConfiguration: {
         ideal: {
-          showImage: true,
+          showImage: true
         },
         card: {
           hasHolderName: true,
@@ -100,9 +101,9 @@ export default function AdyenPaymentMethod() {
           name: "Credit or debit card",
           amount: {
             value: 1000,
-            currency: "USD",
-          },
-        },
+            currency: "USD"
+          }
+        }
       },
       onSubmit: async (state, component) => {
         await submit();
@@ -229,7 +230,7 @@ export default function AdyenPaymentMethod() {
           display: selectedPaymentMethod && selectedPaymentMethod.code === 'adyen' ? 'block' : 'none'
         }}>
           <div className="payment-container">
-            <div ref={paymentContainer} className="payment"></div>
+            <div ref={paymentContainer} className="payment" />
           </div>
         </div>
       </div>

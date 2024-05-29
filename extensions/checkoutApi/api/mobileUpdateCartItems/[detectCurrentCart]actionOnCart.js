@@ -1,4 +1,3 @@
-const { getCartByUUID } = require('../../../../packages/evershop/src/modules/checkout/services/getCartByUUID');
 /* eslint-disable camelcase */
 const {
   INVALID_PAYLOAD,
@@ -6,11 +5,9 @@ const {
   OK
 } = require('@evershop/evershop/src/lib/util/httpStatus');
 const { saveCart } = require('@evershop/evershop/src/modules/checkout/services/saveCart');
-const { select } = require('@evershop/postgres-query-builder');
-const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { setContextValue } = require('@evershop/evershop/src/modules/graphql/services/contextHelper');
 const { getAjv } = require('@evershop/evershop/src/modules/base/services/getAjv');
-const { getValueSync } = require('@evershop/evershop/src/lib/util/registry');
+const { getCartByUUID } = require('../../../../packages/evershop/src/modules/checkout/services/getCartByUUID');
 const jsonSchema = require('./actionDataSchema.json');
 
 const UPDATE_QTY = 'update-quantity';
@@ -56,16 +53,14 @@ module.exports = async (request, response, delegate, next) => {
       return;
     }
 
-    let responseData = {
-      cartId: cartId,
+    const responseData = {
+      cartId,
       message: ''
     };
 
-    let filteredItems = [];
     switch (action) {
       case UPDATE_QTY:
-        const newQty = parseInt(qty, 10);
-        await cart.updateItemQuantity(payload.cart_item_uuid, payload.qty);
+        await cart.updateItemQuantity(payload.cart_item_uuid, parseInt(payload.qty, 10));
         responseData.message = `Item "${payload.cart_item_uuid}": quantity is updated to ${payload.qty}`;
         break;
       case UPDATE_SELECTION:
@@ -74,11 +69,11 @@ module.exports = async (request, response, delegate, next) => {
         break;
       case SELECT_ALL:
         await cart.updateSelectAllItems();
-        responseData.message = `Cart "${payload.cart_item_uuid}": all items are selected`;
+        responseData.message = `Cart "${cartId}": all items are selected`;
         break;
       case DESELECT_ALL:
         await cart.updateDeselectAllItems();
-        responseData.message = `Cart "${payload.cart_item_uuid}": all items are de-selected`;
+        responseData.message = `Cart "${cartId}": all items are de-selected`;
         break;
       case REMOVE_ITEM:
         await cart.removeItem(payload.cart_item_uuid);

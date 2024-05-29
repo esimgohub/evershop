@@ -1,0 +1,7 @@
+extend type Cart {
+    updateCartItemApi: String!
+}
+
+extend type Query {
+    cartWithOut: Cart
+}
