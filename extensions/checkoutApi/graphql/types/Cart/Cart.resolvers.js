@@ -14,6 +14,6 @@ module.exports = {
     }
   },
   Cart: {
-    updateCartItemApi: (cart) => buildUrl('updateCartItems', { cart_id: cart.uuid })
+    updateCartItemApi: (cart) => buildUrl('mobileUpdateCartItems', { cart_id: cart.uuid })
   }
 };
