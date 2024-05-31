@@ -53,10 +53,13 @@ module.exports = {
         '=',
         'category.uuid'
       );
+
       query.where("category.category_type", "=", CategoryType.Country);
-      query.andWhere("category.status", "=", CategoryStatus.Enabled)
+      query.andWhere("category.status", "=", CategoryStatus.Enabled);
 
       const supportedCountryRecords = await query.execute(pool);
+
+      console.log("supportedCountryRecords", supportedCountryRecords);
 
       return supportedCountryRecords.length > 0 ? supportedCountryRecords.map(country => camelCase(country)) : [];
     }
