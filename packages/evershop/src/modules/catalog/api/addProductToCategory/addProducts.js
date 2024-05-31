@@ -1,18 +1,23 @@
 const { error } = require('@evershop/evershop/src/lib/log/logger');
-const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
+const { pool, getConnection} = require('@evershop/evershop/src/lib/postgres/connection');
 const {
   INVALID_PAYLOAD,
   OK,
   INTERNAL_SERVER_ERROR
 } = require('@evershop/evershop/src/lib/util/httpStatus');
-const { select } = require('@evershop/postgres-query-builder');
-const updateProduct = require('../../services/product/updateProduct');
+const { select, insert, startTransaction, commit, rollback } = require('@evershop/postgres-query-builder');
 
 // eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
+  const connection = await getConnection();
+
   const { category_id } = request.params;
   const { product_id } = request.body;
+
+  console.log("request body", request.body);
   try {
+    await startTransaction(connection);
+  
     // Check if the category is exists
     const category = await select()
       .from('category')
@@ -38,39 +43,49 @@ module.exports = async (request, response, delegate, next) => {
         message: 'Product does not exists'
       });
     }
-    // Check if the product is already assigned to the category
+
+    console.log("product", product);
+
     const productCategory = await select()
-      .from('product')
-      .where('category_id', '=', category.category_id)
-      .and('product_id', '=', product.product_id)
+      .from('product_category')
+      .where('category_id', '=', category.uuid)
+      .and('product_id', '=', product.uuid)
       .load(pool);
+    
+    console.log("productCategory", productCategory);
     if (productCategory) {
       response.status(OK);
+
       return response.json({
         success: true,
         message: 'Product is assigned to the category'
       });
     }
 
-    await updateProduct(
-      product_id,
-      {
-        category_id: category.category_id
-      },
-      {
-        routeId: request.currentRoute.id
-      }
-    );
+    // Add the product_id and category_id to the product_category table
+    const result = await insert('product_category')
+      .given({
+        category_id: category.uuid,
+        product_id: product.uuid,
+      })
+      .execute(connection);
+
+    console.log("insert product category result: ", result);
+    await commit(connection);
+
     response.status(OK);
     return response.json({
       success: true,
       data: {
-        product_id: product.product_id,
-        category_id: category.category_id
+        product_id: product.uuid,
+        category_id: category.uuid
       }
     });
   } catch (e) {
+    await rollback(connection);
+
     error(e);
+
     response.status(INTERNAL_SERVER_ERROR);
     return response.json({
       success: false,

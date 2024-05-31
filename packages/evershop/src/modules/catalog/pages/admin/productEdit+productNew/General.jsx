@@ -65,6 +65,8 @@ SKUPriceWeight.defaultProps = {
 };
 
 function Category({ product }) {
+  const [selecting, setSelecting] = React.useState(false);
+  const [selectedCategory, setSelectedCategory] = React.useState(null);
   const [modifiedCategories, setModifiedCategories] = React.useState(
     product ? product.categories : []
   );
@@ -72,7 +74,7 @@ function Category({ product }) {
   return (
     <div className="mt-15 relative">
       <div className="mb-1">Categories</div>
-      {modifiedCategories && (
+      {modifiedCategories.length !== 0 && (
         <div className="border rounded border-[#c9cccf] mb-1 p-1">
           {modifiedCategories.map((category, index) => (
             <div>
@@ -99,7 +101,7 @@ function Category({ product }) {
                     if (modifiedCategories.length !== 0) {
                       setModifiedCategories(
                         modifiedCategories.filter(
-                          (cat) => cat.categoryId !== category.categoryId
+                          (cat) => cat.uuid !== category.uuid
                         )
                       );
                     }
@@ -114,7 +116,7 @@ function Category({ product }) {
         </div>
       )}
 
-      {/* {!selecting && !category && (
+      {!selecting && (
         <a
           href="#"
           onClick={(e) => {
@@ -123,28 +125,30 @@ function Category({ product }) {
           }}
           className="text-interactive"
         >
-          Select category
+          Select categories
         </a>
       )}
+
       {selecting && (
         <div className="absolute top-5 left-0 right-0 bg-[#eff2f5] z-50 border rounded border-[#c9cccf] p-[10px]">
           <CategoryTree
-            selectedCategory={category}
+            selectedCategory={selectedCategory}
             setSelectedCategory={(cat) => {
-              setCategories(cat);
+              setSelectedCategory(cat);
+              setModifiedCategories([...modifiedCategories, cat]);
               setSelecting(false);
             }}
           />
         </div>
-      )} */}
-      {modifiedCategories &&
-        modifiedCategories.map((category) => (
-          <input
-            type="hidden"
-            name="category_id"
-            value={category?.categoryId}
-          />
-        ))}
+      )}
+
+      {modifiedCategories.length !== 0 && (
+        <input
+          type="hidden"
+          name="category_ids"
+          value={modifiedCategories.map((category, index) => category.uuid)}
+        />
+      )}
     </div>
   );
 }
@@ -154,6 +158,7 @@ Category.propTypes = {
     categories: PropTypes.shape({
       categoryId: PropTypes.number.isRequired,
       name: PropTypes.string.isRequired,
+      uuid: PropTypes.string.isRequired,
       path: PropTypes.arrayOf(
         PropTypes.shape({
           name: PropTypes.string.isRequired
@@ -223,10 +228,11 @@ export default function General({
             {
               component: { default: Category },
               props: {
+                name: 'category_ids',
                 product
               },
               sortOrder: 22,
-              id: 'category'
+              id: 'category_ids'
             },
             {
               component: { default: Field },
@@ -333,6 +339,9 @@ export const query = `
       }
       categories {
         categoryId
+        name
+        uuid
+        status
         path {
           name
         }

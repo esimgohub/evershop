@@ -4,7 +4,7 @@ import Error from '@components/common/form/fields/Error';
 import '../Field.scss';
 import { _ } from '@evershop/evershop/src/lib/locale/translate';
 
-const Select = React.forwardRef((props, ref) => {
+export const Select = React.forwardRef((props, ref) => {
   const {
     name,
     placeholder,
@@ -105,5 +105,3 @@ Select.defaultProps = {
   value: undefined,
   disableDefaultOption: true
 };
-
-export { Select };

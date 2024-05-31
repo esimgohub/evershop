@@ -133,7 +133,7 @@ export default function Products({ collection: { code, addProductApi } }) {
                   addProductApi={addProductApi}
                   closeModal={closeModal}
                   addedProductIDs={data.collection.products.items.map(
-                    (p) => p.productId
+                    (p) => p.uuid
                   )}
                 />
               </div>

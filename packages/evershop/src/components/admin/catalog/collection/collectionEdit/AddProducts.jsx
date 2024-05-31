@@ -31,8 +31,9 @@ function AddProducts({ addProductApi, addedProductIDs, closeModal }) {
       closeModal={closeModal}
       selectedChecker={(product) =>
         // eslint-disable-next-line eqeqeq
-        addedProducts.find((p) => p == product.productId)
+        addedProducts.find((p) => p == product.uuid)
       }
+      // TODO: Implement un select products
       onUnSelect={() => {}}
     />
   );

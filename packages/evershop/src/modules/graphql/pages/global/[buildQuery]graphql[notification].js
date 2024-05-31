@@ -36,10 +36,13 @@ module.exports = async function graphql(request, response, delegate, next) {
             validationErrors[0].locations[0].line,
             validationErrors[0].locations[0].column
           );
-          debug(
-            'critical',
-            `GraphQL validation error: ${formatedErrorMessage}`
-          );
+
+          console.log("formatedErrorMessage: ", validationErrors.map(validationError => validationError.message));
+
+          // debug(
+          //   'critical',
+          //   `GraphQL validation error: ${formatedErrorMessage}`
+          // );
           next(validationErrors[0]);
         } else {
           const context = getContext(request);

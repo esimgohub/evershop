@@ -103,9 +103,9 @@
         }
       }
     },
-    "category_id": {
-      "type": ["string", "number", "null"],
-      "pattern": "^[0-9]+$"
+    "category_ids": {
+      "type": "string",
+      "skipEscape": true
     },
     "options": {
       "type": "array",

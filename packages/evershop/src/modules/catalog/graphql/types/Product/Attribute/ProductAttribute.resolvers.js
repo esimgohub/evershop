@@ -20,7 +20,21 @@ module.exports = {
       if (!user) {
         query.andWhere('attribute.display_on_frontend', '=', true);
       }
-      const attributes = await query.execute(pool);
+      let attributes = await query.execute(pool);
+
+      const foundDataAmount = attributes.find(
+        (a) => a.attribute_code === 'data-amount'
+      );
+      const foundDataAmountUnit = attributes.find(
+        (a) => a.attribute_code === 'data-amount-unit'
+      );
+
+      // Combine data amount and data amount unit
+
+      if (foundDataAmount && foundDataAmountUnit) {
+        foundDataAmount.option_text = `${parseInt(foundDataAmount.option_text) < 10 ? `0${foundDataAmount.option_text}` : foundDataAmount.option_text}${foundDataAmountUnit.option_text}`;
+      }
+
       return attributes.map((a) => camelCase(a));
     },
     attributes: async (product, _, { pool, user }) => {

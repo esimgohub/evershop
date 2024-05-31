@@ -1,9 +1,10 @@
-const { select, execute } = require('@evershop/postgres-query-builder');
+const { select, selectDistinct, execute } = require('@evershop/postgres-query-builder');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const {
   getProductsByCategoryBaseQuery
 } = require('../../../services/getProductsByCategoryBaseQuery');
+
 const {
   getFilterableAttributes
 } = require('../../../services/getFilterableAttributes');
@@ -12,6 +13,9 @@ const {
   getCategoriesBaseQuery
 } = require('../../../services/getCategoriesBaseQuery');
 const { CategoryCollection } = require('../../../services/CategoryCollection');
+const { CategoryType } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-type')
+const { CategoryStatus } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-status')
+
 
 module.exports = {
   Query: {
@@ -33,6 +37,28 @@ module.exports = {
       const root = new CategoryCollection(query);
       await root.init(filters, !!user);
       return root;
+    },
+    supportedCategories: async (_, {}, { pool }) => {
+      const query = selectDistinct(`category_description.name`, "*").from('category');
+      query
+        .leftJoin('category_description')
+        .on(
+          'category_description.category_description_category_id',
+          '=',
+          'category.category_id'
+        );
+
+      query.innerJoin("product_category").on(
+        'product_category.category_id',
+        '=',
+        'category.uuid'
+      );
+      query.where("category.category_type", "=", CategoryType.Country);
+      query.andWhere("category.status", "=", CategoryStatus.Enabled)
+
+      const supportedCountryRecords = await query.execute(pool);
+
+      return supportedCountryRecords.length > 0 ? supportedCountryRecords.map(country => camelCase(country)) : [];
     }
   },
   Category: {
@@ -154,7 +180,7 @@ module.exports = {
       productCategoryQuery.innerJoin("category").on(
         'product_category.category_id',
         '=',
-        'category.category_id'
+        'category.uuid'
       )
       
       productCategoryQuery.innerJoin("category_description").on(
@@ -162,7 +188,7 @@ module.exports = {
         '=',
         'category.category_id'
       );
-      productCategoryQuery.where('product_id', '=', product.productId);
+      productCategoryQuery.where('product_id', '=', product.uuid);
       const productCategoryRecords = await productCategoryQuery.execute(pool);
 
       if (productCategoryRecords.length === 0) {

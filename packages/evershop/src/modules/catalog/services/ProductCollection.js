@@ -126,7 +126,10 @@ class ProductCollection {
 
   async items() {
     const items = await this.baseQuery.execute(pool);
-    return items.map((row) => camelCase(row));
+
+    return items.map((row) => {
+      return camelCase(row);
+    });
   }
 
   async total() {

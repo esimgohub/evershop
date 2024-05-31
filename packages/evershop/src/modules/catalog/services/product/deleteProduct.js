@@ -11,7 +11,7 @@ const {
 } = require('@evershop/evershop/src/lib/postgres/connection');
 
 async function deleteProductData(uuid, connection) {
-  await del('product').where('uuid', '=', uuid).execute(connection);
+  const result = await del('product').where('uuid', '=', uuid).execute(connection);
 }
 
 /**
@@ -36,10 +36,12 @@ async function deleteProduct(uuid, context) {
     if (!product) {
       throw new Error('Invalid product id');
     }
+
     await hookable(deleteProductData, { ...context, connection, product })(
       uuid,
       connection
     );
+    
     await commit(connection);
     return product;
   } catch (e) {

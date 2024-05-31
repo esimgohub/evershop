@@ -9,16 +9,21 @@ class Select {
     this._fields = [];
   }
 
-  select(field, alias) {
+  select(field, alias, distinctOnField) {
     // Resolve field name
     let f = '';
+
+    if (distinctOnField) {
+      f = ` DISTINCT ON (${distinctOnField}) `;
+    }
+
     if (isValueASQL(field) || field === '*') {
       // If field is an object has property "isSQL" and it's true
       // or field is a string and it's "*"
       if (typeof field === 'object' && field.isSQL === true) {
-        f = field.value;
+        f += field.value;
       } else {
-        f = field;
+        f += field;
       }
     } else {
       f += `"${field}"`;
@@ -538,7 +543,7 @@ class Query {
 }
 
 class SelectQuery extends Query {
-  constructor() {
+  constructor(distinctOnField) {
     super();
     this._table = undefined;
     this._alias = undefined;
@@ -548,10 +553,11 @@ class SelectQuery extends Query {
     this._limit = new Limit();
     this._groupBy = new GroupBy();
     this._orderBy = new OrderBy();
+    this._distinct_on_field = distinctOnField;
   }
 
   select(field, alias) {
-    this._select.select(field, alias);
+    this._select.select(field, alias, this._distinct_on_field);
     return this;
   }
 
@@ -1017,6 +1023,7 @@ module.exports = {
   update,
   node,
   del,
+  selectDistinct,
   insertOnUpdate,
   getConnection,
   startTransaction,
@@ -1039,6 +1046,22 @@ function select() {
     if (typeof arg == 'string') select.select(arg);
   });
   return select;
+}
+
+function selectDistinct(distinctOnField, fields) {
+  let select = new SelectQuery(distinctOnField);
+
+  let args = [...arguments];
+
+  if (args[1] === '*') {
+    select.select('*');
+    return select;
+  }
+  args.forEach((arg) => {
+    if (typeof arg == 'string') select.select(arg);
+  });
+
+  return select.select('*');
 }
 
 function insert(table) {

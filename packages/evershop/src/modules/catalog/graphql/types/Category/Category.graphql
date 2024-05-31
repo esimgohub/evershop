@@ -100,5 +100,7 @@ extend type Product {
 
 extend type Query {
   categories(filters: [FilterInput]): CategoryCollection
+  supportedCategories: [Category]
+
   category(id: Int): Category
 }

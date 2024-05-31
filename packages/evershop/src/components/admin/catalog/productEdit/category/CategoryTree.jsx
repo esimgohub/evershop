@@ -11,8 +11,9 @@ const categoriesQuery = `
   query Query ($filters: [FilterInput]) {
     categories (filters: $filters) {
       items {
-        categoryId,
+        categoryId
         name
+        uuid
         path {
           name
         }

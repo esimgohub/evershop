@@ -8,6 +8,7 @@ const deleteProduct = require('../../services/product/deleteProduct');
 module.exports = async (request, response, delegate, next) => {
   try {
     const { id } = request.params;
+
     const product = await deleteProduct(id, {
       routeId: request.currentRoute.id
     });
