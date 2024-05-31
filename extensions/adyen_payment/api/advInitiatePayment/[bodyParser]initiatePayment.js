@@ -3,7 +3,7 @@ const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { INVALID_PAYLOAD, INTERNAL_SERVER_ERROR } = require('@evershop/evershop/src/lib/util/httpStatus');
 const { toPrice } = require('@evershop/evershop/src/modules/checkout/services/toPrice');
 const { getSetting } = require('@evershop/evershop/src/modules/setting/services/setting');
-const { select } = require('packages/postgres-query-builder');
+const { select } = require('@evershop/postgres-query-builder');
 
 // Adyen configuration
 const config = new Config();
@@ -42,10 +42,11 @@ module.exports = async (request, response, delegate, next) => {
 
     // Allows for gitpod support
     const merchantAccount = await getSetting('adyenMerchantAccount', '');
+
     // ideally the data passed here should be computed based on business logic
     const data = await checkout.PaymentsApi.payments({
       amount: {
-        currency_code: order.currency,
+        currency: order.currency,
         value: toPrice(order.grand_total)
       },
       reference: orderRef, // required
