@@ -102,7 +102,7 @@ module.exports.registerDefaultValidators =
       },
       async function requiredProductByCategoryValidator(cart, coupon) {
         let flag = true;
-        const items = cart.getItems();
+        const items = cart.getActiveItems();
         const conditions = coupon.condition;
         const requiredProducts = conditions.required_products || [];
         if (requiredProducts.length === 0) {
@@ -155,7 +155,7 @@ module.exports.registerDefaultValidators =
       },
       async function requiredProductByCollectionValidator(cart, coupon) {
         let flag = true;
-        const items = cart.getItems();
+        const items = cart.getActiveItems();
         const conditions = coupon.condition;
         const requiredProducts = conditions.required_products || [];
         if (requiredProducts.length === 0) {
@@ -233,7 +233,7 @@ module.exports.registerDefaultValidators =
       },
       async function requiredProductByAttributeGroupValidator(cart, coupon) {
         let flag = true;
-        const items = cart.getItems();
+        const items = cart.getActiveItems();
         const conditions = coupon.condition;
 
         const requiredProducts = conditions.required_products || [];
@@ -281,7 +281,7 @@ module.exports.registerDefaultValidators =
       },
       async function requiredProductByPriceValidator(cart, coupon) {
         let flag = true;
-        const items = cart.getItems();
+        const items = cart.getActiveItems();
         const conditions = coupon.condition;
         const requiredProducts = conditions.required_products || [];
         if (requiredProducts.length === 0) {
@@ -324,7 +324,7 @@ module.exports.registerDefaultValidators =
       },
       async function requiredProductBySkuValidator(cart, coupon) {
         let flag = true;
-        const items = cart.getItems();
+        const items = cart.getActiveItems();
         const conditions = coupon.condition;
         const requiredProducts = conditions.required_products || [];
         if (requiredProducts.length === 0) {

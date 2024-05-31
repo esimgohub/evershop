@@ -22,7 +22,7 @@ module.exports.registerDefaultCalculators =
         );
         let distributedAmount = 0;
         const discounts = {};
-        const items = cart.getItems();
+        const items = cart.getActiveItems();
         items.forEach((item, index) => {
           let sharedDiscount = 0;
           if (index === items.length - 1) {
@@ -74,7 +74,7 @@ module.exports.registerDefaultCalculators =
           cartTotal > cartDiscountAmount ? cartDiscountAmount : cartTotal;
         let distributedAmount = 0;
         const discounts = {};
-        const items = cart.getItems();
+        const items = cart.getActiveItems();
         items.forEach((item, index) => {
           let sharedDiscount = 0;
           if (index === items.length - 1) {
@@ -127,7 +127,7 @@ module.exports.registerDefaultCalculators =
         const targetProducts = targetConfig.products || [];
         let discountAmount = toPrice(parseFloat(coupon.discount_amount) || 0);
         const discounts = {};
-        const items = cart.getItems();
+        const items = cart.getActiveItems();
         // Get collections of all products
         const collections = await select()
           .from('product_collection')
@@ -290,7 +290,7 @@ module.exports.registerDefaultCalculators =
           return true;
         }
         const configs = coupon.buyx_gety;
-        const items = cart.getItems();
+        const items = cart.getActiveItems();
         const discounts = {};
         configs.forEach((row) => {
           const sku = row.sku ?? null;

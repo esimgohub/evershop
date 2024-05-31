@@ -1,0 +1,7 @@
+{
+    "methods": [
+        "POST"
+    ],
+    "path": "/sessions",
+    "access": "public"
+}

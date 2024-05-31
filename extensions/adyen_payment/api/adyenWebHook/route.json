@@ -1,0 +1,5 @@
+{
+  "methods": ["POST"],
+  "path": "/companies/KimeiGlobal/webhooks",
+  "access": "public"
+}
