@@ -14,7 +14,6 @@ module.exports = async (request, response, delegate, next) => {
   const { category_id } = request.params;
   const { product_id } = request.body;
 
-  console.log("request body", request.body);
   try {
     await startTransaction(connection);
   
@@ -44,15 +43,12 @@ module.exports = async (request, response, delegate, next) => {
       });
     }
 
-    console.log("product", product);
-
     const productCategory = await select()
       .from('product_category')
       .where('category_id', '=', category.uuid)
       .and('product_id', '=', product.uuid)
       .load(pool);
     
-    console.log("productCategory", productCategory);
     if (productCategory) {
       response.status(OK);
 
@@ -70,7 +66,6 @@ module.exports = async (request, response, delegate, next) => {
       })
       .execute(connection);
 
-    console.log("insert product category result: ", result);
     await commit(connection);
 
     response.status(OK);

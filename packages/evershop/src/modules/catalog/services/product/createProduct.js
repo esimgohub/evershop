@@ -184,6 +184,9 @@ async function createProduct(data, context) {
   try {
     const productData = await getValue('productDataBeforeCreate', data);
 
+    // TODO: Remove weight field on product.
+    productData.weight = 0;
+
     // Validate product data
     validateProductDataBeforeInsert(productData);
 

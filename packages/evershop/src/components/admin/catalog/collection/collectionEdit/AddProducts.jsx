@@ -25,6 +25,25 @@ function AddProducts({ addProductApi, addedProductIDs, closeModal }) {
     }
   };
 
+  const removeProduct = async (sku, uuid, productId) => {
+    const response = await fetch(`${addProductApi}/${uuid}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
+    });
+
+    const data = await response.json();
+    if (!data.success) {
+      toast.error(data.message);
+    } else {
+      setAddedProducts(
+        addedProducts.filter((productId) => productId !== data.data.product_id)
+      );
+    }
+  };
+
   return (
     <ProductSkuSelector
       onSelect={addProduct}
@@ -34,7 +53,7 @@ function AddProducts({ addProductApi, addedProductIDs, closeModal }) {
         addedProducts.find((p) => p == product.uuid)
       }
       // TODO: Implement un select products
-      onUnSelect={() => {}}
+      onUnSelect={removeProduct}
     />
   );
 }

@@ -45,13 +45,6 @@
         "pattern": "Price should be a number with maximum 2 decimal places"
       }
     },
-    "weight": {
-      "type": ["string", "number"],
-      "pattern": "^[0-9]+(\\.[0-9]{1,2})?$",
-      "errorMessage": {
-        "pattern": "Weight should be a number with maximum 2 decimal places"
-      }
-    },
     "qty": {
       "type": ["string", "number"],
       "pattern": "^[0-9]+$",

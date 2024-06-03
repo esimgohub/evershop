@@ -285,16 +285,11 @@ async function updateProductData(uuid, data, connection) {
     if (data.category_ids) {
       const splittedCategoryIdsByComma = data.category_ids.split(',').map(id => id.trim());
 
-      console.log("splittedCategoryIdsByComma ne: ", splittedCategoryIdsByComma);
-
       const deleteQuery = await del("product_category");
         deleteQuery.where("product_id", "=", newProduct.uuid);
 
       const deleteResult = await deleteQuery.execute(connection);
       console.log("delete result: ", deleteResult);
-
-
-      console.log("new product: ", newProduct);
       
       for (const category_id of splittedCategoryIdsByComma) {
 
@@ -304,9 +299,6 @@ async function updateProductData(uuid, data, connection) {
 
         upsertQuery.prime("product_id", newProduct.uuid);
         upsertQuery.prime("category_id", category_id);
-
-        console.log("upsertQuery: ", upsertQuery);
-
 
         const upsertProductCategoryResult = await upsertQuery.execute(connection);
 

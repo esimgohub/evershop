@@ -59,8 +59,6 @@ module.exports = {
 
       const supportedCountryRecords = await query.execute(pool);
 
-      console.log("supportedCountryRecords", supportedCountryRecords);
-
       return supportedCountryRecords.length > 0 ? supportedCountryRecords.map(country => camelCase(country)) : [];
     }
   },

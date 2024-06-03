@@ -47,8 +47,6 @@ module.exports = async (request, response, delegate, next) => {
       .andWhere('category_id', '=', category_id)
       .execute(pool);
 
-    console.log("delete category result: ", removeProductCategoryResult)
-
     response.status(OK);
     response.json({
       success: true,

@@ -10,6 +10,7 @@ const childrenQuery = `
     categories (filters: $filters) {
       items {
         categoryId,
+        uuid
         name
         path {
           name
@@ -69,7 +70,12 @@ function CategoryItem({ category, selectedCategory, setSelectedCategory }) {
             setSelectedCategory(category);
           }}
         >
-          {category.categoryId === selectedCategory?.categoryId ? (
+          {/* {category.categoryId === selectedCategory?.categoryId ? (
+            <strong>{category.name}</strong>
+          ) : (
+            category.name
+          )} */}
+          {category.uuid === selectedCategory?.uuid ? (
             <strong>{category.name}</strong>
           ) : (
             category.name
@@ -95,6 +101,7 @@ function CategoryItem({ category, selectedCategory, setSelectedCategory }) {
 CategoryItem.propTypes = {
   category: PropTypes.shape({
     categoryId: PropTypes.number.isRequired,
+    uuid: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     path: PropTypes.arrayOf(
       PropTypes.shape({
@@ -115,6 +122,7 @@ CategoryItem.propTypes = {
   }),
   selectedCategory: PropTypes.shape({
     categoryId: PropTypes.number.isRequired,
+    uuid: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     path: PropTypes.arrayOf(
       PropTypes.shape({

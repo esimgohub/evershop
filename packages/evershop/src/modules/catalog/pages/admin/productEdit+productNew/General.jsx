@@ -8,7 +8,7 @@ import CategoryTree from '@components/admin/catalog/productEdit/category/Categor
 
 function SKUPriceWeight({ sku, price, weight, setting }) {
   return (
-    <div className="grid grid-cols-3 gap-1 mt-15">
+    <div className="grid grid-cols-2 gap-1 mt-15">
       <div>
         <Field
           id="sku"
@@ -32,7 +32,7 @@ function SKUPriceWeight({ sku, price, weight, setting }) {
           suffix={setting.storeCurrency}
         />
       </div>
-      <div>
+      {/* <div>
         <Field
           id="weight"
           name="weight"
@@ -43,7 +43,7 @@ function SKUPriceWeight({ sku, price, weight, setting }) {
           validationRules={['notEmpty']}
           suffix={setting.weightUnit}
         />
-      </div>
+      </div> */}
     </div>
   );
 }
