@@ -22,8 +22,8 @@ module.exports = async (request, response, delegate, next) => {
     const merchantAccount = await getSetting("adyenMerchantAccount", '');
 
     const data = await checkout.PaymentsApi.paymentMethods({
-      channel: "Web",
-      merchantAccount: merchantAccount
+      channel: "iOS",
+      merchantAccount
     });
 
     response.json(data);

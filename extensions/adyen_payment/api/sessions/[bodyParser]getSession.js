@@ -1,6 +1,6 @@
-const { uuid } = require('uuidv4');
 const { Client, Config, CheckoutAPI } = require("@adyen/api-library");
 const { getSetting } = require('@evershop/evershop/src/modules/setting/services/setting');
+const { error } = require('@evershop/evershop/src/lib/log/logger');
 
 // Adyen Node.js API library boilerplate (configuration, etc.)
 
@@ -16,14 +16,12 @@ async function initializeAdyen() {
 
 // Immediately invoke the function to initialize Adyen client
 initializeAdyen().catch(err => {
-  console.error("Failed to initialize Adyen:", err);
+  error("Failed to initialize Adyen:", err);
 });
 
 module.exports = async (request, response, delegate, next) => {
-  const { order_id } = request.body;
+  const { order_id: orderRef } = request.body;
       try {
-        // unique ref for the transaction
-        const orderRef = uuid();
         // Allows for gitpod support
         const localhost = request.get('host');
         // const isHttps = req.connection.encrypted;
@@ -33,7 +31,7 @@ module.exports = async (request, response, delegate, next) => {
         const data = await checkout.PaymentsApi.sessions({
           amount: { currency: "USD", value: 1000 }, // value is 100$ in minor units
           countryCode: "us",
-          merchantAccount: merchantAccount, // required
+          merchantAccount, // required
           reference: orderRef, // required: your Payment Reference
           returnUrl: `${protocol}://${localhost}/checkout?orderRef=${orderRef}`, // set redirect URL required for some payment methods (ie iDEAL)
           // set lineItems required for some payment methods (ie Klarna)
@@ -44,9 +42,8 @@ module.exports = async (request, response, delegate, next) => {
         });
     
         response.json(data);
+        next();
       } catch (err) {
-        // console.error(`Error: ${err.message}, error code: ${err.errorCode}`);
-        // res.status(err.statusCode).json(err.message);
         next(err);
       }
 }

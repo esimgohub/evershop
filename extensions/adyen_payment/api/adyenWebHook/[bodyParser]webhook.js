@@ -11,13 +11,14 @@ const {
   getConnection
 } = require('@evershop/evershop/src/lib/postgres/connection');
 const { emit } = require('@evershop/evershop/src/lib/event/emitter');
-const { hmacValidator } = require('@adyen/api-library');
+const { hmacValidator: HmacValidator } = require('@adyen/api-library');
 const { getSetting } = require('@evershop/evershop/src/modules/setting/services/setting');
+const { info } = require('@evershop/evershop/src/lib/log/logger');
 
 // eslint-disable-next-line no-unused-vars
 module.exports = async (req, res, delegate, next) => {
   const connection = await getConnection();
-  const validator = new hmacValidator();
+  const validator = new HmacValidator();
   try {
 
     // get notificationItems from body
@@ -25,7 +26,7 @@ module.exports = async (req, res, delegate, next) => {
 
     // fetch first (and only) NotificationRequestItem
     const notificationRequestItem = notificationRequestItems[0].NotificationRequestItem;
-    console.log(notificationRequestItem);
+    info(notificationRequestItem);
 
     const hmacKey = await getSetting('adyenHmacKey', '');
 
@@ -48,7 +49,6 @@ module.exports = async (req, res, delegate, next) => {
           .where('uuid', '=', orderId)
           .load(connection);
 
-        // TODO: tim info:
         // orderId:grand_total, amount, currency, txn_id (tuy business ma add kieu gi)
         // Update the order
         // Create payment transaction
@@ -80,7 +80,7 @@ module.exports = async (req, res, delegate, next) => {
         await emit('order_placed', { ...order });
       }
       else {
-        console.info("skipping non actionable webhook");
+        info("skipping non actionable webhook");
       }
       await commit(connection);
       // TODO: CANCEL AND REFUND action

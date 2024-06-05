@@ -1,68 +1,72 @@
-const { Client, Config, CheckoutAPI } = require("@adyen/api-library");
+const { Client, Config, CheckoutAPI } = require('@adyen/api-library');
+const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
+const { INVALID_PAYLOAD, INTERNAL_SERVER_ERROR } = require('@evershop/evershop/src/lib/util/httpStatus');
+const { toPrice } = require('@evershop/evershop/src/modules/checkout/services/toPrice');
 const { getSetting } = require('@evershop/evershop/src/modules/setting/services/setting');
+const { select } = require('@evershop/postgres-query-builder');
 
-// Adyen Node.js API library boilerplate (configuration, etc.)
-
-// let client;
-// let checkout;
-// async function initializeAdyen() {
-//   const config = new Config();
-//   config.apiKey = await getSetting('adyenApiKey', '');
-//   client = new Client({ config });
-//   client.setEnvironment("TEST");  // change to LIVE for production
-//   checkout = new CheckoutAPI(client);
-// }
-
-// // Immediately invoke the function to initialize Adyen client
-// initializeAdyen().catch(err => {
-//   console.error("Failed to initialize Adyen:", err);
-// });
-
+// Adyen configuration
 const config = new Config();
 config.apiKey = process.env.ADYEN_API_KEY;
 const client = new Client({ config });
-client.setEnvironment("TEST");
+client.setEnvironment('TEST');
 const checkout = new CheckoutAPI(client);
 
+// eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
   // unique ref for the transaction
-  const { order_id: orderRef } = request.body;
-  // const shopperIP = request.headers["x-forwarded-for"] || request.connection.remoteAddress;
+  const { order_uuid: orderRef } = request.body;
+
   try {
+    const order = await select()
+      .from('order')
+      .where('uuid', '=', orderRef)
+      .and('payment_method', '=', 'adyen')
+      .and('payment_status', '=', 'pending')
+      .load(pool);
+
+    if (!order) {
+      response.status(INVALID_PAYLOAD).json({
+        error: {
+          status: INVALID_PAYLOAD,
+          message: 'Invalid order'
+        }
+      });
+      return;
+    }
+
+    const items = await select()
+      .from('order_item')
+      .where('order_item_order_id', '=', order.order_id)
+      .execute(pool);
+
     // Allows for gitpod support
-    const localhost = request.get('host');
-    // const isHttps = request.connection.encrypted;
-    // const protocol = request.socket.encrypted ? 'https' : 'http';
-    // Ideally the data passed here should be computed based on business logic
-    const merchantAccount = await getSetting("adyenMerchantAccount", '');
+    const merchantAccount = await getSetting('adyenMerchantAccount', '');
+
     // ideally the data passed here should be computed based on business logic
     const data = await checkout.PaymentsApi.payments({
-      amount: { currency: "USD", value: 1000 }, // value is 10€ in minor units
+      amount: {
+        currency: order.currency,
+        value: toPrice(order.grand_total)
+      },
       reference: orderRef, // required
-      merchantAccount: merchantAccount, // required
-      channel: "Web", // required
-      paymentMethod: request.body.paymentMethod, 
-      // origin: `${protocol}://${localhost}`, // required for 3ds2 native flow
-      // shopperIP, // required by some issuers for 3ds2
-      // socialSecurityNumber: '12398540',
-
-      // returnUrl: `${protocol}://${localhost}/api/handleShopperRedirect?orderRef=${orderRef}`, // required for 3ds2 redirect flow
-      // special handling for boleto
-      // we strongly recommend that you the billingAddress in your request. 
-      // card schemes require this for channel web, iOS, and Android implementations.
-      // below fields are required for Klarna, line items included
-      // shopperReference: "12345",
-      // shopperEmail: "youremail@email.com",
-      lineItems: [
-        { quantity: 1, amountIncludingTax: 5000, description: "Sunglasses" },
-        { quantity: 1, amountIncludingTax: 5000, description: "Headphones" }
-      ],
+      merchantAccount, // required
+      channel: 'iOS', // required
+      paymentMethod: request.body.paymentMethod,
+      lineItems: items.map((item) => ({
+        sku: item.product_sku,
+        quantity: item.qty
+      }))
     });
 
     response.json(data);
   } catch (err) {
-    // console.error(`Error: ${err.message}, error code: ${err.errorCode}`);
-    // res.status(err.statusCode).json(err.message);
-    next(err);
+    response.status(INTERNAL_SERVER_ERROR);
+    response.json({
+      error: {
+        message: err.message,
+        status: INTERNAL_SERVER_ERROR
+      }
+    });
   }
 };
