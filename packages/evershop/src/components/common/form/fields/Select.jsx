@@ -14,7 +14,8 @@ export const Select = React.forwardRef((props, ref) => {
     onChange,
     error,
     instruction,
-    options
+    options,
+    disabled
   } = props;
   const [_value, setValue] = React.useState(value || '');
 
@@ -43,14 +44,18 @@ export const Select = React.forwardRef((props, ref) => {
           }}
           ref={ref}
         >
-          <option value="" disabled={disableDefaultOption}>
+          <option
+            value=""
+            className={`${disableDefaultOption ? 'text-lightgray' : ''}`}
+            disabled={disableDefaultOption}
+          >
             {placeholder || _('Please select')}
           </option>
           {options &&
             options.map(
               // eslint-disable-next-line react/no-array-index-key
               (option, key) => (
-                <option key={key} value={option.value}>
+                <option key={key} disabled={disabled} value={option.value}>
                   {option.text}
                 </option>
               )

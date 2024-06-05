@@ -43,16 +43,18 @@ async function updateAttributeOptions(
   connection
 ) {
   // Ignore updating options if it is not present in the data or if the attribute type is not select or multiselect
-  if (
-    options.length === 0 ||
-    !['select', 'multiselect'].includes(attributeType)
-  ) {
-    return;
-  }
+  // if (
+  //   options.length === 0 ||
+  //   !['select', 'multiselect'].includes(attributeType)
+  // ) {
+  //   return;
+  // }
+
 
   const ids = options
     .filter((o) => o !== undefined)
     .map((o) => parseInt(o.option_id, 10));
+  
   const oldOptions = await select()
     .from('attribute_option')
     .where('attribute_id', '=', attributeId)
@@ -173,8 +175,8 @@ async function updateAttribute(uuid, data, context) {
   try {
     const attributeData = await getValue('attributeDataBeforeUpdate', data);
     // Delete the attribute_code and type from the data object, we do not allow to update these fields
-    delete attributeData.attribute_code;
-    delete attributeData.type;
+    // delete attributeData.attribute_code;
+    // delete attributeData.type;
 
     // Validate attribute data
     validateAttributeDataBeforeInsert(attributeData);

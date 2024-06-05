@@ -133,7 +133,7 @@ export default function General({
         name: 'category_type',
         label: 'Category Type',
         placeholder: 'Select category type',
-        value: category.categoryType || '',
+        value: category && category.categoryType ? category.categoryType : '',
         options: [
           // TODO: Move this 4 options to enum or category option table
           {

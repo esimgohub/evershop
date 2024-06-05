@@ -4,9 +4,9 @@ import { toast } from 'react-toastify';
 import ProductSkuSelector from '@components/admin/promotion/couponEdit/ProductSkuSelector';
 
 function AddProducts({ addProductApi, addedProductIDs, closeModal }) {
-  const [addedProducts, setAddedProducts] = React.useState(addedProductIDs);
+  const [addedProductIds, setAddedProductIds] = React.useState(addedProductIDs);
 
-  const addProduct = async (sku, uuid) => {
+  const addProduct = async (sku, uuid, productId) => {
     const response = await fetch(addProductApi, {
       method: 'POST',
       headers: {
@@ -21,7 +21,7 @@ function AddProducts({ addProductApi, addedProductIDs, closeModal }) {
     if (!data.success) {
       toast.error(data.message);
     } else {
-      setAddedProducts([...addedProducts, data.data.product_id]);
+      setAddedProductIds([...addedProductIds, uuid]);
     }
   };
 
@@ -38,8 +38,8 @@ function AddProducts({ addProductApi, addedProductIDs, closeModal }) {
     if (!data.success) {
       toast.error(data.message);
     } else {
-      setAddedProducts(
-        addedProducts.filter((productId) => productId !== data.data.product_id)
+      setAddedProductIds(
+        addedProductIds.filter((productId) => productId !== uuid)
       );
     }
   };
@@ -48,10 +48,16 @@ function AddProducts({ addProductApi, addedProductIDs, closeModal }) {
     <ProductSkuSelector
       onSelect={addProduct}
       closeModal={closeModal}
-      selectedChecker={(product) =>
+      selectedChecker={(productId) => {
+        console.log('product', product);
+        console.log(
+          'added products',
+          addedProductIds.find((p) => p == product.uuid)
+        );
+
         // eslint-disable-next-line eqeqeq
-        addedProducts.find((p) => p == product.uuid)
-      }
+        return addedProductIds.find((id) => id == productId);
+      }}
       // TODO: Implement un select products
       onUnSelect={removeProduct}
     />
