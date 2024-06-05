@@ -32,7 +32,7 @@ module.exports = {
       // Combine data amount and data amount unit
 
       if (foundDataAmount && foundDataAmountUnit) {
-        foundDataAmount.option_text = `${parseInt(foundDataAmount.option_text) < 10 ? `0${foundDataAmount.option_text}` : foundDataAmount.option_text}${foundDataAmountUnit.option_text}`;
+        foundDataAmount.option_text = `${parseInt(foundDataAmount.option_text) < 10 ? `0${foundDataAmount.option_text}` : foundDataAmount.option_text} ${foundDataAmountUnit.option_text}`;
       }
 
       return attributes.map((a) => camelCase(a));
