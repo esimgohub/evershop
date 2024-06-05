@@ -70,7 +70,7 @@ module.exports = {
         .replace('{plan-type}', foundPlanType ? foundPlanType.attribute_name : "Plan Type")
         .replace('{plan-type-value}', foundPlanType ? foundPlanType.option_text : '')
         .replace('{expiration}', foundExpiration ? foundExpiration.attribute_name : "Expiration")
-        .replace('{expiration-value}', foundExpiration ? foundExpiration.option_text : '')
+        .replace('{expiration-value}', foundExpiration ? `${foundExpiration.option_text} ${parseInt(foundExpiration.option_text) === 1 ? 'day' : 'days'}` : '')
         .replace('{sharing}', foundSharing ? foundSharing.attribute_name : "Sharing")
         .replace('{sharing-value}', foundSharing ? foundSharing.option_text : '')
         .replace('{coverage}', "Coverage")
