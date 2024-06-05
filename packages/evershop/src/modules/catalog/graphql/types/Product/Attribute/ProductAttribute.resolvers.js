@@ -52,8 +52,6 @@ module.exports = {
       }
 
       // Combine data amount and data amount unit
-      
-
       switch(foundPlanType[1]) {
         case PlanType.DailyData:
           responses['data-amount'] = `${foundDataAmount[1]} ${foundDataAmountUnit ? foundDataAmountUnit[1] : 'GB'}/days`;
