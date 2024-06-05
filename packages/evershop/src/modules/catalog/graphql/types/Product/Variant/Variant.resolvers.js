@@ -8,6 +8,9 @@ const {
 
 module.exports = {
   Product: {
+    variants: async (product, _, { pool }) => {
+      
+    },
     variantGroup: async (product, _, { pool, user }) => {
       const { variantGroupId } = product;
       if (!variantGroupId) {

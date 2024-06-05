@@ -18,9 +18,9 @@ module.exports = {
         '=',
         product.productId
       );
-      if (!user) {
-        query.andWhere('attribute.display_on_frontend', '=', true);
-      }
+      // if (!user) {
+      //   query.andWhere('attribute.display_on_frontend', '=', true);
+      // }
       const attributes = await query.execute(pool);
 
     
