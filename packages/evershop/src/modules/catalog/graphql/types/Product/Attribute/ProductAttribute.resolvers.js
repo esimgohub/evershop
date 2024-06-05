@@ -54,16 +54,16 @@ module.exports = {
       // Combine data amount and data amount unit
       
 
-      // switch(foundPlanType[1]) {
-      //   case "Data only":
-      //     responses['data-amount'] = `${foundDataAmount[1]} ${foundDataAmountUnit ? foundDataAmountUnit[1] : 'GB'}/days`;
-      //     break;
-      //   case PlanType.FixedData:
-      //     responses['data-amount'] = `${foundDataAmount[1]} ${foundDataAmountUnit ? foundDataAmountUnit[1] : 'GB'} / ${foundDayAmount[1]} ${parseInt(foundDayAmount[1]) === 1 ? 'day' : 'days'}`;
-      //     break;
-      //   default:
-      //     break;
-      // }
+      switch(foundPlanType[1]) {
+        case PlanType.DailyData:
+          responses['data-amount'] = `${foundDataAmount[1]} ${foundDataAmountUnit ? foundDataAmountUnit[1] : 'GB'}/days`;
+          break;
+        case PlanType.FixedData:
+          responses['data-amount'] = `${foundDataAmount[1]} ${foundDataAmountUnit ? foundDataAmountUnit[1] : 'GB'} / ${foundDayAmount[1]} ${parseInt(foundDayAmount[1]) === 1 ? 'day' : 'days'}`;
+          break;
+        default:
+          break;
+      }
 
       responses['day-amount'] = `${foundDayAmount[1]} ${parseInt(foundDayAmount[1]) === 1 ? 'day' : 'days'}`;
       
