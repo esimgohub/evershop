@@ -9,6 +9,7 @@ const { productDetailDescriptionHtmlTemplate } = require('@evershop/evershop/src
 
 module.exports = {
   Product: {
+
     url: async (product, _, { pool }) => {
       // Get the url rewrite for this product
       const urlRewrite = await select()
@@ -85,6 +86,23 @@ module.exports = {
         .replace('{daily-reset-time-value}', foundDailyResetTime ? foundDailyResetTime.option_text : '')
 
       return filledDescription;
+    },
+    promotion: async (product, _, { pool }) => {
+      const { oldPrice } = product;
+      const price = parseFloat(product.price);
+
+      const isOldPriceGreaterThanOrEqualCurrentPrice = oldPrice && parseFloat(oldPrice) <= price;
+
+      if (!oldPrice || isOldPriceGreaterThanOrEqualCurrentPrice) {
+        return null;
+      }
+
+      const promotionValue = (parseFloat(oldPrice) - price) / oldPrice * 100;
+
+      return {
+        value: promotionValue.toFixed(0),
+        text: `${promotionValue.toFixed(0)}% OFF`
+      };
     }
   },
   Query: {

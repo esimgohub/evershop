@@ -8,8 +8,21 @@ const {
 
 module.exports = {
   Product: {
-    variants: async (product, _, { pool }) => {
-      
+    variants: async (product, _, { pool, user }) => {
+      const { variantGroupId } = product;
+      if (!variantGroupId) {
+        return [];
+      }
+
+      const query = getProductsBaseQuery(pool);
+      query.where('variant_group_id', '=', variantGroupId);
+
+      if (!user) {
+        query.andWhere('status', '=', 1);
+      }
+      const productVariants = await query.execute(pool);
+
+      return productVariants.map(variant => camelCase(variant));
     },
     variantGroup: async (product, _, { pool, user }) => {
       const { variantGroupId } = product;

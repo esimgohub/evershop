@@ -1,10 +1,12 @@
 module.exports = {
   Product: {
     price: (product) => {
+      console.log("price ne: ", product);
+
       const price = parseFloat(product.price);
       return {
         regular: price,
-        oldPrice: price + 20 // TODO: implement special price
+        oldPrice: product.oldPrice ? product.oldPrice : null // TODO: implement special price
       };
     }
   }

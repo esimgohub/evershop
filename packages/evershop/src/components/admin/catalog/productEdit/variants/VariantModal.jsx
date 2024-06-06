@@ -25,6 +25,7 @@ const AttributesQuery = `
 `;
 
 export function VariantModal({
+  productId,
   variant,
   variantAttributes,
   productImageUploadUrl
@@ -148,6 +149,12 @@ export function VariantModal({
               />
             </div>
           </div>
+          <Field
+            name="parent_product_id"
+            formId="product-edit-form"
+            value={productId}
+            type="hidden"
+          />
         </div>
       </div>
     </div>

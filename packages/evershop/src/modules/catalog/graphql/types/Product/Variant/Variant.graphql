@@ -49,6 +49,6 @@ type VariantGroup {
 }
 
 extend type Product {
-  variants: [Variant]
+  variants: [Product]
   variantGroup: VariantGroup
 }

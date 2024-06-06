@@ -15,11 +15,7 @@
       "type": "string"
     },
     "url_key": {
-      "type": "string",
-      "pattern": "^\\S+$",
-      "errorMessage": {
-        "pattern": "Url key should not contain spaces"
-      }
+      "type": "string"
     },
     "meta_title": {
       "type": "string"
@@ -44,6 +40,13 @@
       "errorMessage": {
         "pattern": "Price should be a number with maximum 2 decimal places"
       }
+    },
+
+    "oldPrice": {
+      "type": ["string", "number"]
+    },
+    "product_type": {
+      "type": "string"
     },
     "qty": {
       "type": ["string", "number"],

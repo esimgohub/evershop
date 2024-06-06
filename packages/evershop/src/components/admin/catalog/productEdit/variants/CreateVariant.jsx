@@ -40,6 +40,7 @@ export function CreateVariant({
                 <Card title="Create a new variant">
                   <Card.Session>
                     <VariantModal
+                      productId={productId}
                       variantAttributes={variantGroup.attributes}
                       productImageUploadUrl={productImageUploadUrl}
                     />

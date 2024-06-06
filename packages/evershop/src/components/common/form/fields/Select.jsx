@@ -30,7 +30,9 @@ export const Select = React.forwardRef((props, ref) => {
       {label && <label htmlFor={name}>{label}</label>}
       <div className="field-wrapper flex flex-grow items-baseline">
         <select
-          className="form-field"
+          className={`form-field ${
+            disabled ? 'bg-[lightgray] cursor-not-allowed' : ''
+          }`}
           id={name}
           name={name}
           placeholder={placeholder}
@@ -42,6 +44,7 @@ export const Select = React.forwardRef((props, ref) => {
               setValue(e.target.value);
             }
           }}
+          disabled={disabled}
           ref={ref}
         >
           <option

@@ -1,10 +1,16 @@
 """
 Represents a product.
 """
+type ProductPromotion {
+  value: Int
+  text: String
+}
+
 type Product {
   productId: Int!
   uuid: String!
   name: String!
+  type: String!
   status: Int!
   sku: String!
   weight: Weight!
@@ -19,6 +25,8 @@ type Product {
   groupId: ID
   url: String
   formattedHTMLAttribute: String
+  promotion: ProductPromotion
+  parentProduct: Product
 }
 
 """

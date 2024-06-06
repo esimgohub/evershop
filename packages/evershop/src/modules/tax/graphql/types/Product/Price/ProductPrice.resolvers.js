@@ -23,30 +23,11 @@ module.exports = {
         false
       );
 
-      const attributesQuery = await select().from('attribute');
-
-
-      attributesQuery.innerJoin('product_attribute_value_index')
-        .on(
-          'attribute.attribute_id',
-          '=',
-          'product_attribute_value_index.attribute_id'
-        );
-
-      attributesQuery.where('product_attribute_value_index.product_id', '=', product.productId)
-      const attributes = await attributesQuery.execute(pool);
-
-      const foundOldPriceAttribute = attributes.find(
-        (a) => a.attribute_code === 'old-price'
-      );
-
-      const oldPrice = foundOldPriceAttribute ? parseFloat(foundOldPriceAttribute.option_text) : null
-
       const taxClassId = product.taxClass;
       if (!taxClassId || !taxConfigDisplay || user) {
         return {
           regular: price,
-          oldPrice,
+          oldPrice: product.oldPrice,
         };
       } else {
         const taxRates = await getTaxRates(

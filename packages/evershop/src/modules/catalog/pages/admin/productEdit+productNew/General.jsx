@@ -5,10 +5,12 @@ import { Field } from '@components/common/form/Field';
 import { Card } from '@components/admin/cms/Card';
 import CkeditorField from '@components/common/form/fields/Ckeditor';
 import CategoryTree from '@components/admin/catalog/productEdit/category/CategoryTree';
+import { ProductType } from '../../../utils/enums/product-type';
+import { Select } from '@components/common/form/fields/Select';
 
-function SKUPriceWeight({ sku, price, weight, setting }) {
+function SKUPrice({ sku, price, oldPrice, setting }) {
   return (
-    <div className="grid grid-cols-2 gap-1 mt-15">
+    <div className="grid grid-cols-3 gap-1 mt-15">
       <div>
         <Field
           id="sku"
@@ -32,36 +34,34 @@ function SKUPriceWeight({ sku, price, weight, setting }) {
           suffix={setting.storeCurrency}
         />
       </div>
-      {/* <div>
+      <div>
         <Field
-          id="weight"
-          name="weight"
-          value={weight?.value}
-          placeholder="Weight"
-          label="Weight"
+          id="oldPrice"
+          name="old_price"
+          value={oldPrice?.value}
+          placeholder="Old Price"
+          label="Old Price"
           type="text"
-          validationRules={['notEmpty']}
-          suffix={setting.weightUnit}
+          suffix={setting.storeCurrency}
         />
-      </div> */}
+      </div>
     </div>
   );
 }
 
-SKUPriceWeight.propTypes = {
+SKUPrice.propTypes = {
   price: PropTypes.number,
+  oldPrice: PropTypes.number,
   sku: PropTypes.string,
-  weight: PropTypes.number,
   setting: PropTypes.shape({
-    storeCurrency: PropTypes.string,
-    weightUnit: PropTypes.string
+    storeCurrency: PropTypes.string
   }).isRequired
 };
 
-SKUPriceWeight.defaultProps = {
+SKUPrice.defaultProps = {
   price: undefined,
-  sku: undefined,
-  weight: undefined
+  oldPrice: undefined,
+  sku: undefined
 };
 
 function Category({ product }) {
@@ -215,15 +215,15 @@ export default function General({
               id: 'product_id'
             },
             {
-              component: { default: SKUPriceWeight },
+              component: { default: SKUPrice },
               props: {
                 sku: product?.sku,
                 price: product?.price.regular,
-                weight: product?.weight,
+                oldPrice: product?.price.oldPrice,
                 setting
               },
               sortOrder: 20,
-              id: 'SKUPriceWeight'
+              id: 'SKUPrice'
             },
             {
               component: { default: Category },
@@ -233,6 +233,28 @@ export default function General({
               },
               sortOrder: 22,
               id: 'category_ids'
+            },
+            {
+              component: { default: Select },
+              props: {
+                name: 'type',
+                label: 'Product Type',
+                placeholder: 'Select product type',
+                value: product && product.type ? product.type : '',
+                disabled: product.type,
+                options: [
+                  {
+                    text: ProductType.simple.label,
+                    value: ProductType.simple.value
+                  },
+                  {
+                    text: ProductType.variable.label,
+                    value: ProductType.variable.value
+                  }
+                ]
+              },
+              id: 'type',
+              sortOrder: 24
             },
             {
               component: { default: Field },
@@ -287,15 +309,10 @@ General.propTypes = {
     }),
     productId: PropTypes.string,
     taxClass: PropTypes.number,
-    sku: PropTypes.string,
-    weight: PropTypes.shape({
-      unit: PropTypes.string,
-      value: PropTypes.number
-    })
+    sku: PropTypes.string
   }),
   setting: PropTypes.shape({
-    storeCurrency: PropTypes.string,
-    weightUnit: PropTypes.string
+    storeCurrency: PropTypes.string
   }).isRequired,
   productTaxClasses: PropTypes.shape({
     items: PropTypes.arrayOf(
@@ -327,15 +344,16 @@ export const query = `
       description
       sku
       taxClass
+      type
       price {
         regular {
           value
           currency
         }
-      }
-      weight {
-        value
-        unit
+        oldPrice {
+          value
+          currency
+        }
       }
       categories {
         categoryId
@@ -348,7 +366,6 @@ export const query = `
       }
     }
     setting {
-      weightUnit
       storeCurrency
     }
     browserApi: url(routeId: "fileBrowser", params: [{key: "0", value: ""}])

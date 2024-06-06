@@ -84,6 +84,7 @@ class ProductCollection {
         const invisibleIds = (await copy.execute(pool)).map(
           (v) => v.product_id
         );
+
         if (invisibleIds.length > 0) {
           const n = node('AND');
           n.addLeaf('AND', 'product.product_id', 'IN', invisibleIds).addNode(
@@ -106,7 +107,11 @@ class ProductCollection {
         )
       );
       onePerVariantGroupQuery.removeOrderBy();
+
+      
       const onePerGroup = await onePerVariantGroupQuery.execute(pool);
+      console.log("one per group sql: ", onePerGroup);
+
       this.baseQuery.andWhere(
         'product.product_id',
         'IN',

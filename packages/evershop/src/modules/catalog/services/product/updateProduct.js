@@ -277,10 +277,16 @@ async function updateProductData(uuid, data, connection) {
 
   let newProduct;
   try {
+    if (data.old_price === '') {
+      data.old_price = null;
+    }
+
     newProduct = await update('product')
       .given(data)
       .where('uuid', '=', uuid)
       .execute(connection);
+
+    console.log("update product data: ", data);
 
     if (data.category_ids) {
       const splittedCategoryIdsByComma = data.category_ids.split(',').map(id => id.trim());
