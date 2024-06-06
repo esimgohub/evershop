@@ -145,7 +145,8 @@ class ProductCollection {
 
     // If the user is not admin, we need to filter out the out of stock products and the disabled products
     if (!isAdmin) {
-      this.baseQuery.andWhere('product.status', '=', 1);
+      this.baseQuery.andWhere('product.visibility', '=', true);
+      this.baseQuery.andWhere('product.status', '=', true);
       if (getConfig('catalog.showOutOfStockProduct', false) === false) {
         this.baseQuery
           .andWhere('product_inventory.manage_stock', '=', false)
@@ -187,45 +188,45 @@ class ProductCollection {
       }
     });
 
-    if (!isAdmin) {
-      // Visibility. For variant group
-      const copy = this.baseQuery.clone();
-      // Get all group that have at lease 1 item visibile
-      const visibleGroups = (
-        await select('variant_group_id')
-          .from('variant_group')
-          .where('visibility', '=', 't')
-          .execute(pool)
-      ).map((v) => v.variant_group_id);
+    console.log("base sql", this.baseQuery.sql());
 
-      if (visibleGroups) {
-        // Get all invisible variants from current query
-        copy
-          .select('bool_or(product.visibility)', 'sumv')
-          .select('max(product.product_id)', 'product_id')
-          .andWhere('product.variant_group_id', 'IN', visibleGroups);
-        copy.groupBy('product.variant_group_id');
-        copy.orderBy('product.variant_group_id', 'ASC');
-        copy.having('bool_or(product.visibility)', '=', 'f');
-        const invisibleIds = (await copy.execute(pool)).map(
-          (v) => v.product_id
-        );
+    // if (!isAdmin) {
+    //   // Visibility. For variant group
+    //   const copy = this.baseQuery.clone();
+    //   // Get all group that have at lease 1 item visibile
+    //   const visibleGroups = (
+    //     await select('variant_group_id')
+    //       .from('variant_group')
+    //       .where('visibility', '=', 't')
+    //       .execute(pool)
+    //   ).map((v) => v.variant_group_id);
 
-        if (invisibleIds.length > 0) {
-          const n = node('AND');
-          n.addLeaf('AND', 'product.product_id', 'IN', invisibleIds).addNode(
-            node('OR').addLeaf('OR', 'product.visibility', '=', 't')
-          );
-          this.baseQuery.getWhere().addNode(n);
-        } else {
-          this.baseQuery.andWhere('product.visibility', '=', 't');
-        }
-      } else {
-        this.baseQuery.andWhere('product.visibility', '=', 't');
-      }
-    }
+    //   if (visibleGroups) {
+    //     // Get all invisible variants from current query
+    //     copy
+    //       .select('bool_or(product.visibility)', 'sumv')
+    //       .select('max(product.product_id)', 'product_id')
+    //       .andWhere('product.variant_group_id', 'IN', visibleGroups);
+    //     copy.groupBy('product.variant_group_id');
+    //     copy.orderBy('product.variant_group_id', 'ASC');
+    //     copy.having('bool_or(product.visibility)', '=', 'f');
+    //     const invisibleIds = (await copy.execute(pool)).map(
+    //       (v) => v.product_id
+    //     );
 
-    console.log("to here roi ne 222", this.baseQuery.sql());
+    //     if (invisibleIds.length > 0) {
+    //       const n = node('AND');
+    //       n.addLeaf('AND', 'product.product_id', 'IN', invisibleIds).addNode(
+    //         node('OR').addLeaf('OR', 'product.visibility', '=', 't')
+    //       );
+    //       this.baseQuery.getWhere().addNode(n);
+    //     } else {
+    //       this.baseQuery.andWhere('product.visibility', '=', 't');
+    //     }
+    //   } else {
+    //     this.baseQuery.andWhere('product.visibility', '=', 't');
+    //   }
+    // }
 
     // Clone the main query for getting total right before doing the paging
     const totalQuery = this.baseQuery.clone();

@@ -65,7 +65,6 @@ module.exports = {
       const foundSharing = attributes.find((a) => a.attribute_code === 'sharing');
       const foundNetworkType = attributes.find((a) => a.attribute_code === 'network-type');
       const foundNetworkOperator = attributes.find((a) => a.attribute_code === 'network-operator');
-      const foundNetworkOperatorLogo = attributes.find((a) => a.attribute_code === 'network-operator-logo');
       const foundSpeedThrottle = attributes.find((a) => a.attribute_code === 'speed-throttle');
       const foundDailyResetTime = attributes.find((a) => a.attribute_code === 'daily-reset-time');
 
@@ -81,7 +80,7 @@ module.exports = {
         .replace('{network-type}', foundNetworkType ? foundNetworkType.attribute_name : "Network Type")
         .replace('{network-type-value}', foundNetworkType ? foundNetworkType.option_text : '')
         .replace('{network-operator}', foundNetworkOperator ? foundNetworkOperator.attribute_name : "Network Operator")
-        .replace('{network-operator-value}', foundNetworkOperatorLogo ? `<img src="${foundNetworkOperatorLogo.option_text}" />` : '')
+        .replace('{network-operator-value}', foundNetworkOperator ? foundNetworkOperator.option_text : '')
         .replace('{speed-throttle}', foundSpeedThrottle ? foundSpeedThrottle.attribute_name : "Speed Throttle")
         .replace('{speed-throttle-value}', foundSpeedThrottle ? foundSpeedThrottle.option_text : '')
         .replace('{daily-reset-time}', foundDailyResetTime ? foundDailyResetTime.attribute_name : "Daily Reset Time")
