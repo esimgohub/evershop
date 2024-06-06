@@ -9,6 +9,7 @@ import { SubmitButton } from '@components/admin/catalog/productEdit/variants/Sub
 
 export function CreateVariant({
   productId,
+  productUuid,
   variantGroup,
   createProductApi,
   addVariantItemApi,
@@ -41,6 +42,7 @@ export function CreateVariant({
                   <Card.Session>
                     <VariantModal
                       productId={productId}
+                      productUuid={productUuid}
                       variantAttributes={variantGroup.attributes}
                       productImageUploadUrl={productImageUploadUrl}
                     />
@@ -50,6 +52,7 @@ export function CreateVariant({
                       <div className="grid grid-cols-2 gap-1">
                         <SubmitButton
                           productId={productId}
+                          productUuid={productUuid}
                           attributes={variantGroup.attributes}
                           createProductApi={createProductApi}
                           addVariantItemApi={addVariantItemApi}

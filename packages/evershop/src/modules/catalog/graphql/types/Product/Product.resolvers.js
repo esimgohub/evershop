@@ -11,6 +11,8 @@ module.exports = {
   Product: {
 
     url: async (product, _, { pool }) => {
+      // I want to get origin of the url request here
+
       // Get the url rewrite for this product
       const urlRewrite = await select()
         .from('url_rewrite')
@@ -23,7 +25,7 @@ module.exports = {
         return urlRewrite.request_path;
       }
     },
-    formattedHTMLAttribute: async (product, _, { pool }) => {
+    formattedHTMLAttribute: async (product, _, { pool, homeUrl }) => {
       // Attributes
       const productAttributeQuery = select().from('product_attribute_value_index');
       productAttributeQuery
@@ -75,7 +77,7 @@ module.exports = {
         .replace('{sharing}', foundSharing ? foundSharing.attribute_name : "Sharing")
         .replace('{sharing-value}', foundSharing ? foundSharing.option_text : '')
         .replace('{coverage}', "Coverage")
-        .replace('{coverage-value}', categories.map(c => `<img width="24" height="24" src="${c.image}" /> ${c.name}`).join(' '))
+        .replace('{coverage-value}', categories.map(c => `<img width="24" height="24" src="${homeUrl}${c.image}" /> ${c.name}`).join(' '))
         .replace('{network-type}', foundNetworkType ? foundNetworkType.attribute_name : "Network Type")
         .replace('{network-type-value}', foundNetworkType ? foundNetworkType.option_text : '')
         .replace('{network-operator}', foundNetworkOperator ? foundNetworkOperator.attribute_name : "Network Operator")

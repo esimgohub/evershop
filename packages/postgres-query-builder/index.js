@@ -84,6 +84,7 @@ class RawLeaf {
 class Leaf {
   constructor(link, field, operator, value, node) {
     this._binding = [];
+
     if (value.isSQL === true) {
       this._value = value.value;
     } else {
@@ -163,18 +164,19 @@ class Node {
     // check if value is an object, not null and not an array
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       this._tree.push(new Leaf(link, field, operator, value, this));
-    } else {
-      this._tree.push(
-        new Leaf(
-          link,
-          field,
-          operator,
-          { value: value, isSQL: this._defaultValueTreatment === 'sql' },
-          this
-        )
-      );
+      return this;
     }
 
+    this._tree.push(
+      new Leaf(
+        link,
+        field,
+        operator,
+        { value: value, isSQL: this._defaultValueTreatment === 'sql' },
+        this
+      )
+    );
+    
     // Return this for chaining
     return this;
   }

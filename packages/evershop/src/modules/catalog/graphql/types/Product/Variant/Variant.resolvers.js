@@ -5,14 +5,17 @@ const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const {
   getProductsBaseQuery
 } = require('../../../../services/getProductsBaseQuery');
+const { ProductType } = require('../../../../utils/enums/product-type');
 
 module.exports = {
   Product: {
     variants: async (product, _, { pool, user }) => {
-      const { variantGroupId } = product;
-      if (!variantGroupId) {
-        return [];
+      const isSimpleProductType = product.type === ProductType.simple.value && product.parentProductId === null;
+      if (isSimpleProductType) {
+        return [product];
       }
+
+      const { variantGroupId } = product;
 
       const query = getProductsBaseQuery(pool);
       query.where('variant_group_id', '=', variantGroupId);

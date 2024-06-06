@@ -240,8 +240,11 @@ export default function General({
                 name: 'type',
                 label: 'Product Type',
                 placeholder: 'Select product type',
-                value: product && product.type ? product.type : '',
-                disabled: product.type,
+                value:
+                  product && product.type
+                    ? product.type
+                    : ProductType.simple.value,
+                disabled: product && product.type,
                 options: [
                   {
                     text: ProductType.simple.label,
