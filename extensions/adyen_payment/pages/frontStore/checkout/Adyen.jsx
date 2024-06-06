@@ -11,9 +11,11 @@ const initiatePayEndpoint = "http://localhost:3010/api/initiatePayment";
 
 // Calls your server endpoints
 async function callServer(url, orderId, additionalData) {
+  alert(JSON.stringify({ ...additionalData, order_uuid: orderId }))
+  const returnUrl = window.location.href
   const res = await fetch(url, {
     method: "POST",
-    body: JSON.stringify({ ...additionalData, order_id: orderId }),
+    body: JSON.stringify({ ...additionalData, order_uuid: orderId, returnUrl }),
     headers: {
       "Content-Type": "application/json"
     }

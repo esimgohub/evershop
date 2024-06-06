@@ -30,7 +30,7 @@ function convertToMinorUnits(amount, currency) {
 // eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
   // unique ref for the transaction
-  const { order_uuid: orderRef } = request.body;
+  const { order_uuid: orderRef, browserInfo, returnUrl } = request.body;
 
   try {
     const order = await select()
@@ -57,7 +57,8 @@ module.exports = async (request, response, delegate, next) => {
 
     const addtionalParameters = {
       shopperEmail: order.customer_email,
-      browserInfo
+      browserInfo,
+      returnUrl
     };
 
     const items = await select()
@@ -87,6 +88,10 @@ module.exports = async (request, response, delegate, next) => {
     // ideally the data passed here should be computed based on business logic
     const data = await checkout.PaymentsApi.payments({
       ...addtionalParameters,
+      merchantRiskIndicator: {
+        addressMatch: false,
+        deliveryAddressIndicator: 'digitalGoods'
+      },
       merchantAccount, // required
       paymentMethod: request.body.paymentMethod,
       authenticationData: {
