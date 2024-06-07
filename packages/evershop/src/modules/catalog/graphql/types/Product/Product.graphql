@@ -26,7 +26,8 @@ type Product {
   url: String
   formattedHTMLAttribute: String
   promotion: ProductPromotion
-  parentProduct: Product
+  parentProductId: Int
+  parentProductUuid: String
 }
 
 """

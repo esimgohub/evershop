@@ -135,16 +135,16 @@ class ProductCollection {
     // this.baseQuery.orWhere('product.status', '=', 1);
 
     // Implement: extend baseQuery to product type = simple or (product type = variable and product_parent_id = null or parent_product_uuid = null)
-    this.baseQuery.orWhere('product.type', '=', ProductType.variable.value);
-    this.baseQuery
-      .orWhere('product.type', '=', ProductType.simple.value)
-      .addNode(
-        node('AND')
-          .addLeaf('AND', 'parent_product_id', 'IS NULL', null)
-      );
+    // this.baseQuery
+    //   .orWhere('product.type', '=', ProductType.simple.value)
+    //   .addNode(
+    //     node('AND')
+    //       .addLeaf('AND', 'parent_product_id', 'IS NULL', null)
+    //   );
 
     // If the user is not admin, we need to filter out the out of stock products and the disabled products
     if (!isAdmin) {
+      this.baseQuery.orWhere('product.type', '=', ProductType.simple.value);
       this.baseQuery.andWhere('product.visibility', '=', true);
       this.baseQuery.andWhere('product.status', '=', true);
       if (getConfig('catalog.showOutOfStockProduct', false) === false) {
@@ -156,6 +156,9 @@ class ProductCollection {
               .addLeaf('AND', 'product_inventory.stock_availability', '=', true)
           );
       }
+    }
+    else {
+      this.baseQuery.orWhere('product.type', '=', ProductType.variable.value);
     }
     const currentFilters = [];
     // Attribute filter

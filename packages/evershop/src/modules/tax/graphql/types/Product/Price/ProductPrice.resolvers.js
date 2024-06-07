@@ -17,7 +17,6 @@ const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 module.exports = {
   Product: {
     price: async (product, _, { user }) => {
-      const price = parseFloat(product.price);
       const taxConfigDisplay = getConfig(
         'pricing.tax.display_catalog_price_including_tax',
         false
@@ -26,7 +25,7 @@ module.exports = {
       const taxClassId = product.taxClass;
       if (!taxClassId || !taxConfigDisplay || user) {
         return {
-          regular: price,
+          regular: product.price ? parseFloat(product.price) : null,
           oldPrice: product.oldPrice,
         };
       } else {

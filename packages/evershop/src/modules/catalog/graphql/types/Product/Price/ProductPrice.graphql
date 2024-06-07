@@ -2,7 +2,7 @@
 Represents a price for a product.
 """
 type ProductPrice {
-  regular: Price!
+  regular: Price
   oldPrice: Price
 }
 

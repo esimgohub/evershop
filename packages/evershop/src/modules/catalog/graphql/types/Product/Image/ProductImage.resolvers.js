@@ -3,7 +3,7 @@ const { select } = require('@evershop/postgres-query-builder');
 
 module.exports = {
   Product: {
-    image: async (product) => {
+    image: async (product, _, { homeUrl }) => {
       const mainImage = product.originImage;
       return mainImage
         ? {
@@ -11,7 +11,7 @@ module.exports = {
             single: product.singleImage || null,
             listing: product.listingImage || null,
             alt: product.name,
-            url: mainImage,
+            url: `${homeUrl}${mainImage}`,
             uuid: uuidv4(),
             origin: mainImage
           }

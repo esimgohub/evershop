@@ -35,11 +35,7 @@
       "type": "string"
     },
     "price": {
-      "type": ["string", "number"],
-      "pattern": "^\\d+(\\.\\d{1,2})?$",
-      "errorMessage": {
-        "pattern": "Price should be a number with maximum 2 decimal places"
-      }
+      "type": ["string", "number"]
     },
 
     "oldPrice": {

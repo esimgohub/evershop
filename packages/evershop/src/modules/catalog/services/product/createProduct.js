@@ -19,14 +19,15 @@ const { getAjv } = require('../../../base/services/getAjv');
 const productDataSchema = require('./productDataSchema.json');
 
 function validateProductDataBeforeInsert(data) {
+
   const ajv = getAjv();
   productDataSchema.required = [
     'name',
     'url_key',
     'status',
+    'type',
     'sku',
     'qty',
-    'price',
     'group_id',
     'visibility'
   ];

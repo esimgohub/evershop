@@ -8,9 +8,16 @@ import CategoryTree from '@components/admin/catalog/productEdit/category/Categor
 import { ProductType } from '../../../utils/enums/product-type';
 import { Select } from '@components/common/form/fields/Select';
 
-function SKUPrice({ sku, price, oldPrice, setting }) {
+function SKUPrice({ sku, price, oldPrice, productType, setting }) {
   return (
-    <div className="grid grid-cols-3 gap-1 mt-15">
+    <div
+      className={`grid grid-cols-${
+        !productType ||
+        (productType && productType === ProductType.variable.value)
+          ? '1'
+          : '3'
+      } gap-1 mt-15`}
+    >
       <div>
         <Field
           id="sku"
@@ -22,29 +29,35 @@ function SKUPrice({ sku, price, oldPrice, setting }) {
           validationRules={['notEmpty']}
         />
       </div>
-      <div>
-        <Field
-          id="price"
-          name="price"
-          value={price?.value}
-          placeholder="Price"
-          label="Price"
-          type="text"
-          validationRules={['notEmpty']}
-          suffix={setting.storeCurrency}
-        />
-      </div>
-      <div>
-        <Field
-          id="oldPrice"
-          name="old_price"
-          value={oldPrice?.value}
-          placeholder="Old Price"
-          label="Old Price"
-          type="text"
-          suffix={setting.storeCurrency}
-        />
-      </div>
+
+      {productType && productType === ProductType.simple.value && (
+        <div>
+          <Field
+            id="price"
+            name="price"
+            value={price?.value}
+            placeholder="Price"
+            label="Price"
+            type="text"
+            validationRules={['notEmpty']}
+            suffix={setting.storeCurrency}
+          />
+        </div>
+      )}
+
+      {productType && productType === ProductType.simple.value && (
+        <div>
+          <Field
+            id="oldPrice"
+            name="old_price"
+            value={oldPrice?.value}
+            placeholder="Old Price"
+            label="Old Price"
+            type="text"
+            suffix={setting.storeCurrency}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -220,6 +233,7 @@ export default function General({
                 sku: product?.sku,
                 price: product?.price.regular,
                 oldPrice: product?.price.oldPrice,
+                productType: product?.type,
                 setting
               },
               sortOrder: 20,
@@ -237,14 +251,11 @@ export default function General({
             {
               component: { default: Select },
               props: {
-                name: 'type',
+                name: 'product_type',
                 label: 'Product Type',
                 placeholder: 'Select product type',
-                value:
-                  product && product.type
-                    ? product.type
-                    : ProductType.simple.value,
-                disabled: product && product.type,
+                value: ProductType.variable.value,
+                disabled: true,
                 options: [
                   {
                     text: ProductType.simple.label,
@@ -256,7 +267,7 @@ export default function General({
                   }
                 ]
               },
-              id: 'type',
+              id: 'product_type',
               sortOrder: 24
             },
             {
@@ -346,6 +357,7 @@ export const query = `
       name
       description
       sku
+      parentProductId
       taxClass
       type
       price {
