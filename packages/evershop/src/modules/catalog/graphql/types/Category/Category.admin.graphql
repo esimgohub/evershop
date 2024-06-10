@@ -1,5 +1,4 @@
 extend type Category {
-  categoryId: ID!
   editUrl: String
   updateApi: String!
   deleteApi: String!

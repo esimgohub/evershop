@@ -61,7 +61,7 @@ module.exports = {
       return popularCountryRecords.length > 0 ? popularCountryRecords.map(country => {
         return camelCase({
           ...country,
-          image: `${homeUrl}${country.image}`
+          image: `${homeUrl}${country.image}`,
         })
       }) : [];
     },
@@ -88,7 +88,7 @@ module.exports = {
 
       const supportedCountryRecords = await query.execute(pool);
 
-      return supportedCountryRecords.length > 0 ? supportedCountryRecords.map(country => {
+      const ne = supportedCountryRecords.length > 0 ? supportedCountryRecords.map(country => {
         return camelCase({
           ...country,
           category_id: categories.find(
@@ -96,6 +96,9 @@ module.exports = {
           ).category_id
         })
       }) : [];
+
+      console.log("ne: ", ne);
+      return ne;
     }
   },
   Category: {
