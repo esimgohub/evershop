@@ -35,7 +35,6 @@ function validateLanguageDataBeforeInsert(data) {
 
 async function insertLanguageData(data, connection) {
   const language = await insert('language').given(data).execute(connection);
-  delete language.password;
   return language;
 }
 
