@@ -1,4 +1,4 @@
-const updateLanguage = require('../../services/updateLanguage');
+const updateLanguage = require('../../services/language/updateLanguage');
 
 module.exports = async (request) => {
   const result = await updateLanguage(request.body, {

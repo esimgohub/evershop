@@ -1,4 +1,4 @@
-const createLanguage = require('../../services/createLanguage');
+const createLanguage = require('../../services/language/createLanguage');
 
 module.exports = async (request) => {
   const result = await createLanguage(request.body, {
