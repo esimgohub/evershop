@@ -607,6 +607,17 @@ class SelectQuery extends Query {
     return this;
   }
 
+  orderByRandomOnFields(fields) {
+    const directions = ['ASC', 'DESC'];
+
+    // random in fields
+    const field = fields[Math.floor(Math.random() * fields.length)];
+    const direction = directions[Math.floor(Math.random() * directions.length)];
+
+    this._orderBy.add(field, direction);
+    return this;
+  }
+
   orderDirection(direction) {
     this._orderBy._direction = direction;
     return this;

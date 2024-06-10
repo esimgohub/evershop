@@ -98,9 +98,14 @@ extend type Product {
   categories: [Category]
 }
 
+input PopularCountryFilter {
+  limit: Int
+}
+
 extend type Query {
   categories(filters: [FilterInput]): CategoryCollection
   supportedCategories: [Category]
+  popularCountries(filter: PopularCountryFilter): [Category]
 
   category(id: Int): Category
 }
