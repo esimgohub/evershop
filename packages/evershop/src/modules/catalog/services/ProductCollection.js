@@ -201,9 +201,7 @@ class ProductCollection {
       this.baseQuery.andWhere("product.uuid", "IN", productCategory.map(p => p.product_id));
     }
     
-    if (productFilter.fromDate && productFilter.toDate) {
-      const differentBetweenDates = getTimeDifferenceInDays(productFilter.fromDate, productFilter.toDate);
-
+    if (productFilter.tripPeriod) {
       console.log("differentBetweenDates: ", differentBetweenDates);
 
       this.baseQuery
@@ -223,9 +221,7 @@ class ProductCollection {
         );
 
       this.baseQuery.andWhere("attribute.attribute_code", "=", "day-amount")
-      this.baseQuery.andWhere("product_attribute_value_index.option_text", "<=", differentBetweenDates < 10 ? `0${differentBetweenDates}` : differentBetweenDates);
-
-      console.log("sqlll: ", this.baseQuery.sql());
+      this.baseQuery.andWhere("product_attribute_value_index.option_text", "<=", tripPeriod < 10 ? `0${tripPeriod}` : tripPeriod);
     }
 
     // Clone the main query for getting total right before doing the paging
