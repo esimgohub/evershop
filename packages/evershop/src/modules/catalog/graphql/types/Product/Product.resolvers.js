@@ -88,7 +88,7 @@ module.exports = {
 
       return filledDescription;
     },
-    promotion: async (product, _, { pool }) => {
+    promotion: async (product, _, {}) => {
       const { oldPrice } = product;
       const price = parseFloat(product.price);
 
@@ -118,10 +118,10 @@ module.exports = {
         return camelCase(result);
       }
     },
-    products: async (_, { filters = [] }, { user }) => {
+    products: async (_, { filters = [], productFilter }, { user }) => {
       const query = getProductsBaseQuery();
       const root = new ProductCollection(query);
-      await root.init(filters, !!user);
+      await root.init(filters, productFilter, !!user);
       return root;
     }
   }

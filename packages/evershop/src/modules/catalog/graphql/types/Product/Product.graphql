@@ -30,6 +30,12 @@ type Product {
   parentProductUuid: String
 }
 
+input ProductFilterInput {
+  categoryId: String
+  fromDate: String
+  toDate: String
+}
+
 """
 Returns a collection of products.
 """
@@ -42,5 +48,8 @@ type ProductCollection {
 
 extend type Query {
   product(id: ID): Product
-  products(filters: [FilterInput]): ProductCollection
+  products(
+    filters: [FilterInput]
+    productFilter: ProductFilterInput
+  ): ProductCollection
 }

@@ -5,6 +5,7 @@ const { select, node } = require('@evershop/postgres-query-builder');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getValue } = require('@evershop/evershop/src/lib/util/registry');
 const { ProductType } = require('../utils/enums/product-type');
+const { getTimeDifferenceInDays } = require('@evershop/evershop/src/lib/util/date');
 
 class ProductCollection {
   constructor(baseQuery) {
@@ -130,7 +131,7 @@ class ProductCollection {
   //   this.totalQuery = totalQuery;
   // }
 
-  async init(filters = [], isAdmin = false) {
+  async init(filters = [], productFilter = {}, isAdmin = false) {
     // this.baseQuery.orWhere('product.type', '=', ProductType.simple.value);
     // this.baseQuery.orWhere('product.status', '=', 1);
 
@@ -145,7 +146,7 @@ class ProductCollection {
     // If the user is not admin, we need to filter out the out of stock products and the disabled products
     if (!isAdmin) {
       this.baseQuery.orWhere('product.type', '=', ProductType.simple.value);
-      this.baseQuery.andWhere('product.visibility', '=', true);
+      // this.baseQuery.andWhere('product.visibility', '=', true);
       this.baseQuery.andWhere('product.status', '=', true);
       if (getConfig('catalog.showOutOfStockProduct', false) === false) {
         this.baseQuery
@@ -191,45 +192,41 @@ class ProductCollection {
       }
     });
 
-    console.log("base sql", this.baseQuery.sql());
+    if (productFilter.categoryId) {
+      const productCategory = await select()
+        .from('product_category')
+        .where('category_id', '=', productFilter.categoryId)
+        .execute(pool);
 
-    // if (!isAdmin) {
-    //   // Visibility. For variant group
-    //   const copy = this.baseQuery.clone();
-    //   // Get all group that have at lease 1 item visibile
-    //   const visibleGroups = (
-    //     await select('variant_group_id')
-    //       .from('variant_group')
-    //       .where('visibility', '=', 't')
-    //       .execute(pool)
-    //   ).map((v) => v.variant_group_id);
+      this.baseQuery.andWhere("product.uuid", "IN", productCategory.map(p => p.product_id));
+    }
+    
+    if (productFilter.fromDate && productFilter.toDate) {
+      const differentBetweenDates = getTimeDifferenceInDays(productFilter.fromDate, productFilter.toDate);
 
-    //   if (visibleGroups) {
-    //     // Get all invisible variants from current query
-    //     copy
-    //       .select('bool_or(product.visibility)', 'sumv')
-    //       .select('max(product.product_id)', 'product_id')
-    //       .andWhere('product.variant_group_id', 'IN', visibleGroups);
-    //     copy.groupBy('product.variant_group_id');
-    //     copy.orderBy('product.variant_group_id', 'ASC');
-    //     copy.having('bool_or(product.visibility)', '=', 'f');
-    //     const invisibleIds = (await copy.execute(pool)).map(
-    //       (v) => v.product_id
-    //     );
+      console.log("differentBetweenDates: ", differentBetweenDates);
 
-    //     if (invisibleIds.length > 0) {
-    //       const n = node('AND');
-    //       n.addLeaf('AND', 'product.product_id', 'IN', invisibleIds).addNode(
-    //         node('OR').addLeaf('OR', 'product.visibility', '=', 't')
-    //       );
-    //       this.baseQuery.getWhere().addNode(n);
-    //     } else {
-    //       this.baseQuery.andWhere('product.visibility', '=', 't');
-    //     }
-    //   } else {
-    //     this.baseQuery.andWhere('product.visibility', '=', 't');
-    //   }
-    // }
+      this.baseQuery
+        .innerJoin("product_attribute_value_index")
+        .on(
+          "product_attribute_value_index.product_id",
+          "=",
+          "product.product_id"
+        )
+
+      this.baseQuery
+        .innerJoin("attribute")
+        .on(
+          "attribute.attribute_id",
+          "=",
+          "product_attribute_value_index.attribute_id"
+        );
+
+      this.baseQuery.andWhere("attribute.attribute_code", "=", "day-amount")
+      this.baseQuery.andWhere("product_attribute_value_index.option_text", "<=", differentBetweenDates < 10 ? `0${differentBetweenDates}` : differentBetweenDates);
+
+      console.log("sqlll: ", this.baseQuery.sql());
+    }
 
     // Clone the main query for getting total right before doing the paging
     const totalQuery = this.baseQuery.clone();
