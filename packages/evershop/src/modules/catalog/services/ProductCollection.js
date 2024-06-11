@@ -201,9 +201,9 @@ class ProductCollection {
       this.baseQuery.andWhere("product.uuid", "IN", productCategory.map(p => p.product_id));
     }
     
-    if (productFilter.tripPeriod) {
-      console.log("differentBetweenDates: ", differentBetweenDates);
+    console.log("productFilter: ", productFilter);
 
+    if (productFilter.tripPeriod) {
       this.baseQuery
         .innerJoin("product_attribute_value_index")
         .on(
@@ -221,7 +221,7 @@ class ProductCollection {
         );
 
       this.baseQuery.andWhere("attribute.attribute_code", "=", "day-amount")
-      this.baseQuery.andWhere("product_attribute_value_index.option_text", "<=", tripPeriod < 10 ? `0${tripPeriod}` : tripPeriod);
+      this.baseQuery.andWhere("product_attribute_value_index.option_text", "<=", productFilter.tripPeriod < 10 ? `0${productFilter.tripPeriod}` : productFilter.tripPeriod);
     }
 
     // Clone the main query for getting total right before doing the paging
