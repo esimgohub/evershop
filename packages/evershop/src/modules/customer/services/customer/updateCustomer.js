@@ -3,6 +3,8 @@ const {
   getValueSync,
   getValue
 } = require('@evershop/evershop/src/lib/util/registry');
+const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
+const { snakeCase } = require('@evershop/evershop/src/lib/util/snakeCase');
 const {
   startTransaction,
   commit,
@@ -19,11 +21,10 @@ const customerDataSchema = require('./customerDataSchema.json');
 function validateCustomerDataBeforeInsert(data) {
   const ajv = getAjv();
   customerDataSchema.required = [];
-  const jsonSchema = getValueSync(
-    'updateCustomerDataJsonSchema',
-    customerDataSchema
-  );
+
+  const jsonSchema = getValueSync('customerDataSchema', customerDataSchema);
   const validate = ajv.compile(jsonSchema);
+
   const valid = validate(data);
   if (valid) {
     return data;
@@ -32,17 +33,35 @@ function validateCustomerDataBeforeInsert(data) {
   }
 }
 
-async function updateCustomerData(uuid, data, connection) {
+async function updateCustomerData(data, connection) {
   const query = select().from('customer');
-  const customer = await query.where('uuid', '=', uuid).load(connection);
+  const { id, fullName, languageCode, currencyCode } = data;
+  const customer = await query.where('uuid', '=', id).load(connection);
   if (!customer) {
     throw new Error('Requested customer not found');
   }
 
+  const camelCasedCustomer = camelCase(customer);
+  const updatedCustomer = {
+    ...customer,
+    languageCode:
+      languageCode && languageCode !== camelCasedCustomer.languageCode
+        ? languageCode
+        : camelCasedCustomer.languageCode,
+    currencyCode:
+      currencyCode && currencyCode !== camelCasedCustomer.currencyCode
+        ? currencyCode
+        : camelCasedCustomer.currencyCode,
+    fullName:
+      fullName && fullName.trim() !== camelCasedCustomer.fullName
+        ? fullName
+        : camelCasedCustomer.fullName
+  };
+
   try {
     const newCustomer = await update('customer')
-      .given(data)
-      .where('uuid', '=', uuid)
+      .given(snakeCase(updatedCustomer))
+      .where('uuid', '=', id)
       .execute(connection);
     Object.assign(customer, newCustomer);
   } catch (e) {
@@ -50,9 +69,6 @@ async function updateCustomerData(uuid, data, connection) {
       throw e;
     }
   }
-
-  // Delete password from customer object
-  delete customer.password;
   return customer;
 }
 
@@ -62,21 +78,17 @@ async function updateCustomerData(uuid, data, connection) {
  * @param {Object} data
  * @param {Object} context
  */
-async function updateCustomer(uuid, data, context) {
+async function updateCustomer(data, context) {
   const connection = await getConnection();
   await startTransaction(connection);
   try {
     const customerData = await getValue('customerDataBeforeUpdate', data);
-    // Validate customer data
     validateCustomerDataBeforeInsert(customerData);
 
-    // Do not allow to update password here. Use changePassword service instead
-    delete customerData.password;
-    // Update customer data
     const customer = await hookable(updateCustomerData, {
       ...context,
       connection
-    })(uuid, customerData, connection);
+    })(customerData, connection);
 
     await commit(connection);
     return customer;
@@ -86,11 +98,11 @@ async function updateCustomer(uuid, data, context) {
   }
 }
 
-module.exports = async (uuid, data, context) => {
+module.exports = async (data, context) => {
   // Make sure the context is either not provided or is an object
   if (context && typeof context !== 'object') {
     throw new Error('Context must be an object');
   }
-  const customer = await hookable(updateCustomer, context)(uuid, data, context);
+  const customer = await hookable(updateCustomer, context)(data, context);
   return customer;
 };

@@ -8,6 +8,8 @@ type Customer {
   email: String!
   fullName: String!
   createdAt: Date!
+  languageCode: String!
+  currencyCode: String!
 }
 
 extend type Query {

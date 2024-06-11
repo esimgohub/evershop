@@ -1,10 +1,6 @@
 {
   "type": "object",
   "properties": {
-    "status": {
-      "type": ["string", "integer"],
-      "enum": ["0", "1", 0, 1]
-    },
     "fullName": {
       "type": "string"
     },
@@ -15,5 +11,5 @@
       "type": "string"
     }
   },
-  "additionalProperties": true
+  "required": []
 }
