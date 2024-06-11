@@ -1,9 +1,13 @@
 const { select } = require('@evershop/postgres-query-builder');
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const { PlanType } = require('../../../../utils/enums/plan-type');
+const { unescape } = require('lodash');
 
 module.exports = {
   Product: {
+    description: async (product, _, { pool, user }) => {
+      return `<div><label style="color: #848B91">Note: </label>${product.description.replace(/<\/?p>/g, "")}</div>`;
+    },
     attribute: async (product, _, { pool, user }) => {
       const query = select().from('product_attribute_value_index');
       query

@@ -76,7 +76,8 @@ module.exports = {
         .replace('{sharing}', foundSharing ? foundSharing.attribute_name : "Sharing")
         .replace('{sharing-value}', foundSharing ? foundSharing.option_text : '')
         .replace('{coverage}', "Coverage")
-        .replace('{coverage-value}', categories.map(c => `<img width="24" height="24" src="${homeUrl}${c.image}" /> ${c.name}`).join(' '))
+        // src="${homeUrl}${c.image}"
+        .replace('{coverage-value}', categories.map(c => `<img width="28" height="20" style="border-radius: 4px; position: relative; top: 4px;" src="https://64.media.tumblr.com/d2a265c42236cf36411cb6f6a93e93a3/8d05d19d81201690-5b/s640x960/de67a31188bc86ec25c181743e8eab03a6edb0dd.png" /> ${c.name}`).join(' '))
         .replace('{network-type}', foundNetworkType ? foundNetworkType.attribute_name : "Network Type")
         .replace('{network-type-value}', foundNetworkType ? foundNetworkType.option_text : '')
         .replace('{network-operator}', foundNetworkOperator ? foundNetworkOperator.attribute_name : "Network Operator")
