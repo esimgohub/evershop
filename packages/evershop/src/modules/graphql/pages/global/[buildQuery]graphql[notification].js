@@ -31,6 +31,8 @@ module.exports = async function graphql(request, response, delegate, next) {
 
         const validationErrors = validate(schema, document);
         if (validationErrors.length > 0) {
+          console.log("graphqlQuery", graphqlQuery);
+
           const formatedErrorMessage = graphqlErrorMessageFormat(
             graphqlQuery,
             validationErrors[0].locations[0].line,
