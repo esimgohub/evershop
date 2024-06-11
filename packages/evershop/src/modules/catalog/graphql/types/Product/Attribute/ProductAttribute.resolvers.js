@@ -6,7 +6,7 @@ const { unescape } = require('lodash');
 module.exports = {
   Product: {
     description: async (product, _, { pool, user }) => {
-      return `<div><label style="color: #848B91">Note: </label>${product.description.replace(/<\/?p>/g, "")}</div>`;
+      return `<b style="color: #848B91">Note: </b>${product.description.replace(/<\/?p>/g, "")}`;
     },
     attribute: async (product, _, { pool, user }) => {
       const query = select().from('product_attribute_value_index');
