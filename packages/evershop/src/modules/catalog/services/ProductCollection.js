@@ -146,7 +146,7 @@ class ProductCollection {
     // If the user is not admin, we need to filter out the out of stock products and the disabled products
     if (!isAdmin) {
       this.baseQuery.orWhere('product.type', '=', ProductType.simple.value);
-      // this.baseQuery.andWhere('product.visibility', '=', true);
+      this.baseQuery.andWhere('product.visibility', '=', true);
       this.baseQuery.andWhere('product.status', '=', true);
       if (getConfig('catalog.showOutOfStockProduct', false) === false) {
         this.baseQuery
