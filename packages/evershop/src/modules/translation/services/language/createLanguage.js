@@ -48,17 +48,14 @@ async function createLanguage(data, context) {
       context
     );
     validateLanguageDataBeforeInsert(languageData);
-    const { code, isDefault } = languageData;
     const existingLanguage = await select()
       .from('language')
-      .where('code', '=', code)
+      .where('code', '=', languageData.code)
       .load(pool);
 
     if (existingLanguage) {
       throw new Error('Email is already used');
     }
-
-    languageData.isDefault = isDefault === 1 || isDefault === 0 ? isDefault : 0;
 
     const language = await hookable(insertLanguageData, {
       ...context,
