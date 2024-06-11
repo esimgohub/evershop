@@ -1,0 +1,5 @@
+{
+  "methods": ["PATCH"],
+  "path": "/posts/:id",
+  "access": "private"
+}
