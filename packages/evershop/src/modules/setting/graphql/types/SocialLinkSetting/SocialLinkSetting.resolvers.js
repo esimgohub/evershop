@@ -2,7 +2,7 @@ module.exports = {
   Setting: {
     facebook: (setting) => {
       const facebookUrl = setting.find((s) => s.name === 'facebookUrl');
-      const facebookIcon = setting.find((s) => s.name === 'facebookIcon');
+      const facebookIcon = setting.find((s) => s.name === 'facebookIconUrl');
 
       return {
         url: facebookUrl ? facebookUrl.value : undefined,
@@ -11,7 +11,7 @@ module.exports = {
     },
     tiktok: (setting) => {
       const tiktokUrl = setting.find((s) => s.name === 'tiktokUrl');
-      const tiktokIcon = setting.find((s) => s.name === 'tiktokIcon');
+      const tiktokIcon = setting.find((s) => s.name === 'tiktokIconUrl');
 
       return {
         url: tiktokUrl ? tiktokUrl.value : undefined,
@@ -20,7 +20,7 @@ module.exports = {
     },
     instagram: (setting) => {
       const instagramUrl = setting.find((s) => s.name === 'instagramUrl');
-      const instagramIcon = setting.find((s) => s.name === 'instagramIcon');
+      const instagramIcon = setting.find((s) => s.name === 'instagramIconUrl');
 
       return {
         url: instagramUrl ? instagramUrl.value : undefined,
@@ -29,7 +29,7 @@ module.exports = {
     },
     thread: (setting) => {
       const threadUrl = setting.find((s) => s.name === 'threadUrl');
-      const threadIcon = setting.find((s) => s.name === 'threadIcon');
+      const threadIcon = setting.find((s) => s.name === 'threadIconUrl');
 
       return {
         url: threadUrl ? threadUrl.value : undefined,

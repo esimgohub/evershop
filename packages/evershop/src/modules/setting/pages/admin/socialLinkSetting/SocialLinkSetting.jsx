@@ -99,7 +99,10 @@ Upload.propTypes = {
 function SocialLink(props) {
   const { setting, imageUploadUrl } = props;
 
-  const ref = useRef();
+  const facebookRef = useRef();
+  const instagramRef = useRef();
+  const tiktokRef = useRef();
+  const threadRef = useRef();
 
   const { facebook, instagram, tiktok, thread } = setting;
 
@@ -117,7 +120,6 @@ function SocialLink(props) {
       formData.append('images', e.target.files[i]);
     }
 
-    console.log('form data: ', formData);
     setLoading(true);
     fetch(
       `${imageUploadUrl}/social/${
@@ -142,10 +144,8 @@ function SocialLink(props) {
         return response.json();
       })
       .then((response) => {
-        console.log('face book icon file:', response);
-
         if (!response.error) {
-          setFacebookIcon(response.data.files[0]);
+          setFacebookIcon(response.data.files[0].url);
         } else {
           toast.error(get(response, 'error.message', 'Failed!'));
         }
@@ -190,7 +190,7 @@ function SocialLink(props) {
       })
       .then((response) => {
         if (!response.error) {
-          setInstagramIcon(response.data.files[0]);
+          setInstagramIcon(response.data.files[0].url);
         } else {
           toast.error(get(response, 'error.message', 'Failed!'));
         }
@@ -235,7 +235,7 @@ function SocialLink(props) {
       })
       .then((response) => {
         if (!response.error) {
-          setTiktokIcon(response.data.files[0]);
+          setTiktokIcon(response.data.files[0].url);
         } else {
           toast.error(get(response, 'error.message', 'Failed!'));
         }
@@ -280,7 +280,7 @@ function SocialLink(props) {
       })
       .then((response) => {
         if (!response.error) {
-          setThreadIcon(response.data.files[0]);
+          setThreadIcon(response.data.files[0].url);
         } else {
           toast.error(get(response, 'error.message', 'Failed!'));
         }
@@ -302,7 +302,7 @@ function SocialLink(props) {
         actions={
           facebookIcon
             ? [
-                { name: 'Change', onAction: () => ref.current.click() },
+                { name: 'Change', onAction: () => facebookRef.current.click() },
                 {
                   name: 'Remove',
                   variant: 'critical',
@@ -357,7 +357,7 @@ function SocialLink(props) {
                     <Button
                       title="Add image"
                       variant="default"
-                      onAction={() => ref.current.click()}
+                      onAction={() => facebookRef.current.click()}
                     />
                   </div>
                   <div className="flex justify-center mt-1">
@@ -411,9 +411,15 @@ function SocialLink(props) {
             id="facebookIconUpload"
             type="file"
             onChange={handleFacebookIconChange}
-            ref={ref}
+            ref={facebookRef}
           />
         </div>
+
+        <Field
+          type="hidden"
+          name="facebookIconUrl"
+          value={facebookIcon || ''}
+        />
       </Card>
 
       <Card
@@ -422,7 +428,10 @@ function SocialLink(props) {
         actions={
           instagramIcon
             ? [
-                { name: 'Change', onAction: () => ref.current.click() },
+                {
+                  name: 'Change',
+                  onAction: () => instagramRef.current.click()
+                },
                 {
                   name: 'Remove',
                   variant: 'critical',
@@ -444,7 +453,7 @@ function SocialLink(props) {
                 type="text"
                 name="instagramUrl"
                 placeholder="Instagram"
-                value={instagram.url}
+                value={instagram?.url}
               />
             </div>
           </div>
@@ -477,7 +486,7 @@ function SocialLink(props) {
                     <Button
                       title="Add image"
                       variant="default"
-                      onAction={() => ref.current.click()}
+                      onAction={() => instagramRef.current.click()}
                     />
                   </div>
                   <div className="flex justify-center mt-1">
@@ -500,23 +509,29 @@ function SocialLink(props) {
             id="instagramIconUpload"
             type="file"
             onChange={handleInstagramIconChange}
-            ref={ref}
+            ref={instagramRef}
           />
         </div>
+
+        <Field
+          type="hidden"
+          name="instagramIconUrl"
+          value={instagramIcon || ''}
+        />
       </Card>
 
       <Card
-        title="Instagram"
+        title="Tiktok"
         className="mb-2"
         actions={
-          instagramIcon
+          tiktokIcon
             ? [
-                { name: 'Change', onAction: () => ref.current.click() },
+                { name: 'Change', onAction: () => tiktokRef.current.click() },
                 {
                   name: 'Remove',
                   variant: 'critical',
                   onAction: () => {
-                    setInstagramIcon(undefined);
+                    setTiktokIcon(undefined);
                   }
                 }
               ]
@@ -566,7 +581,7 @@ function SocialLink(props) {
                     <Button
                       title="Add image"
                       variant="default"
-                      onAction={() => ref.current.click()}
+                      onAction={() => tiktokRef.current.click()}
                     />
                   </div>
                   <div className="flex justify-center mt-1">
@@ -589,23 +604,25 @@ function SocialLink(props) {
             id="tiktokIconUpload"
             type="file"
             onChange={handleTiktokIconChange}
-            ref={ref}
+            ref={tiktokRef}
           />
         </div>
+
+        <Field type="hidden" name="tiktokIconUrl" value={tiktokIcon || ''} />
       </Card>
 
       <Card
-        title="Instagram"
+        title="Thread"
         className="mb-2"
         actions={
-          instagramIcon
+          threadIcon
             ? [
-                { name: 'Change', onAction: () => ref.current.click() },
+                { name: 'Change', onAction: () => threadRef.current.click() },
                 {
                   name: 'Remove',
                   variant: 'critical',
                   onAction: () => {
-                    setInstagramIcon(undefined);
+                    setThreadIcon(undefined);
                   }
                 }
               ]
@@ -617,9 +634,11 @@ function SocialLink(props) {
             id="threadIconUpload"
             type="file"
             onChange={handleThreadIconChange}
-            ref={ref}
+            ref={threadRef}
           />
         </div>
+
+        <Field type="hidden" name="threadIconUrl" value={threadIcon || ''} />
 
         <Card.Session>
           <div className="grid grid-cols-3 gap-2">
@@ -664,7 +683,7 @@ function SocialLink(props) {
                     <Button
                       title="Add image"
                       variant="default"
-                      onAction={() => ref.current.click()}
+                      onAction={() => threadRef.current.click()}
                     />
                   </div>
                   <div className="flex justify-center mt-1">
@@ -687,8 +706,6 @@ function SocialLink(props) {
 }
 export default function SocialLinkSetting(props) {
   const { saveSettingApi, imageUploadUrl, setting } = props;
-
-  console.log('setting : ', setting);
 
   return (
     <div className="main-content-inner">
