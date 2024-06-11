@@ -1,13 +1,13 @@
 {
   "type": "object",
   "properties": {
-    "fullName": {
+    "full_name": {
       "type": "string"
     },
-    "languageCode": {
+    "language_code": {
       "type": "string"
     },
-    "currencyCode": {
+    "currency_code": {
       "type": "string"
     }
   },

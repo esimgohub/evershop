@@ -3,8 +3,6 @@ const {
   getValueSync,
   getValue
 } = require('@evershop/evershop/src/lib/util/registry');
-const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
-const { snakeCase } = require('@evershop/evershop/src/lib/util/snakeCase');
 const {
   startTransaction,
   commit,
@@ -35,35 +33,35 @@ function validateCustomerDataBeforeInsert(data) {
 
 async function updateCustomerData(data, connection) {
   const query = select().from('customer');
-  const { id, fullName, languageCode, currencyCode } = data;
+  const { id, full_name, language_code, currency_code } = data;
   const customer = await query.where('uuid', '=', id).load(connection);
   if (!customer) {
     throw new Error('Requested customer not found');
   }
 
-  const camelCasedCustomer = camelCase(customer);
   const updatedCustomer = {
     ...customer,
-    languageCode:
-      languageCode && languageCode !== camelCasedCustomer.languageCode
-        ? languageCode
-        : camelCasedCustomer.languageCode,
-    currencyCode:
-      currencyCode && currencyCode !== camelCasedCustomer.currencyCode
-        ? currencyCode
-        : camelCasedCustomer.currencyCode,
-    fullName:
-      fullName && fullName.trim() !== camelCasedCustomer.fullName
-        ? fullName
-        : camelCasedCustomer.fullName
+    language_code:
+      language_code && language_code !== customer.language_code
+        ? language_code
+        : customer.language_code,
+    currency_code:
+      currency_code && currency_code !== customer.currency_code
+        ? currency_code
+        : customer.currency_code,
+    full_name:
+      full_name && full_name.trim() !== customer.full_name
+        ? full_name
+        : customer.full_name
   };
 
   try {
     const newCustomer = await update('customer')
-      .given(snakeCase(updatedCustomer))
+      .given(updatedCustomer)
       .where('uuid', '=', id)
       .execute(connection);
     Object.assign(customer, newCustomer);
+    return newCustomer;
   } catch (e) {
     if (!e.message.includes('No data was provided')) {
       throw e;
