@@ -148,15 +148,15 @@ class ProductCollection {
       this.baseQuery.orWhere('product.type', '=', ProductType.simple.value);
       this.baseQuery.andWhere('product.visibility', '=', true);
       this.baseQuery.andWhere('product.status', '=', true);
-      if (getConfig('catalog.showOutOfStockProduct', false) === false) {
-        this.baseQuery
-          .andWhere('product_inventory.manage_stock', '=', false)
-          .addNode(
-            node('OR')
-              .addLeaf('AND', 'product_inventory.qty', '>', 0)
-              .addLeaf('AND', 'product_inventory.stock_availability', '=', true)
-          );
-      }
+      // if (getConfig('catalog.showOutOfStockProduct', false) === false) {
+      //   this.baseQuery
+      //     .andWhere('product_inventory.manage_stock', '=', false)
+      //     .addNode(
+      //       node('OR')
+      //         .addLeaf('AND', 'product_inventory.qty', '>', 0)
+      //         .addLeaf('AND', 'product_inventory.stock_availability', '=', true)
+      //     );
+      // }
     }
     else {
       this.baseQuery.orWhere('product.type', '=', ProductType.variable.value);

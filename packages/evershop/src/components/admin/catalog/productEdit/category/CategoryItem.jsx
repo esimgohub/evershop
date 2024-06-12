@@ -4,12 +4,14 @@ import PropTypes from 'prop-types';
 import Spinner from '@components/common/Spinner';
 import MinusSmall from '@heroicons/react/outline/MinusSmIcon';
 import PlusSmall from '@heroicons/react/outline/PlusSmIcon';
+import { CategoryType } from '@evershop/evershop/src/modules/catalog/utils/enums/category-type';
 
 const childrenQuery = `
   query Query ($filters: [FilterInput]) {
     categories (filters: $filters) {
       items {
-        categoryId,
+        categoryId
+        categoryType
         uuid
         name
         path {
@@ -25,7 +27,13 @@ function CategoryItem({ category, selectedCategory, setSelectedCategory }) {
   const [result] = useQuery({
     query: childrenQuery,
     variables: {
-      filters: [{ key: 'parent', operation: 'eq', value: category.categoryId }]
+      filters: [
+        {
+          key: 'parent',
+          operation: 'eq',
+          value: category.categoryId.toString()
+        }
+      ]
     },
     pause: !expanded
   });
@@ -40,24 +48,27 @@ function CategoryItem({ category, selectedCategory, setSelectedCategory }) {
       </p>
     );
   }
+
+  const isCountryCategory =
+    category && category.categoryType !== CategoryType.Country;
+
   return (
     <li>
       <div className="flex justify-start gap-1 items-center">
-        {!category.children && (
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setExpanded(!expanded);
-            }}
-          >
-            {expanded ? (
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            setExpanded(!expanded);
+          }}
+        >
+          {isCountryCategory &&
+            (expanded ? (
               <MinusSmall width={15} height={15} />
             ) : (
               <PlusSmall width={15} height={15} />
-            )}
-          </a>
-        )}
+            ))}
+        </a>
         {fetching && (
           <span>
             <Spinner width={20} height={20} />

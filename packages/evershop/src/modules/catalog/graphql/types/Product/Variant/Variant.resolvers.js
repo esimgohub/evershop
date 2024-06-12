@@ -19,15 +19,15 @@ module.exports = {
       query.andWhere('variant_group_id', '=', variantGroupId);
       query.andWhere('product.visibility', '=', true);
       
-      if (getConfig('catalog.showOutOfStockProduct', false) === false) {
-        query
-          .andWhere('product_inventory.manage_stock', '=', false)
-          .addNode(
-            node('OR')
-              .addLeaf('AND', 'product_inventory.qty', '>', 0)
-              .addLeaf('AND', 'product_inventory.stock_availability', '=', true)
-          );
-      }
+      // if (getConfig('catalog.showOutOfStockProduct', false) === false) {
+      //   query
+      //     .andWhere('product_inventory.manage_stock', '=', false)
+      //     .addNode(
+      //       node('OR')
+      //         .addLeaf('AND', 'product_inventory.qty', '>', 0)
+      //         .addLeaf('AND', 'product_inventory.stock_availability', '=', true)
+      //     );
+      // }
 
       if (!user) {
         query.andWhere('status', '=', 1);

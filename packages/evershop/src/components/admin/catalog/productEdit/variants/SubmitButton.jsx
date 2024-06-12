@@ -53,10 +53,7 @@ export function SubmitButton({
         }
       }
       // Modify the url key to be unique
-      formData.set(
-        'url_key',
-        `${formData.get('url_key')}-${formData.get('sku')}`
-      );
+      formData.set('url_key', `${formData.get('sku')}`);
       const productData = serializeForm(formData.entries());
 
       productData.parent_product_id = parseInt(productData.parent_product_id);
