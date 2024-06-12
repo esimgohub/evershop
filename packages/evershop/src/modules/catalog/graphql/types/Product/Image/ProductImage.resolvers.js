@@ -5,8 +5,6 @@ module.exports = {
   Product: {
     image: async (product, _, { homeUrl }) => {
       const mainImage = product.originImage;
-      console.log("main image: ", mainImage);
-
       return mainImage
         ? {
             thumb: product.thumbImage || null,
