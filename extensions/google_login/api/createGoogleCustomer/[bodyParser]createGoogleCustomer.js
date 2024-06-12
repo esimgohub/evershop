@@ -2,6 +2,10 @@ const { OK } = require('@evershop/evershop/src/lib/util/httpStatus');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { select, insert } = require('@evershop/postgres-query-builder');
 const { getGoogleUserInfo } = require('../../services/getGoogleUserInfo');
+const {
+  AccountStatus,
+  LoginSource
+} = require('@evershop/evershop/src/modules/customer/constant');
 
 module.exports = async (request, response, delegate, next) => {
   const { accessToken } = request.body;
@@ -22,7 +26,7 @@ module.exports = async (request, response, delegate, next) => {
     .where('email', '=', googleUserInfo.email)
     .load(pool);
 
-  if (customer && customer.status !== 1) {
+  if (customer && customer.status !== AccountStatus.ENABLED) {
     response.status(400);
     return response.json({
       error: {
@@ -38,8 +42,8 @@ module.exports = async (request, response, delegate, next) => {
         external_id: googleUserInfo.id,
         email: googleUserInfo.email,
         full_name: googleUserInfo.name,
-        status: 1,
-        password: ''
+        status: AccountStatus.ENABLED,
+        login_source: LoginSource.GOOGLE
       })
       .execute(pool);
   }

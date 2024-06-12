@@ -8,6 +8,10 @@ const { getGoogleAuthToken } = require('../../../services/getGoogleAuthToken');
 const { getGoogleUserInfo } = require('../../../services/getGoogleUserInfo');
 const { select, insert } = require('@evershop/postgres-query-builder');
 const { error } = require('@evershop/evershop/src/lib/log/logger');
+const {
+  LoginSource,
+  AccountStatus
+} = require('@evershop/evershop/src/modules/customer/constant');
 
 /* eslint-disable-next-line no-unused-vars */
 module.exports = async (request, response, delegate, next) => {
@@ -23,49 +27,42 @@ module.exports = async (request, response, delegate, next) => {
   );
 
   try {
-    // Get the access token from google using the code
     const { access_token, id_token } = await getGoogleAuthToken(code);
     if (!access_token || !id_token) {
       return response.redirect(failureUrl);
     }
 
-    // Get the user info from google using the access token
     const userInfo = await getGoogleUserInfo(access_token, id_token);
     if (!userInfo) {
       return response.redirect(failureUrl);
     }
 
-    // Check if the email exists in the database
     let customer = await select()
       .from('customer')
       .where('email', '=', userInfo.email)
       .load(pool);
 
-    if (customer && customer.is_google_login === false) {
+    if (customer && customer.login_source !== LoginSource.GOOGLE) {
       throw new Error('This email is already registered');
     }
-    if (customer && customer.status !== 1) {
+    if (customer && customer.status !== AccountStatus.ENABLED) {
       throw new Error('This account is disabled');
     }
 
     if (!customer) {
-      // If the email does not exist, create a new customer
       customer = await insert('customer')
         .given({
           email: userInfo.email,
           full_name: userInfo.name,
-          status: 1,
-          password: '',
-          login_source: 'google'
+          status: AccountStatus.ENABLED,
+          login_source: LoginSource.GOOGLE,
+          external_id: userInfo.id
         })
         .execute(pool);
     }
-    // Login the customer
+
     request.session.customerID = customer.customer_id;
-    request.session.loginSource = 'google';
-    // Delete the password field
-    delete customer.password;
-    // Save the customer in the request
+    request.session.loginSource = LoginSource.GOOGLE;
     request.locals.customer = customer;
 
     response.redirect(success_redirect_url);

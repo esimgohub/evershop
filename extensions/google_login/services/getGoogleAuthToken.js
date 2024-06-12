@@ -14,7 +14,7 @@ module.exports.getGoogleAuthToken = async (code) => {
     const { access_token, id_token } = tokens;
     return { access_token, id_token };
   } catch (err) {
-    error(err);
+    error(err.message);
     return null;
   }
 };
