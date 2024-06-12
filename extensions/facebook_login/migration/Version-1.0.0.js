@@ -2,9 +2,10 @@ const { execute } = require('@evershop/postgres-query-builder');
 
 // eslint-disable-next-line no-multi-assign
 module.exports = exports = async (connection) => {
-  // Add a column named `is_google_login` to `customer` table, after `password` column
+  // Create a reset_password_token table
   await execute(
     connection,
-    `ALTER TABLE "customer" ADD COLUMN "is_google_login" boolean NOT NULL DEFAULT FALSE`
+    `ALTER TYPE login_source_enum
+    ADD VALUE 'facebook';`
   );
 };

@@ -2,69 +2,67 @@ const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const {
-  getGoogleAuthToken
-} = require('@evershop/google_login/services/getGoogleAuthToken');
+  getFacebookAuthToken
+} = require('../../../services/getFacebookAuthToken');
 const {
-  getGoogleUserInfo
-} = require('@evershop/google_login/services/getGoogleUserInfo');
+  getFacebookUserInfo
+} = require('../../../services/getFacebookUserInfo');
 const { select, insert } = require('@evershop/postgres-query-builder');
 const { error } = require('@evershop/evershop/src/lib/log/logger');
+const {
+  AccountStatus,
+  LoginSource
+} = require('@evershop/evershop/src/modules/customer/constant');
 
 /* eslint-disable-next-line no-unused-vars */
 module.exports = async (request, response, delegate, next) => {
   const { code } = request.query;
-  const client_id = getConfig('google_login.client_id');
-  const client_secret = getConfig('google_login.client_secret');
+  const client_id = getConfig('facebook_login.client_id');
+  const app_secret = getConfig('facebook_login.app_secret');
+
   const homeUrl = getConfig('shop.homeUrl', 'http://localhost:3000');
-  const redirect_uri = `${homeUrl}${buildUrl('gcallback')}`;
-  const successUrl = getConfig('google_login.success_redirect_url', homeUrl);
+  const redirect_uri = `${homeUrl}${buildUrl('facebookCallback')}`;
+  const successUrl = getConfig('facebook_login.success_redirect_url', homeUrl);
   const failureUrl = getConfig(
-    'google_login.failure_redirect_url',
+    'facebook_login.failure_redirect_url',
     `${homeUrl}${buildUrl('login')}`
   );
 
   try {
-    // Get the access token from google using the code
-    const { id_token, access_token } = await getGoogleAuthToken(
+    const { access_token } = await getFacebookAuthToken(
       code,
       client_id,
-      client_secret,
+      app_secret,
       redirect_uri
     );
+    if (!access_token) {
+      return response.redirect(failureUrl);
+    }
 
-    // Get the user info from google using the access token
-    const userInfo = await getGoogleUserInfo(access_token, id_token);
-
-    // Check if the email exists in the database
+    const userInfo = await getFacebookUserInfo(access_token);
     let customer = await select()
       .from('customer')
-      .where('email', '=', userInfo.email)
+      .where('external_id', '=', userInfo.id)
       .load(pool);
 
-    if (customer && customer.is_google_login === false) {
-      throw new Error('This email is already registered');
-    }
-    if (customer && customer.status !== 1) {
+    if (customer && customer.status !== AccountStatus.ENABLED) {
       throw new Error('This account is disabled');
     }
 
     if (!customer) {
-      // If the email does not exist, create a new customer
       customer = await insert('customer')
         .given({
-          email: userInfo.email,
           full_name: userInfo.name,
-          status: 1,
-          is_google_login: true,
-          password: ''
+          external_id: userInfo.id,
+          status: AccountStatus.ENABLED,
+          login_source: LoginSource.FACEBOOK
         })
         .execute(pool);
     }
-    // Login the customer
+
     request.session.customerID = customer.customer_id;
-    // Delete the password field
-    delete customer.password;
-    // Save the customer in the request
+    request.session.loginSource = LoginSource.FACEBOOK;
+
     request.locals.customer = customer;
     request.session.save((e) => {
       if (e) {
@@ -75,7 +73,7 @@ module.exports = async (request, response, delegate, next) => {
       }
     });
   } catch (err) {
-    error(err);
+    error(err.message);
     response.redirect(failureUrl);
   }
 };
