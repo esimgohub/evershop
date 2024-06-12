@@ -1,9 +1,6 @@
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
-const {
-  INTERNAL_SERVER_ERROR
-} = require('@evershop/evershop/src/lib/util/httpStatus');
 const { getGoogleAuthToken } = require('../../../services/getGoogleAuthToken');
 const { getGoogleUserInfo } = require('../../../services/getGoogleUserInfo');
 const { select, insert } = require('@evershop/postgres-query-builder');
@@ -42,9 +39,6 @@ module.exports = async (request, response, delegate, next) => {
       .where('email', '=', userInfo.email)
       .load(pool);
 
-    if (customer && customer.login_source !== LoginSource.GOOGLE) {
-      throw new Error('This email is already registered');
-    }
     if (customer && customer.status !== AccountStatus.ENABLED) {
       throw new Error('This account is disabled');
     }
