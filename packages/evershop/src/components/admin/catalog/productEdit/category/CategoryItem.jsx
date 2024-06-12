@@ -50,48 +50,68 @@ function CategoryItem({ category, selectedCategory, setSelectedCategory }) {
   }
 
   const isCountryCategory =
-    category && category.categoryType !== CategoryType.Country;
+    category && category.categoryType === CategoryType.Country;
 
   return (
     <li>
       <div className="flex justify-start gap-1 items-center">
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            setExpanded(!expanded);
-          }}
-        >
-          {isCountryCategory &&
-            (expanded ? (
+        {isCountryCategory ? (
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              setExpanded(!expanded);
+            }}
+          />
+        ) : (
+          <span
+            className="cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              setExpanded(!expanded);
+            }}
+          >
+            {expanded ? (
               <MinusSmall width={15} height={15} />
             ) : (
               <PlusSmall width={15} height={15} />
-            ))}
-        </a>
+            )}
+          </span>
+        )}
+
         {fetching && (
           <span>
             <Spinner width={20} height={20} />
           </span>
         )}
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            setSelectedCategory(category);
-          }}
-        >
-          {/* {category.categoryId === selectedCategory?.categoryId ? (
-            <strong>{category.name}</strong>
-          ) : (
-            category.name
-          )} */}
-          {category.uuid === selectedCategory?.uuid ? (
-            <strong>{category.name}</strong>
-          ) : (
-            category.name
-          )}
-        </a>
+        {isCountryCategory ? (
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              setSelectedCategory(category);
+            }}
+          >
+            {/* {category.categoryId === selectedCategory?.categoryId ? (
+              <strong>{category.name}</strong>
+            ) : (
+              category.name
+            )} */}
+            {category.uuid === selectedCategory?.uuid ? (
+              <strong>{category.name}</strong>
+            ) : (
+              category.name
+            )}
+          </a>
+        ) : (
+          <span className="cursor-not-allowed">
+            {category.uuid === selectedCategory?.uuid ? (
+              <strong>{category.name}</strong>
+            ) : (
+              category.name
+            )}
+          </span>
+        )}
       </div>
       {data && data.categories.items.length > 0 && expanded && (
         <ul>

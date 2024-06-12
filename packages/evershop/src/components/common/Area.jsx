@@ -19,7 +19,7 @@ function Area(props) {
     const areaCoreComponents = coreComponents
       ? coreComponents.filter((c) => c)
       : [];
-    console.log('areaCoreComponents', areaCoreComponents);
+
     const cs =
       components[id] === undefined
         ? areaCoreComponents
