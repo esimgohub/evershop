@@ -1,6 +1,5 @@
 const axios = require('axios');
-const { error } = require('@evershop/evershop/src/lib/log/logger');
-const qs = require('qs');
+const { error, info } = require('@evershop/evershop/src/lib/log/logger');
 
 module.exports.getFacebookUserInfo = async (accessToken) => {
   const facebookUserInfoUrl = 'https://graph.facebook.com/v20.0/me';
@@ -9,17 +8,11 @@ module.exports.getFacebookUserInfo = async (accessToken) => {
     fields: 'id,name,email'
   };
 
-  console.log(
-    'facebookUserInfoUrl',
-    facebookUserInfoUrl,
-    facebookUserInfoQueryOptions
-  );
-
   try {
     const response = await axios.get(facebookUserInfoUrl, {
       params: facebookUserInfoQueryOptions
     });
-    console.log('response', response);
+    info('Facebook user info response', response.data);
 
     const { data } = response;
     return data;

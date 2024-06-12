@@ -11,7 +11,7 @@ module.exports = (request, response, delegate, next) => {
   const client_id = getConfig('facebook_login.client_id');
   const homeUrl = getConfig('shop.homeUrl', 'http://localhost:3000');
   const redirect_uri = `${homeUrl}${buildUrl('facebookCallback')}`;
-  console.log('redirect_uri', redirect_uri);
   const facebookAuthUrl = getFacebookAuthUrl(client_id, redirect_uri);
+
   response.redirect(facebookAuthUrl);
 };

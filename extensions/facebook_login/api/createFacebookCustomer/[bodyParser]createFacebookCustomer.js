@@ -2,6 +2,10 @@ const { OK } = require('@evershop/evershop/src/lib/util/httpStatus');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { select, insert } = require('@evershop/postgres-query-builder');
 const { getFacebookUserInfo } = require('../../services/getFacebookUserInfo');
+const {
+  AccountStatus,
+  LoginSource
+} = require('@evershop/evershop/src/modules/customer/constant');
 
 module.exports = async (request, response, stack, next) => {
   const { accessToken } = request.body;
@@ -22,7 +26,7 @@ module.exports = async (request, response, stack, next) => {
     .where('external_id', '=', facebookUserInfo.id)
     .load(pool);
 
-  if (customer && customer.status !== 1) {
+  if (customer && customer.status !== AccountStatus.ENABLED) {
     response.status(400);
     return response.json({
       error: {
@@ -36,10 +40,9 @@ module.exports = async (request, response, stack, next) => {
     customer = await insert('customer')
       .given({
         external_id: facebookUserInfo.id,
-        login_source: 'facebook',
+        login_source: LoginSource.FACEBOOK,
         full_name: facebookUserInfo.name,
-        status: 1,
-        password: ''
+        status: AccountStatus.ENABLED
       })
       .execute(pool);
   }

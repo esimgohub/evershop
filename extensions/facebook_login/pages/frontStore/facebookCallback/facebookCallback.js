@@ -9,6 +9,10 @@ const {
 } = require('../../../services/getFacebookUserInfo');
 const { select, insert } = require('@evershop/postgres-query-builder');
 const { error } = require('@evershop/evershop/src/lib/log/logger');
+const {
+  AccountStatus,
+  LoginSource
+} = require('@evershop/evershop/src/modules/customer/constant');
 
 /* eslint-disable-next-line no-unused-vars */
 module.exports = async (request, response, delegate, next) => {
@@ -36,36 +40,29 @@ module.exports = async (request, response, delegate, next) => {
     }
 
     const userInfo = await getFacebookUserInfo(access_token);
-    console.log('userInfo', userInfo);
-    // Check if the email exists in the database
     let customer = await select()
       .from('customer')
       .where('external_id', '=', userInfo.id)
       .load(pool);
 
-    if (customer && customer.status !== 1) {
+    if (customer && customer.status !== AccountStatus.ENABLED) {
       throw new Error('This account is disabled');
     }
 
     if (!customer) {
-      // If the email does not exist, create a new customer
       customer = await insert('customer')
         .given({
           full_name: userInfo.name,
           external_id: userInfo.id,
-          status: 1,
-          password: '',
-          login_source: 'facebook'
+          status: AccountStatus.ENABLED,
+          login_source: LoginSource.FACEBOOK
         })
         .execute(pool);
     }
-    // Login the customer
-    request.session.customerID = customer.customer_id;
-    request.session.loginSource = 'facebook';
 
-    // Delete the password field
-    delete customer.password;
-    // Save the customer in the request
+    request.session.customerID = customer.customer_id;
+    request.session.loginSource = LoginSource.FACEBOOK;
+
     request.locals.customer = customer;
     request.session.save((e) => {
       if (e) {

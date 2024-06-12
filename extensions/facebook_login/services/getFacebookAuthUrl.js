@@ -3,8 +3,7 @@ module.exports.getFacebookAuthUrl = (client_id, redirect_uri) => {
 
   const facebookOauthQueryOptions = {
     redirect_uri,
-    client_id,
-    state: 'bcxvadasdasdasdasdasda'
+    client_id
   };
 
   const queryString = new URLSearchParams(facebookOauthQueryOptions).toString();
