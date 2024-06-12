@@ -4,10 +4,8 @@ import { Card } from '@components/admin/cms/Card';
 
 export default function SocialLinkSettingMenu({ socialLinkSettingUrl }) {
   return (
-    <Card.Session
-      title={<a href={socialLinkSettingUrl}>Social Link Setting</a>}
-    >
-      <div>Configure the social links</div>
+    <Card.Session title={<a href={socialLinkSettingUrl}>Social Setting</a>}>
+      <div>Configure the socials</div>
     </Card.Session>
   );
 }

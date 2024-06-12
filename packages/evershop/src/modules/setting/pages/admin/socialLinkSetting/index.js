@@ -4,7 +4,7 @@ const {
 
 module.exports = (request) => {
   setContextValue(request, 'pageInfo', {
-    title: 'Social Link Setting',
-    description: 'Social Link Setting'
+    title: 'Social Setting',
+    description: 'Social Setting'
   });
 };
