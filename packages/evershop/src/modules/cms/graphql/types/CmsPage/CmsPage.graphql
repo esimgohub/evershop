@@ -31,4 +31,6 @@ type CmsPageCollection {
 extend type Query {
   cmsPage(id: Int): CmsPage
   cmsPages(filters: [FilterInput]): CmsPageCollection
+
+  staticPage(urlKey: String): CmsPage
 }
