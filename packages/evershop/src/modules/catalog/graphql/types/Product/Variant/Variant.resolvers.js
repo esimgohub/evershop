@@ -1,4 +1,4 @@
-const { select } = require('@evershop/postgres-query-builder');
+const { select, node } = require('@evershop/postgres-query-builder');
 const uniqid = require('uniqid');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
@@ -6,6 +6,7 @@ const {
   getProductsBaseQuery
 } = require('../../../../services/getProductsBaseQuery');
 const { ProductType } = require('../../../../utils/enums/product-type');
+const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 
 module.exports = {
   Product: {
@@ -14,7 +15,19 @@ module.exports = {
 
       const query = getProductsBaseQuery(pool);
       query.andWhere('type', '=', ProductType.simple.value);
+      query.andWhere('status', '=', true);
       query.andWhere('variant_group_id', '=', variantGroupId);
+      query.andWhere('product.visibility', '=', true);
+      
+      // if (getConfig('catalog.showOutOfStockProduct', false) === false) {
+      //   query
+      //     .andWhere('product_inventory.manage_stock', '=', false)
+      //     .addNode(
+      //       node('OR')
+      //         .addLeaf('AND', 'product_inventory.qty', '>', 0)
+      //         .addLeaf('AND', 'product_inventory.stock_availability', '=', true)
+      //     );
+      // }
 
       if (!user) {
         query.andWhere('status', '=', 1);

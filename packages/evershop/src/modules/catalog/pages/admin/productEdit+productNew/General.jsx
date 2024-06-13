@@ -202,7 +202,8 @@ export default function General({
         <Area
           id="productEditGeneral"
           coreComponents={[
-            {
+            (!product ||
+              (product && product.type === ProductType.variable.value)) && {
               component: { default: Field },
               props: {
                 id: 'name',
@@ -239,7 +240,8 @@ export default function General({
               sortOrder: 20,
               id: 'SKUPrice'
             },
-            {
+            (!product ||
+              (product && product.type === ProductType.variable.value)) && {
               component: { default: Category },
               props: {
                 name: 'category_ids',
@@ -251,10 +253,13 @@ export default function General({
             {
               component: { default: Select },
               props: {
-                name: 'product_type',
+                name: 'type',
                 label: 'Product Type',
                 placeholder: 'Select product type',
-                value: ProductType.variable.value,
+                value:
+                  product && product.type
+                    ? product.type
+                    : ProductType.variable.value,
                 disabled: true,
                 options: [
                   {
@@ -267,10 +272,11 @@ export default function General({
                   }
                 ]
               },
-              id: 'product_type',
+              id: 'type',
               sortOrder: 24
             },
-            {
+            (!product ||
+              (product && product.type === ProductType.variable.value)) && {
               component: { default: Field },
               props: {
                 id: 'tax_class',
@@ -285,7 +291,8 @@ export default function General({
               sortOrder: 25,
               id: 'tax_class'
             },
-            {
+            (!product ||
+              (product && product.type === ProductType.variable.value)) && {
               component: { default: CkeditorField },
               props: {
                 id: 'description',

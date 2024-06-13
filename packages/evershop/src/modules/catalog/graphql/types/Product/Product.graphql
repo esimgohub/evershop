@@ -32,8 +32,7 @@ type Product {
 
 input ProductFilterInput {
   categoryId: String
-  fromDate: String
-  toDate: String
+  tripPeriod: String
 }
 
 """

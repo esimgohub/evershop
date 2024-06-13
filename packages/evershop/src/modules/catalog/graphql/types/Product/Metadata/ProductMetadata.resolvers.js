@@ -28,6 +28,9 @@ module.exports = {
 
       const foundPlanTypeAttribute = attributes.find((a) => a.attribute_code === 'plan-type');
 
+      console.log("product SKU: ", product.sku)
+      console.log("foundPlanTypeAttribute", foundPlanTypeAttribute);
+
       const foundDataAmountAttribute = attributes.find((a) => a.attribute_code === 'data-amount');
       const dataAmountValue = foundDataAmountAttribute ? parseInt(foundDataAmountAttribute.option_text) : 1;
 
@@ -35,6 +38,14 @@ module.exports = {
       const foundDataAmountUnit = attributes.find((a) => a.attribute_code === 'data-amount-unit');
 
       const totalDataAmount = foundPlanTypeAttribute.option_text === PlanType.DailyData ?  dayAmountValue * dataAmountValue : dataAmountValue;
+
+      console.log("dayAmountValue", dayAmountValue);
+      console.log("dataAmountValue", dataAmountValue);
+      console.log("foundDataAmountUnit", foundDataAmountUnit);
+
+      console.log("------")
+
+
 
       // Get metadata on categories
       const productCategoryQuery = select().from('product_category');
@@ -48,6 +59,7 @@ module.exports = {
       productCategoryQuery.where('product_category.product_id', '=', product.uuid);
 
       const categories = await productCategoryQuery.execute(pool);
+
 
       return {
         totalDataAmount: `${totalDataAmount < 10 ? `0${totalDataAmount}` : totalDataAmount} ${calculateDataAmountUnit(totalDataAmount, foundDataAmountUnit ? foundDataAmountUnit.option_text : 'GB')}`,

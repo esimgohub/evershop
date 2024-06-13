@@ -2,7 +2,13 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import './Card.scss';
 
-function Card({ title, actions = [], subdued = false, children }) {
+function Card({
+  title,
+  actions = [],
+  subdued = false,
+  children,
+  contentClassName
+}) {
   return (
     <div className={subdued ? 'card shadow subdued' : 'card shadow'}>
       {(title || actions.length > 0) && (
@@ -41,7 +47,11 @@ function Card({ title, actions = [], subdued = false, children }) {
           )}
         </div>
       )}
-      {children}
+      {contentClassName ? (
+        <div className={contentClassName}>{children}</div>
+      ) : (
+        children
+      )}
     </div>
   );
 }

@@ -27,7 +27,6 @@ function validateProductDataBeforeInsert(data) {
     'status',
     'type',
     'sku',
-    'qty',
     'group_id',
     'visibility'
   ];
@@ -183,6 +182,8 @@ async function createProduct(data, context) {
   const connection = await getConnection();
   await startTransaction(connection);
   try {
+
+    
     const productData = await getValue('productDataBeforeCreate', data);
 
     // TODO: Remove weight field on product.

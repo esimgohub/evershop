@@ -2,8 +2,14 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import ProductMediaManager from '@components/admin/catalog/productEdit/media/ProductMediaManager';
 import { Card } from '@components/admin/cms/Card';
+import { ProductType } from '../../../utils/enums/product-type';
 
 export default function Media({ id, product, productImageUploadUrl }) {
+  const isSimpleProduct = product && product.type === ProductType.simple.value;
+  if (isSimpleProduct) {
+    return null;
+  }
+
   const image = product?.image;
   let gallery = product?.gallery || [];
 
@@ -25,6 +31,7 @@ export default function Media({ id, product, productImageUploadUrl }) {
 
 Media.propTypes = {
   id: PropTypes.string.isRequired,
+  type: PropTypes.string.isRequired,
   product: PropTypes.shape({
     gallery: PropTypes.arrayOf(
       PropTypes.shape({
@@ -52,6 +59,7 @@ export const layout = {
 export const query = `
   query Query {
     product(id: getContextValue("productId", null)) {
+      type
       image {
         id: uuid
         url
