@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build:
@@ -17,6 +15,10 @@ services:
       - database
     ports:
       - 3000:3000
+    volumes:
+      - ./media:/app/media
+      - ./public:/app/public
+      - ./themes:/app/themes
 
   #The postgres database:
   database:
