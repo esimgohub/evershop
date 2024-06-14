@@ -9,7 +9,6 @@ module.exports = {
   Query: {
     cmsPage: async (root, { id }, { pool }) => {
       const query = getCmsPagesBaseQuery();
-      query.where('cms_page_id', '=', id);
       const page = await query.load(pool);
       return page ? camelCase(page) : null;
     },
@@ -18,7 +17,17 @@ module.exports = {
       const root = new CMSPageCollection(query);
       await root.init(filters, !!user);
       return root;
+    },
+    staticPage: async (_, { urlKey }, { pool }) => {
+      const query = getCmsPagesBaseQuery();
+      query.andWhere('url_key', '=', urlKey);
+    
+      const page = await query.load(pool);
+      console.log("page", page);
+
+      return page ? camelCase(page)  : null;
     }
+
   },
   CmsPage: {
     url: ({ urlKey }) => buildUrl('cmsPageView', { url_key: urlKey }),

@@ -7,10 +7,12 @@ const {
   startTransaction,
   commit,
   rollback,
-  insert
+  insert,
+  select
 } = require('@evershop/postgres-query-builder');
 const {
-  getConnection
+  getConnection,
+  pool
 } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getAjv } = require('../../../base/services/getAjv');
 const pageDataSchema = require('./pageDataSchema.json');
@@ -60,6 +62,15 @@ async function createPage(data, context) {
     const pageData = await getValue('pageDataBeforeCreate', data);
     // Validate page data
     validatePageDataBeforeInsert(pageData);
+
+    // Check if duplicate cms page
+    const existedCmsPage = await select()
+      .from('cms_page_description')
+      .where('url_key', '=', pageData.url_key)
+      .load(pool);
+    if (existedCmsPage) {
+      throw new Error(`Cms page with url key: ${pageData.url_key} already exists`);
+    }
 
     // Insert page data
     const page = await hookable(insertPageData, { ...context, connection })(

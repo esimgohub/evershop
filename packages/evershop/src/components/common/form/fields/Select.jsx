@@ -31,7 +31,9 @@ export const Select = React.forwardRef((props, ref) => {
       <div className="field-wrapper flex flex-grow items-baseline">
         <select
           className={`form-field ${
-            disabled ? 'bg-[lightgray] cursor-not-allowed' : ''
+            disabled
+              ? 'bg-[lightgray] cursor-not-allowed pointer-events-none'
+              : ''
           }`}
           id={name}
           name={name}
@@ -44,7 +46,6 @@ export const Select = React.forwardRef((props, ref) => {
               setValue(e.target.value);
             }
           }}
-          disabled={disabled}
           ref={ref}
         >
           <option
@@ -58,7 +59,7 @@ export const Select = React.forwardRef((props, ref) => {
             options.map(
               // eslint-disable-next-line react/no-array-index-key
               (option, key) => (
-                <option key={key} disabled={disabled} value={option.value}>
+                <option key={key} value={option.value}>
                   {option.text}
                 </option>
               )
@@ -99,7 +100,8 @@ Select.propTypes = {
   ),
   placeholder: PropTypes.string,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  disableDefaultOption: PropTypes.bool
+  disableDefaultOption: PropTypes.bool,
+  disabled: PropTypes.bool
 };
 
 Select.defaultProps = {
@@ -111,5 +113,6 @@ Select.defaultProps = {
   placeholder: undefined,
   name: undefined,
   value: undefined,
-  disableDefaultOption: true
+  disableDefaultOption: true,
+  disabled: false
 };

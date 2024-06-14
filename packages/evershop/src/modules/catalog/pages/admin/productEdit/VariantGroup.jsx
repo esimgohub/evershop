@@ -21,7 +21,7 @@ export default function VariantGroup({
 
   return (
     (isProductVariantType || haveNoProductTypeField) && (
-      <Card title="Variant">
+      <Card title="Variant" contentClassName=":w-[100%]">
         {!group && (
           <New
             createVariantGroupApi={createVariantGroupApi}

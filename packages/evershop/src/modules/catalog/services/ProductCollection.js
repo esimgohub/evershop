@@ -146,17 +146,17 @@ class ProductCollection {
     // If the user is not admin, we need to filter out the out of stock products and the disabled products
     if (!isAdmin) {
       this.baseQuery.orWhere('product.type', '=', ProductType.simple.value);
-      // this.baseQuery.andWhere('product.visibility', '=', true);
+      this.baseQuery.andWhere('product.visibility', '=', true);
       this.baseQuery.andWhere('product.status', '=', true);
-      if (getConfig('catalog.showOutOfStockProduct', false) === false) {
-        this.baseQuery
-          .andWhere('product_inventory.manage_stock', '=', false)
-          .addNode(
-            node('OR')
-              .addLeaf('AND', 'product_inventory.qty', '>', 0)
-              .addLeaf('AND', 'product_inventory.stock_availability', '=', true)
-          );
-      }
+      // if (getConfig('catalog.showOutOfStockProduct', false) === false) {
+      //   this.baseQuery
+      //     .andWhere('product_inventory.manage_stock', '=', false)
+      //     .addNode(
+      //       node('OR')
+      //         .addLeaf('AND', 'product_inventory.qty', '>', 0)
+      //         .addLeaf('AND', 'product_inventory.stock_availability', '=', true)
+      //     );
+      // }
     }
     else {
       this.baseQuery.orWhere('product.type', '=', ProductType.variable.value);
@@ -201,11 +201,9 @@ class ProductCollection {
       this.baseQuery.andWhere("product.uuid", "IN", productCategory.map(p => p.product_id));
     }
     
-    if (productFilter.fromDate && productFilter.toDate) {
-      const differentBetweenDates = getTimeDifferenceInDays(productFilter.fromDate, productFilter.toDate);
+    console.log("productFilter: ", productFilter);
 
-      console.log("differentBetweenDates: ", differentBetweenDates);
-
+    if (productFilter.tripPeriod) {
       this.baseQuery
         .innerJoin("product_attribute_value_index")
         .on(
@@ -223,9 +221,7 @@ class ProductCollection {
         );
 
       this.baseQuery.andWhere("attribute.attribute_code", "=", "day-amount")
-      this.baseQuery.andWhere("product_attribute_value_index.option_text", "<=", differentBetweenDates < 10 ? `0${differentBetweenDates}` : differentBetweenDates);
-
-      console.log("sqlll: ", this.baseQuery.sql());
+      this.baseQuery.andWhere("product_attribute_value_index.option_text", "<=", productFilter.tripPeriod < 10 ? `0${productFilter.tripPeriod}` : productFilter.tripPeriod);
     }
 
     // Clone the main query for getting total right before doing the paging

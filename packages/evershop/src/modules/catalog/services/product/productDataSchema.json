@@ -38,27 +38,16 @@
       "type": ["string", "number"]
     },
 
-    "oldPrice": {
+    "old_price": {
       "type": ["string", "number"]
     },
-    "product_type": {
+    "type": {
       "type": "string"
-    },
-    "qty": {
-      "type": ["string", "number"],
-      "pattern": "^[0-9]+$",
-      "errorMessage": {
-        "pattern": "Quantity should be a number"
-      }
     },
     "tax_class": {
       "type": ["string", "number", "null"],
       "pattern": "^[0-9]+$",
       "default": null
-    },
-    "manage_stock": {
-      "type": ["string", "number"],
-      "enum": [0, 1, "0", "1"]
     },
     "stock_availability": {
       "type": ["string", "number"],
