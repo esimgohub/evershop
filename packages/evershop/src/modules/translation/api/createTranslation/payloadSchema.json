@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "properties": {
+    "entity_id": {
+      "type": "string"
+    },
+    "entity_name": {
+      "type": "string"
+    },
+    "entity_attribute": {
+      "type": "string"
+    },
+    "value": {
+      "type": "string"
+    },
+    "language_code": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "entity_id",
+    "entity_name",
+    "entity_attribute",
+    "value",
+    "language_code"
+  ]
+}
