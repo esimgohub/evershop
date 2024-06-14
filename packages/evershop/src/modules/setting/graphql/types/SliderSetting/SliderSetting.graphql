@@ -1,0 +1,9 @@
+type Slider {
+  index: Int
+  sortOrder: Int
+  imageUrl: String
+}
+
+extend type Setting {
+  slidersSetting: [Slider]
+}

@@ -13,10 +13,26 @@ const {
 const { refreshSetting } = require('../../services/setting');
 
 // eslint-disable-next-line no-unused-vars
+
+// TODO: Must check this function
+// const validateRequestBody = (body)  => {
+//   // Validate slider settings
+//   const sliderKeys = Object.keys(body).filter(setting => setting.startsWith("slider"));
+
+//   console.log("sliderKeys: ", sliderKeys);
+  
+//   const hasSettingOptionIsEmpty = sliderKeys.some(key => !body[key] || (body[key] && body[key] === ''));
+//   if (hasSettingOptionIsEmpty) {
+//     throw new Error("Some slider option is empty");
+//   }
+// }
+
 module.exports = async (request, response, delegate, next) => {
   const { body } = request;
   const connection = await getConnection();
   try {
+
+    console.log("body ne: ", body);
     // Loop through the body and insert the data
     const promises = [];
     Object.keys(body).forEach((key) => {
