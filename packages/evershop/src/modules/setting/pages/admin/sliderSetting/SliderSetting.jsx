@@ -19,6 +19,7 @@ function SliderSetting(props) {
           {
             index: 1,
             sortOrder: 1,
+            url: null,
             visibility: true,
             imageUrl: null
           }
@@ -89,14 +90,6 @@ function SliderSetting(props) {
       });
   };
 
-  // const handleSliderImageChangeWithIndex = (sliderIndex) => {
-  //   console.log('upload index original: ', sliderIndex);
-  //   const originalIndex = sliderIndex;
-  //   return (e) => {
-  //     handleSliderImageChange(e, sliderIndex);
-  //   };
-  // };
-
   useEffect(() => {
     refs.current = refs.current.slice(0, sliders.length);
   }, [sliders]);
@@ -105,7 +98,6 @@ function SliderSetting(props) {
     return (
       <>
         {sliders?.map((slider, index) => {
-          const sliderr = { ...slider };
           return (
             <Card
               key={index}
@@ -113,6 +105,23 @@ function SliderSetting(props) {
               className="mb-2"
               actions={[]}
             >
+              <Card.Session>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="col-span-1 items-center flex">
+                    <h4>URL</h4>
+                  </div>
+                  <div className="col-span-2">
+                    <Field
+                      type="text"
+                      name={`slider${slider?.index}Url`}
+                      validationRules={['notEmpty']}
+                      placeholder="Example: https://abc.com"
+                      value={slider?.url}
+                    />
+                  </div>
+                </div>
+              </Card.Session>
+
               <Card.Session>
                 <div className="grid grid-cols-3 gap-2">
                   <div className="col-span-1 items-center flex">
@@ -267,7 +276,7 @@ function SliderSetting(props) {
 
               <Field
                 type="hidden"
-                name={`slider${slider?.index}Url`}
+                name={`slider${slider?.index}ImageUrl`}
                 value={slider?.imageUrl || ''}
                 validationRules={['notEmpty']}
               />
@@ -290,6 +299,7 @@ function SliderSetting(props) {
               {
                 index: sliders.length + 1,
                 sortOrder: sliders.length + 1,
+                url: '',
                 visibility: true,
                 imageUrl: null
               }
@@ -348,6 +358,7 @@ export const query = `
       index
       sortOrder
       visibility
+      url
       imageUrl
     }
     imageUploadUrl: url(routeId: "imageUpload", params: [{key: "0", value: ""}])

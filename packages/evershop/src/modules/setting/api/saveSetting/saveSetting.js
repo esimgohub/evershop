@@ -32,7 +32,6 @@ module.exports = async (request, response, delegate, next) => {
   const connection = await getConnection();
   try {
 
-    console.log("body ne: ", body);
     // Loop through the body and insert the data
     const promises = [];
     Object.keys(body).forEach((key) => {

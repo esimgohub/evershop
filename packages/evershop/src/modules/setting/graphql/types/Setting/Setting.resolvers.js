@@ -3,25 +3,10 @@ const { select } = require('@evershop/postgres-query-builder');
 module.exports = {
   Query: {
     setting: async (root, _, { pool }) => {
-      // Store name
-      // Company name
-      // address
-      // tax code
-      // business ID
-      // phone number
-      // hotline 
-      // email
-      // social links
-      // default currency
-      // default locale
-      // default meta site title
-      // default meta site description
-      // default meta  site keyword
-
       const setting = await select().from('setting').execute(pool);
       return setting;
     },
-    config: async (root, _, { pool }) => {
+    config: async (root, _, { pool, homeUrl }) => {
       const setting = await select().from('setting').execute(pool);
 
       const store = {
@@ -87,18 +72,22 @@ module.exports = {
 
         const sliderSortOrder = matchedSliders.find((s) => s.name.toLowerCase().includes('sortorder'));
         const sliderVisibility = matchedSliders.find((s) => s.name.toLowerCase().includes('visibility'));
-        const sliderIndex = matchedSliders.find((s) => s.name.toLowerCase().includes('index'));
-        const sliderImageUrl = matchedSliders.find((s) => s.name.toLowerCase().includes('url'));
+        const sliderImageUrl = matchedSliders.find((s) => s.name.toLowerCase().includes('imageurl'));
+        const sliderUrl = matchedSliders.find((s) => s.name.toLowerCase().includes('url'));
+
 
         results.push({
           sortOrder: parseInt(sliderSortOrder.value),
-          index: parseInt(sliderIndex.value),
+          url: sliderUrl.value,
           visibility: parseInt(sliderVisibility.value) === 1,
-          imageUrl: sliderImageUrl.value
+          imageUrl: `${homeUrl}${sliderImageUrl.value}`,
         })
       }
   
-      const sliders = results.filter((s) => s.visibility === true).sort((a, b) => a.sortOrder - b.sortOrder);
+      const sliders = results.filter((s) => s.visibility === true).sort((a, b) => a.sortOrder - b.sortOrder).map((s, index) => ({
+        ...s,
+        index: index + 1,
+      }));
   
       return {
         store,

@@ -1,6 +1,6 @@
 type Slider {
   index: Int
-  sortOrder: Int
+  url: String
   imageUrl: String
 }
 
