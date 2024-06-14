@@ -1,0 +1,16 @@
+type Translation {
+  id: ID!
+  createdAt: Date!
+  updatedAt: Date!
+
+  entityId: String!
+  entityName: String!
+  entityAttribute: String!
+  value: String!
+  languageCode: String!
+}
+
+extend type Query {
+  translation(id: ID): Translation
+  translations(filters: [FilterInput]): [Translation]
+}
