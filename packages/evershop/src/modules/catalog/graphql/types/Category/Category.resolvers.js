@@ -88,7 +88,7 @@ module.exports = {
 
       const supportedCountryRecords = await query.execute(pool);
 
-      const ne = supportedCountryRecords.length > 0 ? supportedCountryRecords.map(country => {
+      const mappedCategories = supportedCountryRecords.length > 0 ? supportedCountryRecords.map(country => {
         return camelCase({
           ...country,
           category_id: categories.find(
@@ -97,8 +97,7 @@ module.exports = {
         })
       }) : [];
 
-      console.log("ne: ", ne);
-      return ne;
+      return mappedCategories;
     }
   },
   Category: {

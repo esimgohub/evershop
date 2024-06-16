@@ -14,13 +14,15 @@ const {
   del
 } = require('@evershop/postgres-query-builder');
 const {
-  getConnection
+  getConnection,
+  pool
 } = require('@evershop/evershop/src/lib/postgres/connection');
 const { error } = require('@evershop/evershop/src/lib/log/logger');
 const { getAjv } = require('../../../base/services/getAjv');
 const productDataSchema = require('./productDataSchema.json');
+const { getProductsBaseQuery } = require('../getProductsBaseQuery');
 
-function validateProductDataBeforeUpdate(data) {
+async function validateProductDataBeforeUpdate(data) {
   const ajv = getAjv();
   productDataSchema.required = [];
   const jsonSchema = getValueSync(
@@ -29,11 +31,20 @@ function validateProductDataBeforeUpdate(data) {
   );
   const validate = ajv.compile(jsonSchema);
   const valid = validate(data);
-  if (valid) {
-    return data;
-  } else {
+  if (!valid) {
     throw new Error(validate.errors[0].message);
   }
+
+  const productQuery = getProductsBaseQuery();
+  productQuery.where('product_description.url_key', '=', data.url_key);
+  productQuery.andWhere('product.uuid', '!=', data.uuid);
+  const product = await productQuery.load(pool);
+
+  if (product) {
+    throw new Error('URL key already exists');
+  }
+
+  return data;
 }
 
 async function updateProductInventory(inventoryData, productId, connection) {
@@ -373,7 +384,7 @@ async function updateProduct(uuid, data, context) {
     const productData = await getValue('productDataBeforeUpdate', data);
 
     // Validate product data
-    validateProductDataBeforeUpdate(productData);
+    await validateProductDataBeforeUpdate(productData);
 
     // Insert product data
     const product = await hookable(updateProductData, {

@@ -6,6 +6,7 @@ const {
 } = require('../../../services/getProductsBaseQuery');
 const { ProductCollection } = require('../../../services/ProductCollection');
 const { productDetailDescriptionHtmlTemplate } = require('@evershop/evershop/src/modules/catalog/utils/product-detail');
+const { CategoryStatus } = require('../../../utils/enums/category-status');
 
 module.exports = {
   Product: {
@@ -24,6 +25,44 @@ module.exports = {
       } else {
         return urlRewrite.request_path;
       }
+    },
+    categories: async (product, _, { homeUrl, pool }) => {
+      const originCategories = await select().from('category').execute(pool);
+
+      const query = select().from('category');
+
+      query
+        .leftJoin('category_description')
+        .on(
+          'category_description.category_description_category_id',
+          '=',
+          'category.category_id'
+        );
+      
+      query.innerJoin('product_category')
+        .on('product_category.category_id', '=', 'category.uuid');
+
+
+      query.where('product_category.product_id', '=', product.uuid);
+        
+      query.andWhere('category.status', '=', CategoryStatus.Enabled);
+
+      const categories = await query.execute(pool);
+
+
+      const mappedCategories = categories.length > 0 ? categories.map(country => {
+        return camelCase({
+          ...country,
+          category_id: originCategories.find(
+            category => category.uuid === country.uuid
+          ).category_id
+        })
+      }) : [];
+
+      console.log("categories: ", categories);
+
+
+      return mappedCategories;
     },
     formattedHTMLAttribute: async (product, _, { pool, homeUrl }) => {
       // Attributes
@@ -88,6 +127,14 @@ module.exports = {
 
       return filledDescription;
     },
+    parentUrlKey: async (product, _, { pool }) => {
+      const parentProductQuery = getProductsBaseQuery();
+      parentProductQuery.where('uuid', '=', product.parentProductUuid)
+      
+      const parent = await parentProductQuery.load(pool);
+
+      return parent ? parent.url_key : null;
+    },
     promotion: async (product, _, {}) => {
       const { oldPrice } = product;
       const price = parseFloat(product.price);
@@ -110,6 +157,17 @@ module.exports = {
     product: async (_, { id }, { pool }) => {
       const query = getProductsBaseQuery();
       query.where('product.product_id', '=', id);
+      const result = await query.load(pool);
+
+      if (!result) {
+        return null;
+      } else {
+        return camelCase(result);
+      }
+    },
+    productByUrlKey: async (_, { urlKey }, { pool }) => {
+      const query = getProductsBaseQuery();
+      query.where('product_description.url_key', '=', urlKey);
       const result = await query.load(pool);
 
       if (!result) {

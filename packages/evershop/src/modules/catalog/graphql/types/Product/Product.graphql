@@ -26,6 +26,7 @@ type Product {
   url: String
   formattedHTMLAttribute: String
   promotion: ProductPromotion
+  parentUrlKey: String
   parentProductId: Int
   parentProductUuid: String
 }
@@ -47,6 +48,7 @@ type ProductCollection {
 
 extend type Query {
   product(id: ID): Product
+  productByUrlKey(urlKey: String): Product
   products(
     filters: [FilterInput]
     productFilter: ProductFilterInput

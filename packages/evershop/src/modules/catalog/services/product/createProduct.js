@@ -13,13 +13,14 @@ const {
   insertOnUpdate
 } = require('@evershop/postgres-query-builder');
 const {
-  getConnection
+  getConnection,
+  pool
 } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getAjv } = require('../../../base/services/getAjv');
 const productDataSchema = require('./productDataSchema.json');
+const { getProductsBaseQuery } = require('../getProductsBaseQuery');
 
-function validateProductDataBeforeInsert(data) {
-
+async function validateProductDataBeforeInsert(data) {
   const ajv = getAjv();
   productDataSchema.required = [
     'name',
@@ -36,11 +37,19 @@ function validateProductDataBeforeInsert(data) {
   );
   const validate = ajv.compile(jsonSchema);
   const valid = validate(data);
-  if (valid) {
-    return data;
-  } else {
+  if (!valid) {
     throw new Error(validate.errors[0].message);
   }
+
+  const productQuery = getProductsBaseQuery();
+  productQuery.where('product_description.url_key', '=', data.url_key);
+  const product = await productQuery.load(pool);
+
+  if (product) {
+    throw new Error('URL key already exists');
+  }
+
+  return data;
 }
 
 async function insertProductInventory(inventoryData, productId, connection) {
@@ -182,15 +191,15 @@ async function createProduct(data, context) {
   const connection = await getConnection();
   await startTransaction(connection);
   try {
-
-    
     const productData = await getValue('productDataBeforeCreate', data);
 
     // TODO: Remove weight field on product.
     productData.weight = 0;
 
+    console.log("product data: ", productData);
+
     // Validate product data
-    validateProductDataBeforeInsert(productData);
+    await validateProductDataBeforeInsert(productData);
 
     // Insert product data
     const product = await hookable(insertProductData, {
