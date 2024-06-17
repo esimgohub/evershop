@@ -7,6 +7,7 @@ const {
 const { ProductCollection } = require('../../../services/ProductCollection');
 const { productDetailDescriptionHtmlTemplate } = require('@evershop/evershop/src/modules/catalog/utils/product-detail');
 const { CategoryStatus } = require('../../../utils/enums/category-status');
+const { ProductType } = require('../../../utils/enums/product-type');
 
 module.exports = {
   Product: {
@@ -168,13 +169,21 @@ module.exports = {
     productByUrlKey: async (_, { urlKey }, { pool }) => {
       const query = getProductsBaseQuery();
       query.where('product_description.url_key', '=', urlKey);
-      const result = await query.load(pool);
-
-      if (!result) {
+      const foundedProduct = await query.load(pool);
+      if (!foundedProduct) {
         return null;
-      } else {
-        return camelCase(result);
       }
+
+      const isVariableProduct = foundedProduct.type === ProductType.variable.value;
+      if (isVariableProduct) {
+        return camelCase(foundedProduct);
+      }
+
+      const parentProductQuery = getProductsBaseQuery();
+      parentProductQuery.where('product.uuid', '=', foundedProduct.parent_product_uuid);
+      const parentProduct = await parentProductQuery.load(pool);
+
+      return camelCase(parentProduct);
     },
     products: async (_, { filters = [], productFilter }, { user }) => {
       const query = getProductsBaseQuery();

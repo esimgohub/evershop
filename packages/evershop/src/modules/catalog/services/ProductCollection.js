@@ -232,6 +232,8 @@ class ProductCollection {
 
     this.currentFilters = currentFilters;
     this.totalQuery = totalQuery;
+
+    console.log("sql: ", this.baseQuery.sql());
   }
 
   async items() {
