@@ -60,9 +60,6 @@ module.exports = {
         })
       }) : [];
 
-      console.log("categories: ", categories);
-
-
       return mappedCategories;
     },
     formattedHTMLAttribute: async (product, _, { pool, homeUrl }) => {
@@ -162,9 +159,9 @@ module.exports = {
 
       if (!result) {
         return null;
-      } else {
-        return camelCase(result);
       }
+
+      return camelCase(result);
     },
     productByUrlKey: async (_, { urlKey }, { pool }) => {
       const query = getProductsBaseQuery();

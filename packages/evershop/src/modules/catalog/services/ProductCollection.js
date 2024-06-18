@@ -6,6 +6,7 @@ const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getValue } = require('@evershop/evershop/src/lib/util/registry');
 const { ProductType } = require('../utils/enums/product-type');
 const { getTimeDifferenceInDays } = require('@evershop/evershop/src/lib/util/date');
+const { PlanType } = require('../utils/enums/plan-type');
 
 class ProductCollection {
   constructor(baseQuery) {
@@ -200,8 +201,6 @@ class ProductCollection {
 
       this.baseQuery.andWhere("product.uuid", "IN", productCategory.map(p => p.product_id));
     }
-    
-    console.log("productFilter: ", productFilter);
 
     if (productFilter.tripPeriod) {
       this.baseQuery
@@ -221,7 +220,7 @@ class ProductCollection {
         );
 
       this.baseQuery.andWhere("attribute.attribute_code", "=", "day-amount")
-      this.baseQuery.andWhere("product_attribute_value_index.option_text", "<=", productFilter.tripPeriod < 10 ? `0${productFilter.tripPeriod}` : productFilter.tripPeriod);
+      this.baseQuery.andWhere("product_attribute_value_index.option_text", ">=", productFilter.tripPeriod < 10 ? `0${productFilter.tripPeriod}` : productFilter.tripPeriod);
     }
 
     // Clone the main query for getting total right before doing the paging
@@ -232,16 +231,76 @@ class ProductCollection {
 
     this.currentFilters = currentFilters;
     this.totalQuery = totalQuery;
-
-    console.log("sql: ", this.baseQuery.sql());
   }
 
   async items() {
     const items = await this.baseQuery.execute(pool);
 
-    return items.map((row) => {
-      return camelCase(row);
+    for (const item of items) {
+      const productAttributeQuery = select().from('product_attribute_value_index');
+      productAttributeQuery
+        .leftJoin('attribute')
+        .on(
+          'attribute.attribute_id',
+          '=',
+          'product_attribute_value_index.attribute_id'
+        );
+      productAttributeQuery.where(
+        'product_attribute_value_index.product_id',
+        '=',
+        item.product_id
+      );
+      const matchedAttributes = await productAttributeQuery.execute(pool);
+
+      const planTypeAttribute = matchedAttributes.find(a => a.attribute_code === 'plan-type');
+      const dayAmountAttribute = matchedAttributes.find(a => a.attribute_code === 'day-amount');
+      const dataAmountAttribute = matchedAttributes.find(a => a.attribute_code === 'data-amount');
+      const dataAmountUnitAttribute = matchedAttributes.find(a => a.attribute_code === 'data-amount-unit');
+      const localEsimAttribute = matchedAttributes.find(a => a.attribute_code === 'local-esim');
+
+      // Init attribute temp to sort by day-amount and total amount unit
+      item.attributeTemp = {
+        localEsim: localEsimAttribute.option_text,
+        dayAmount: parseInt(dayAmountAttribute.option_text),
+        totalDataAmount: planTypeAttribute.option_text === PlanType.DailyData ? parseInt(dayAmountAttribute.option_text) * parseInt(dataAmountAttribute.option_text) : parseInt(dataAmountAttribute.option_text),
+        dataAmountUnit: dataAmountUnitAttribute.option_text
+      };
+    }
+
+    const sortedItems = items.sort((a, b) => {
+      // Check if 'local esim' attribute exists and prioritize it
+      if (a.attributeTemp.localEsim.toLowerCase() === "yes" && b.attributeTemp.localEsim.toLowerCase() === "no") {
+        return -1; // 'a' has local esim, should come before 'b'
+      }
+
+      if (a.attributeTemp.localEsim.toLowerCase() === "no" && b.attributeTemp.localEsim.toLowerCase() === "yes") {
+        return 1; // 'b' has local esim, should come before 'a'
+      }
+
+      if (a.attributeTemp.dayAmount !== b.attributeTemp.dayAmount) {
+        return a.attributeTemp.dayAmount - b.attributeTemp.dayAmount;
+      } 
+      
+      if (a.attributeTemp.totalDataAmount !== b.attributeTemp.totalDataAmount) {
+        return a.attributeTemp.totalDataAmount - b.attributeTemp.totalDataAmount;
+      } 
+
+      // Compare data amount unit
+      if (a.attributeTemp.dataAmountUnit.toLowerCase() === "mb" && b.attributeTemp.dataAmountUnit.toLowerCase() === "gb") {
+        return -1; // "MB" should come before "GB"
+      } else if (a.attributeTemp.dataAmountUnit.toLowerCase() === "gb" && b.attributeTemp.dataAmountUnit.toLowerCase() === "mb") {
+        return 1; // "GB" should come after "MB"
+      } else {
+        return 0; // Same unit or both units are equal
+      }
+    }).map((row) => camelCase(row));
+
+    // Remove attribute temp.
+    sortedItems.forEach((item) => {
+      delete item.attributeTemp
     });
+
+    return sortedItems;
   }
 
   async total() {
