@@ -65,7 +65,7 @@ module.exports = {
         })
       }) : [];
     },
-    supportedCategories: async (_, {}, { pool }) => {
+    supportedCategories: async (_, {}, { pool, homeUrl }) => {
       const categories = await select().from('category').execute(pool);
 
       const query = selectDistinct(`category_description.name`, "*").from('category');
@@ -89,11 +89,14 @@ module.exports = {
       const supportedCountryRecords = await query.execute(pool);
 
       const mappedCategories = supportedCountryRecords.length > 0 ? supportedCountryRecords.map(country => {
+        console.log("country: ", country);
+
         return camelCase({
           ...country,
           category_id: categories.find(
             category => category.uuid === country.uuid
-          ).category_id
+          ).category_id,
+          image: `${homeUrl}${country.image}`
         })
       }) : [];
 
