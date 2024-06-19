@@ -6,8 +6,6 @@ const { uploadFile } = require('../../services/uploadFile');
 
 // eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
-  console.log("[multer upload middleware] request.files", request.files);
-
   if (!request.files || request.files.length === 0) {
     response.status(INVALID_PAYLOAD).json({
       error: {
