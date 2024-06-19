@@ -103,6 +103,13 @@ exports.addDefaultMiddlewareFuncs = function addDefaultMiddlewareFuncs(
     const { currentRoute } = request;
     if (currentRoute?.isApi) {
       // We don't need session for api routes. Restful api should be stateless
+        console.log("currentRoute", currentRoute);
+
+      if (!currentRoute?.isAdmin) {
+
+        console.log("to 1088888");
+        frontStoreSessionMiddleware(request, response, next);
+      }
       next();
     } else if (currentRoute?.isAdmin) {
       adminSessionMiddleware(request, response, next);
