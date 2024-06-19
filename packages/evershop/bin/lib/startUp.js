@@ -21,6 +21,8 @@ const server = http.createServer(app);
 
 module.exports.start = async function start(cb) {
   const modules = [...getCoreModules(), ...getEnabledExtensions()];
+  console.log("modules: ", modules);
+
 
   /** Loading bootstrap script from modules */
   try {
