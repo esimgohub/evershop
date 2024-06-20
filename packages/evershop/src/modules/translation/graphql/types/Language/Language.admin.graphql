@@ -1,0 +1,12 @@
+extend type Language {
+  createdAt: Date!
+  updatedAt: Date!
+
+  isDisabled: Int!
+  isDefault: Int!
+}
+
+extend type Query {
+  language(code: String): Language
+  languages(filters: [FilterInput]): [Language]
+}
