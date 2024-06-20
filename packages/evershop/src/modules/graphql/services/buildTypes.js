@@ -10,9 +10,11 @@ module.exports.buildTypeDefs = function buildTypeDefs(isAdmin = false) {
   ];
 
   const extensions = getEnabledExtensions();
+  
   extensions.forEach((extension) => {
     typeSources.push(path.join(extension.path, 'graphql/types/**/*.graphql'));
   });
+
   const typeDefs = mergeTypeDefs(
     typeSources.map((source) =>
       loadFilesSync(source, {

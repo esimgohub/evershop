@@ -13,7 +13,7 @@ const {
 const {
   getConnection
 } = require('@evershop/evershop/src/lib/postgres/connection');
-const { getAjv } = require('../../../base/services/getAjv');
+const { getAjv } = require('@evershop/evershop/src/modules/base/services/getAjv');
 const categoryDataSchema = require('./categoryDataSchema.json');
 
 function validateCategoryDataBeforeInsert(data) {
