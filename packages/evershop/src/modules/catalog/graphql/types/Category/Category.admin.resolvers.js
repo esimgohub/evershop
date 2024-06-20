@@ -3,7 +3,10 @@ const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 
 module.exports = {
   Category: {
-    editUrl: (category) => buildUrl('categoryEdit', { id: category.uuid }),
+    editUrl: (category) => {
+      console.log("category ne: ", category);
+      return buildUrl('categoryEdit', { id: category.uuid })
+    },
     updateApi: (category) => buildUrl('updateCategory', { id: category.uuid }),
     deleteApi: (category) => buildUrl('deleteCategory', { id: category.uuid }),
     addProductUrl: (category) =>

@@ -19,6 +19,8 @@ module.exports = {
       const query = getAttributesBaseQuery();
       const root = new AttributeCollection(query);
       await root.init(filters);
+
+      console.log("root nnenene attribute: ", root);
       return root;
     },
     attributeGroups: async (_, { filters = [] }) => {

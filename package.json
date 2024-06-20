@@ -17,7 +17,7 @@
     "extensions/*"
   ],
   "scripts": {
-    "dev": "evershop dev",
+    "dev": "NODE_OPTIONS='--inspect' evershop dev",
     "setup": "evershop install",
     "build": "evershop build",
     "start": "evershop start",
@@ -56,6 +56,7 @@
   "dependencies": {
     "@adyen/adyen-web": "^5.65.0",
     "@adyen/api-library": "^17.0.0",
-    "swr": "^2.2.5"
+    "swr": "^2.2.5",
+    "@evershop/evershop": "^1.1.0"
   }
 }

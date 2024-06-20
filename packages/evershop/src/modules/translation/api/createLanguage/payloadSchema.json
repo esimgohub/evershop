@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "string"
+    },
+    "is_default": {
+      "type": "number",
+      "enum": [0, 1]
+    }
+  },
+  "required": ["code"]
+}
