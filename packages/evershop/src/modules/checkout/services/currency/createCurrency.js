@@ -12,9 +12,9 @@ const {
 const {
   getConnection
 } = require('@evershop/evershop/src/lib/postgres/connection');
+const crypto = require('crypto');
 const { getAjv } = require('../../../base/services/getAjv');
 const currencyDataSchema = require('./currencyDataSchema.json');
-const crypto = require('crypto');
 
 function validateCurrencyDataBeforeInsert(data) {
   const ajv = getAjv();

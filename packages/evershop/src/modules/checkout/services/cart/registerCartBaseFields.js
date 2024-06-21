@@ -72,7 +72,7 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
       resolvers: [
         async function resolver() {
           let count = 0;
-          const items = this.getItems();
+          const items = this.getActiveItems();
           items.forEach((i) => {
             count += parseInt(i.getData('qty'), 10);
           });
@@ -86,7 +86,7 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
       resolvers: [
         async function resolver() {
           let weight = 0;
-          const items = this.getItems();
+          const items = this.getActiveItems();
           items.forEach((i) => {
             weight += i.getData('product_weight') * i.getData('qty');
           });
@@ -101,7 +101,7 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
         async function resolver() {
           // Sum all tax amount from items
           let taxAmount = 0;
-          const items = this.getItems();
+          const items = this.getActiveItems();
           items.forEach((i) => {
             taxAmount += i.getData('tax_amount');
           });
@@ -115,7 +115,7 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
       resolvers: [
         async function resolver() {
           let total = 0;
-          const items = this.getItems();
+          const items = this.getActiveItems();
           items.forEach((i) => {
             total += i.getData('final_price') * i.getData('qty');
           });
@@ -471,7 +471,7 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
                 return this.getData('shipping_fee_excl_tax') + taxAmount;
               }
             } else {
-              const items = this.getItems();
+              const items = this.getActiveItems();
               let percentage = 0;
               if (shippingTaxClass === 0) {
                 // Highest tax rate
@@ -537,11 +537,6 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
       key: 'payment_method',
       resolvers: [
         async function resolver(paymentMethod) {
-          // TODO: BEGIN OF COMMENT
-          // BUG? keep 
-          // error(`${JSON.stringify(paymentMethod)}`)
-          // this.setError('payment_method', 'Payment method is required');
-          // END OF COMMENT 
           return paymentMethod;
           // Each payment method should handle this field
           // by returning the payment method code and remove this error if the payment method is valid

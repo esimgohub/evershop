@@ -1,4 +1,2 @@
-module.exports.calculateCurrencyRatio = (currency, rate) => {
-    return currency * rate;
-};
+module.exports.calculateCurrencyRatio = (currency, rate) => currency * rate;
   

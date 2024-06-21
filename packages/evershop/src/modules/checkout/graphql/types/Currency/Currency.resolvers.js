@@ -11,6 +11,6 @@ module.exports = {
       const currencies = await getCurrenciesBaseQuery().execute(pool);
 
       return currencies.map((row) => camelCase(row));
-    },
-  },
+    }
+  }
 };

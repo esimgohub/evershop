@@ -47,40 +47,6 @@ let validationServices = [
         return true;
       }
     }
-  },
-  {
-    id: 'shippingAddress',
-    /**
-     *
-     * @param {Cart} cart
-     * @param {*} validationErrors
-     * @returns
-     */
-    func: (cart, validationErrors) => {
-      if (!cart.getData('shipping_address_id')) {
-        validationErrors.push('Please provide a shipping address');
-        return false;
-      } else {
-        return true;
-      }
-    }
-  },
-  {
-    id: 'shippingMethod',
-    /**
-     *
-     * @param {Cart} cart
-     * @param {*} validationErrors
-     * @returns
-     */
-    func: (cart, validationErrors) => {
-      if (!cart.getData('shipping_method')) {
-        validationErrors.push('Please provide a shipping method');
-        return false;
-      } else {
-        return true;
-      }
-    }
   }
 ];
 
@@ -92,7 +58,6 @@ module.exports = exports = {};
 exports.createOrder = async function createOrder(cart) {
   // Start creating order
   const connection = await getConnection(pool);
-  const shipmentStatusList = getConfig('oms.order.shipmentStatus', {});
   const paymentStatusList = getConfig('oms.order.paymentStatus', {});
   try {
     await startTransaction(connection);
@@ -105,15 +70,6 @@ exports.createOrder = async function createOrder(cart) {
       }
     }
 
-    // Save the shipping address
-    const cartShippingAddress = await select()
-      .from('cart_address')
-      .where('cart_address_id', '=', cart.getData('shipping_address_id'))
-      .load(connection);
-    delete cartShippingAddress.uuid;
-    const shipAddr = await insert('order_address')
-      .given(cartShippingAddress)
-      .execute(connection);
     // Save the billing address
     const cartBillingAddress = await select()
       .from('cart_address')
@@ -123,6 +79,8 @@ exports.createOrder = async function createOrder(cart) {
     const billAddr = await insert('order_address')
       .given(cartBillingAddress)
       .execute(connection);
+
+
     // Save order to DB
     const previous = await select('order_id')
       .from('order')
@@ -130,14 +88,6 @@ exports.createOrder = async function createOrder(cart) {
       .limit(0, 1)
       .execute(pool);
 
-    // Get the default shipment status
-    // Loop the shipmentStatusList object and find the one has isDefault = true
-    let defaultShipmentStatus = null;
-    Object.keys(shipmentStatusList).forEach((key) => {
-      if (shipmentStatusList[key].isDefault) {
-        defaultShipmentStatus = key;
-      }
-    });
 
     let defaultPaymentStatus = null;
     Object.keys(paymentStatusList).forEach((key) => {
@@ -153,10 +103,8 @@ exports.createOrder = async function createOrder(cart) {
         order_number:
           10000 + parseInt(previous[0] ? previous[0].order_id : 0, 10) + 1,
         // FIXME: Must be structured
-        shipping_address_id: shipAddr.insertId,
         billing_address_id: billAddr.insertId,
-        payment_status: defaultPaymentStatus,
-        shipment_status: defaultShipmentStatus
+        payment_status: defaultPaymentStatus
       })
       .execute(connection);
 

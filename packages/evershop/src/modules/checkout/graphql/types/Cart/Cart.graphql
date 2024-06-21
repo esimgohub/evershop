@@ -110,6 +110,7 @@ type CartItem implements ShoppingCartItem {
   productCustomOptions: String
   productUrl: String!
   errors: [String!]
+  isActive: Boolean
 }
 
 """

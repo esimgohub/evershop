@@ -1,5 +1,36 @@
 scalar JSON
 
 extend type Cart {
-  applyCouponApi: String!
+    applyCouponApi: String!
+}
+
+"""
+Represents a coupon
+"""
+type Coupon {
+    couponId: Int
+    uuid: String!
+    status: Int!
+    description: String!
+    discountAmount: Float!
+    freeShipping: Int!
+    discountType: String!
+    coupon: String!
+    startDate: DateTime
+    endDate: DateTime
+}
+
+"""
+Returns a collection of coupons
+"""
+type CouponCollection {
+    items: [Coupon]
+    currentPage: Int!
+    total: Int!
+    currentFilters: [Filter]
+}
+
+extend type Query {
+    availableCoupons: CouponCollection
+    coupon(id: Int): Coupon
 }

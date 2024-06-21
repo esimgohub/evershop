@@ -1,15 +1,4 @@
-"""
-Represents a coupon
-"""
-type Coupon {
-  couponId: Int
-  uuid: String!
-  status: Int!
-  description: String!
-  discountAmount: Float!
-  freeShipping: Int!
-  discountType: String!
-  coupon: String!
+extend type Coupon  {
   usedTime: Int
   targetProducts: TargetProducts
   condition: OrderCondition
@@ -17,15 +6,13 @@ type Coupon {
   buyxGety: [ByXGetY]
   maxUsesTimePerCoupon: Int
   maxUsesTimePerCustomer: Int
-  startDate: DateTime
-  endDate: DateTime
   editUrl: String!
   updateApi: String!
   deleteApi: String!
 }
 
 """
-Represents a signle product used in the condition of a coupon.
+Represents a single product used in the condition of a coupon.
 """
 type MatchProductFilter {
   key: String!
@@ -71,17 +58,6 @@ type UserCondition {
   purchased: String
 }
 
-"""
-Returns a collection of coupons
-"""
-type CouponCollection {
-  items: [Coupon]
-  currentPage: Int!
-  total: Int!
-  currentFilters: [Filter]
-}
-
 extend type Query {
-  coupon(id: Int): Coupon
   coupons(filters: [FilterInput]): CouponCollection
 }
