@@ -47,9 +47,9 @@ module.exports = async (request, response, delegate, next) => {
       })
       .execute(pool);
   }
-
-  delete customer.password;
   request.locals.customer = customer;
+  request.session.customerID = customer.customer_id;
+  request.session.loginSource = LoginSource.GOOGLE;
   delegate.createCustomer = customer;
   response.status(OK);
   response.$body = {
