@@ -4,7 +4,7 @@ import { Field } from '@components/common/form/Field';
 import { Card } from '@components/admin/cms/Card';
 
 export default function RelatedPosts({ cmsPage }) {
-  return <Card></Card>;
+  return <Card />;
 }
 
 RelatedPosts.propTypes = {
