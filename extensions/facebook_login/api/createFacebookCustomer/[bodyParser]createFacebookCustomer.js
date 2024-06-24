@@ -7,7 +7,7 @@ const {
   LoginSource
 } = require('@evershop/evershop/src/modules/customer/constant');
 
-module.exports = async (request, response, stack, next) => {
+module.exports = async (request, response, delegate, next) => {
   const { accessToken } = request.body;
 
   const facebookUserInfo = await getFacebookUserInfo(accessToken);
