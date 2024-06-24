@@ -5,10 +5,19 @@ import { Field } from '@components/common/form/Field';
 import { Card } from '@components/admin/cms/Card';
 import CkeditorField from '@components/common/form/fields/Ckeditor';
 import CategoryTree from '@components/admin/catalog/productEdit/category/CategoryTree';
+import { Select } from '@components/common/form/fields/Select';
+import { ProductType } from '../../../utils/enums/product-type';
 
-function SKUPriceWeight({ sku, price, weight, setting }) {
+function SKUPrice({ sku, price, oldPrice, productType, setting }) {
   return (
-    <div className="grid grid-cols-3 gap-1 mt-15">
+    <div
+      className={`grid grid-cols-${
+        !productType ||
+        (productType && productType === ProductType.variable.value)
+          ? '1'
+          : '3'
+      } gap-1 mt-15`}
+    >
       <div>
         <Field
           id="sku"
@@ -20,91 +29,107 @@ function SKUPriceWeight({ sku, price, weight, setting }) {
           validationRules={['notEmpty']}
         />
       </div>
-      <div>
-        <Field
-          id="price"
-          name="price"
-          value={price?.value}
-          placeholder="Price"
-          label="Price"
-          type="text"
-          validationRules={['notEmpty']}
-          suffix={setting.storeCurrency}
-        />
-      </div>
-      <div>
-        <Field
-          id="weight"
-          name="weight"
-          value={weight?.value}
-          placeholder="Weight"
-          label="Weight"
-          type="text"
-          validationRules={['notEmpty']}
-          suffix={setting.weightUnit}
-        />
-      </div>
+
+      {productType && productType === ProductType.simple.value && (
+        <div>
+          <Field
+            id="price"
+            name="price"
+            value={price?.value}
+            placeholder="Price"
+            label="Price"
+            type="text"
+            validationRules={['notEmpty']}
+            suffix={setting.storeCurrency}
+          />
+        </div>
+      )}
+
+      {productType && productType === ProductType.simple.value && (
+        <div>
+          <Field
+            id="oldPrice"
+            name="old_price"
+            value={oldPrice?.value}
+            placeholder="Old Price"
+            label="Old Price"
+            type="text"
+            suffix={setting.storeCurrency}
+          />
+        </div>
+      )}
     </div>
   );
 }
 
-SKUPriceWeight.propTypes = {
+SKUPrice.propTypes = {
   price: PropTypes.number,
+  oldPrice: PropTypes.number,
   sku: PropTypes.string,
-  weight: PropTypes.number,
   setting: PropTypes.shape({
-    storeCurrency: PropTypes.string,
-    weightUnit: PropTypes.string
+    storeCurrency: PropTypes.string
   }).isRequired
 };
 
-SKUPriceWeight.defaultProps = {
+SKUPrice.defaultProps = {
   price: undefined,
-  sku: undefined,
-  weight: undefined
+  oldPrice: undefined,
+  sku: undefined
 };
 
 function Category({ product }) {
   const [selecting, setSelecting] = React.useState(false);
-  const [category, setCategory] = React.useState(
-    product ? product.category : null
+  const [selectedCategory, setSelectedCategory] = React.useState(null);
+  const [modifiedCategories, setModifiedCategories] = React.useState(
+    product ? product.categories : []
   );
 
   return (
     <div className="mt-15 relative">
-      <div className="mb-1">Category</div>
-      {category && (
+      <div className="mb-1">Categories</div>
+      {modifiedCategories.length !== 0 && (
         <div className="border rounded border-[#c9cccf] mb-1 p-1">
-          {category.path.map((item, index) => (
-            <span key={item.name} className="text-gray-500">
-              {item.name}
-              {index < category.path.length - 1 && ' > '}
-            </span>
+          {modifiedCategories.map((category, index) => (
+            <div>
+              {category.path.map((item, index) => (
+                <span key={item.name} className="text-gray-500">
+                  {item.name}
+                  {index < category.path.length - 1 && ' > '}
+                </span>
+              ))}
+              <span className="text-interactive pl-2">
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                  }}
+                >
+                  Change
+                </a>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+
+                    if (modifiedCategories.length !== 0) {
+                      setModifiedCategories(
+                        modifiedCategories.filter(
+                          (cat) => cat.uuid !== category.uuid
+                        )
+                      );
+                    }
+                  }}
+                  className="text-critical ml-2"
+                >
+                  Unassign
+                </a>
+              </span>
+            </div>
           ))}
-          <span className="text-interactive pl-2">
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                setSelecting(true);
-              }}
-            >
-              Change
-            </a>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                setCategory(null);
-              }}
-              className="text-critical ml-2"
-            >
-              Unassign
-            </a>
-          </span>
         </div>
       )}
-      {!selecting && !category && (
+
+      {!selecting && (
         <a
           href="#"
           onClick={(e) => {
@@ -113,22 +138,29 @@ function Category({ product }) {
           }}
           className="text-interactive"
         >
-          Select category
+          Select categories
         </a>
       )}
+
       {selecting && (
         <div className="absolute top-5 left-0 right-0 bg-[#eff2f5] z-50 border rounded border-[#c9cccf] p-[10px]">
           <CategoryTree
-            selectedCategory={category}
+            selectedCategory={selectedCategory}
             setSelectedCategory={(cat) => {
-              setCategory(cat);
+              setSelectedCategory(cat);
+              setModifiedCategories([...modifiedCategories, cat]);
               setSelecting(false);
             }}
           />
         </div>
       )}
-      {category && (
-        <input type="hidden" name="category_id" value={category?.categoryId} />
+
+      {modifiedCategories.length !== 0 && (
+        <input
+          type="hidden"
+          name="category_ids"
+          value={modifiedCategories.map((category, index) => category.uuid)}
+        />
       )}
     </div>
   );
@@ -136,9 +168,10 @@ function Category({ product }) {
 
 Category.propTypes = {
   product: PropTypes.shape({
-    category: PropTypes.shape({
+    categories: PropTypes.shape({
       categoryId: PropTypes.number.isRequired,
       name: PropTypes.string.isRequired,
+      uuid: PropTypes.string.isRequired,
       path: PropTypes.arrayOf(
         PropTypes.shape({
           name: PropTypes.string.isRequired
@@ -150,7 +183,7 @@ Category.propTypes = {
 
 Category.defaultProps = {
   product: {
-    category: {}
+    categories: []
   }
 };
 
@@ -195,23 +228,47 @@ export default function General({
               id: 'product_id'
             },
             {
-              component: { default: SKUPriceWeight },
+              component: { default: SKUPrice },
               props: {
                 sku: product?.sku,
                 price: product?.price.regular,
-                weight: product?.weight,
+                oldPrice: product?.price.oldPrice,
+                productType: product?.type,
                 setting
               },
               sortOrder: 20,
-              id: 'SKUPriceWeight'
+              id: 'SKUPrice'
             },
             {
               component: { default: Category },
               props: {
+                name: 'category_ids',
                 product
               },
               sortOrder: 22,
-              id: 'category'
+              id: 'category_ids'
+            },
+            {
+              component: { default: Select },
+              props: {
+                name: 'product_type',
+                label: 'Product Type',
+                placeholder: 'Select product type',
+                value: ProductType.variable.value,
+                disabled: true,
+                options: [
+                  {
+                    text: ProductType.simple.label,
+                    value: ProductType.simple.value
+                  },
+                  {
+                    text: ProductType.variable.label,
+                    value: ProductType.variable.value
+                  }
+                ]
+              },
+              id: 'product_type',
+              sortOrder: 24
             },
             {
               component: { default: Field },
@@ -266,15 +323,10 @@ General.propTypes = {
     }),
     productId: PropTypes.string,
     taxClass: PropTypes.number,
-    sku: PropTypes.string,
-    weight: PropTypes.shape({
-      unit: PropTypes.string,
-      value: PropTypes.number
-    })
+    sku: PropTypes.string
   }),
   setting: PropTypes.shape({
-    storeCurrency: PropTypes.string,
-    weightUnit: PropTypes.string
+    storeCurrency: PropTypes.string
   }).isRequired,
   productTaxClasses: PropTypes.shape({
     items: PropTypes.arrayOf(
@@ -305,26 +357,30 @@ export const query = `
       name
       description
       sku
+      parentProductId
       taxClass
+      type
       price {
         regular {
           value
           currency
         }
+        oldPrice {
+          value
+          currency
+        }
       }
-      weight {
-        value
-        unit
-      }
-      category {
+      categories {
         categoryId
+        name
+        uuid
+        status
         path {
           name
         }
       }
     }
     setting {
-      weightUnit
       storeCurrency
     }
     browserApi: url(routeId: "fileBrowser", params: [{key: "0", value: ""}])

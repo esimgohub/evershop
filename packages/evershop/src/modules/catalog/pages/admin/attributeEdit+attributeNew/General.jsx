@@ -203,6 +203,9 @@ Options.propTypes = {
 
 export default function General({ attribute, createGroupApi }) {
   const [type, setType] = React.useState(attribute?.type);
+
+  console.log('attribute ne:', attribute);
+
   const fields = [
     {
       component: { default: Field },
@@ -222,7 +225,8 @@ export default function General({ attribute, createGroupApi }) {
         name: 'attribute_code',
         label: 'Attribute code',
         validationRules: ['notEmpty'],
-        type: 'text'
+        type: 'text',
+        disabled: get(attribute, 'attributeCode') !== undefined
       },
       sortOrder: 15
     },
@@ -250,11 +254,18 @@ export default function General({ attribute, createGroupApi }) {
         ],
         onChange: (value) => {
           setType(value);
-        }
+        },
+        disabled: get(attribute, 'type') !== undefined
       },
       sortOrder: 20
     }
   ].map((f) => {
+    console.log('f ne:', f);
+    console.log(
+      'get(attribute, `${f.props.id}`) ne:',
+      get(attribute, `${f.props.id}`)
+    );
+
     if (get(attribute, `${f.props.id}`) !== undefined) {
       // eslint-disable-next-line no-param-reassign
       f.props.value = get(attribute, `${f.props.id}`);

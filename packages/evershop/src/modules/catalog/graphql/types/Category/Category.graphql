@@ -95,10 +95,12 @@ type PriceRange {
 }
 
 extend type Product {
-  category: Category,
+  categories: [Category]
 }
 
 extend type Query {
   categories(filters: [FilterInput]): CategoryCollection
+  supportedCategories: [Category]
+
   category(id: Int): Category
 }

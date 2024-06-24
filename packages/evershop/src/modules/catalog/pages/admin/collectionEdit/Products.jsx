@@ -106,6 +106,8 @@ export default function Products({ collection: { code, addProductApi } }) {
     );
   }
   if (data || fetching) {
+    console.log('data collection product uuids: ', data);
+
     return (
       <Card
         title="Products"
@@ -133,7 +135,7 @@ export default function Products({ collection: { code, addProductApi } }) {
                   addProductApi={addProductApi}
                   closeModal={closeModal}
                   addedProductIDs={data.collection.products.items.map(
-                    (p) => p.productId
+                    (p) => p.uuid
                   )}
                 />
               </div>
@@ -268,6 +270,7 @@ export default function Products({ collection: { code, addProductApi } }) {
 Products.propTypes = {
   collection: PropTypes.shape({
     collectionId: PropTypes.number,
+    uuid: PropTypes.string,
     code: PropTypes.string,
     addProductApi: PropTypes.string
   }).isRequired
@@ -282,6 +285,7 @@ export const query = `
   query Query {
     collection(code: getContextValue("collectionCode", null)) {
       collectionId
+      uuid
       code
       addProductApi: addProductUrl
     }

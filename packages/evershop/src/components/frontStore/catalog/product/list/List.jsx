@@ -77,7 +77,7 @@ ProductList.propTypes = {
           value: PropTypes.number,
           text: PropTypes.string
         }),
-        special: PropTypes.shape({
+        oldPrice: PropTypes.shape({
           value: PropTypes.number,
           text: PropTypes.string
         })

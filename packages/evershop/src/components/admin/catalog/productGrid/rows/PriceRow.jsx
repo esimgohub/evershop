@@ -5,7 +5,7 @@ export default function ProductPriceRow({ areaProps: { row } }) {
   return (
     <td>
       <div>
-        <span>{row.price.regular.text}</span>
+        <span>{row.price.regular ? row.price.regular.text : '-'}</span>
       </div>
     </td>
   );

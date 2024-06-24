@@ -128,7 +128,8 @@ export function Variants({
       </div>
       <div className="self-center">
         <CreateVariant
-          productId={productUuid}
+          productId={productId}
+          productUuid={productUuid}
           variantGroup={variantGroup}
           createProductApi={createProductApi}
           addVariantItemApi={addVariantItemApi}

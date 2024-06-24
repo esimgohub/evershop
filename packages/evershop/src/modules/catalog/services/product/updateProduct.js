@@ -262,6 +262,7 @@ async function updateProductImages(images, productId, connection) {
 
 async function updateProductData(uuid, data, connection) {
   const query = select().from('product');
+
   query
     .leftJoin('product_description')
     .on(
@@ -276,10 +277,40 @@ async function updateProductData(uuid, data, connection) {
 
   let newProduct;
   try {
+    if (data.old_price === '') {
+      data.old_price = null;
+    }
+
     newProduct = await update('product')
       .given(data)
       .where('uuid', '=', uuid)
       .execute(connection);
+
+    console.log("update product data: ", data);
+
+    if (data.category_ids) {
+      const splittedCategoryIdsByComma = data.category_ids.split(',').map(id => id.trim());
+
+      const deleteQuery = await del("product_category");
+        deleteQuery.where("product_id", "=", newProduct.uuid);
+
+      const deleteResult = await deleteQuery.execute(connection);
+      console.log("delete result: ", deleteResult);
+      
+      for (const category_id of splittedCategoryIdsByComma) {
+
+        const upsertQuery = await insertOnUpdate('product_category', ['product_id', 'category_id']);
+
+        upsertQuery.where('product_id', '=', newProduct.uuid)
+
+        upsertQuery.prime("product_id", newProduct.uuid);
+        upsertQuery.prime("category_id", category_id);
+
+        const upsertProductCategoryResult = await upsertQuery.execute(connection);
+
+        console.log("upsertProductCategoryResult: ", upsertProductCategoryResult);
+      }
+    }
   } catch (e) {
     if (!e.message.includes('No data was provided')) {
       throw e;
