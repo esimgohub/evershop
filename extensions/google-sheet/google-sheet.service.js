@@ -5,8 +5,6 @@ class GoogleSheetService {
   client;
 
   async bootstrapClient() {
-    console.log("config: ", config);
-
     const auth = new google.auth.GoogleAuth({
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
       credentials: {
@@ -23,15 +21,10 @@ class GoogleSheetService {
       version: 'v4',
       auth: authClient,
     });
-
-    console.log("this client: ", this.client);
   }
 
   async getRowsData(spreadsheetId, range) {
     try {
-
-      console.log("spread sheet: ", this.client);
-
       const response = await this.client.spreadsheets.values.get({
         spreadsheetId,
         range,

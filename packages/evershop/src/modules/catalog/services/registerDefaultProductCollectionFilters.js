@@ -77,11 +77,11 @@ module.exports = async function registerDefaultProductCollectionFilters() {
       key: 'qty',
       operation: ['eq', 'gteq', 'lteq'],
       callback: (query, operation, value, currentFilters) => {
-        query.andWhere(
-          'product_inventory.qty',
-          OPERATION_MAP[operation],
-          parseFloat(value) || 0
-        );
+        // query.andWhere(
+        //   'product_inventory.qty',
+        //   OPERATION_MAP[operation],
+        //   parseFloat(value) || 0
+        // );
         currentFilters.push({
           key: 'qty',
           operation,

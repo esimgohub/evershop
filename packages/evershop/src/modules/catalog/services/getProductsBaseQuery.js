@@ -9,13 +9,13 @@ module.exports.getProductsBaseQuery = () => {
       '=',
       'product.product_id'
     );
-  query
-    .innerJoin('product_inventory')
-    .on(
-      'product_inventory.product_inventory_product_id',
-      '=',
-      'product.product_id'
-    );
+  // query
+  //   .innerJoin('product_inventory')
+  //   .on(
+  //     'product_inventory.product_inventory_product_id',
+  //     '=',
+  //     'product.product_id'
+  //   );
 
   query
     .leftJoin('product_image')

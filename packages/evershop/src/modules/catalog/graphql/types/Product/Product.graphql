@@ -41,6 +41,7 @@ Returns a collection of products.
 """
 type ProductCollection {
   items: [Product]
+  adminItems: [Product]
   currentPage: Int!
   total: Int!
   currentFilters: [Filter]

@@ -97,13 +97,13 @@ module.exports = {
       const categories = await productCategoryQuery.execute(pool);
 
 
-      const foundPlanType = attributes.find((a) => a.attribute_code === 'plan-type');
-      const foundExpiration = attributes.find((a) => a.attribute_code === 'expiration');
-      const foundSharing = attributes.find((a) => a.attribute_code === 'sharing');
-      const foundNetworkType = attributes.find((a) => a.attribute_code === 'network-type');
-      const foundNetworkOperator = attributes.find((a) => a.attribute_code === 'network-operator');
-      const foundSpeedThrottle = attributes.find((a) => a.attribute_code === 'speed-throttle');
-      const foundDailyResetTime = attributes.find((a) => a.attribute_code === 'daily-reset-time');
+      const foundPlanType = attributes.find((a) => a.attribute_code === 'plan_types');
+      const foundExpiration = attributes.find((a) => a.attribute_code === 'expirations');
+      const foundSharing = attributes.find((a) => a.attribute_code === 'sharings');
+      const foundNetworkType = attributes.find((a) => a.attribute_code === 'network_types');
+      const foundNetworkOperator = attributes.find((a) => a.attribute_code === 'network_operators');
+      const foundSpeedThrottle = attributes.find((a) => a.attribute_code === 'throttle_speeds');
+      const foundDailyResetTime = attributes.find((a) => a.attribute_code === 'daily_reset_times');
 
       const filledDescription = productDetailDescriptionHtmlTemplate
         .replace('{plan-type}', foundPlanType ? foundPlanType.attribute_name : "Plan Type")

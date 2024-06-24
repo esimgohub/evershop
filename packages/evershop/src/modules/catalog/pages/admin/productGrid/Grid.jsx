@@ -158,7 +158,7 @@ Actions.propTypes = {
 };
 
 export default function ProductGrid({
-  products: { items: products, total, currentFilters = [] }
+  products: { adminItems: products, total, currentFilters = [] }
 }) {
   const page = currentFilters.find((filter) => filter.key === 'page')
     ? currentFilters.find((filter) => filter.key === 'page').value
@@ -168,8 +168,6 @@ export default function ProductGrid({
     ? currentFilters.find((filter) => filter.key === 'limit').value
     : 20;
   const [selectedRows, setSelectedRows] = useState([]);
-
-  console.log('products ne: ', products.length);
 
   return (
     <Card>
@@ -347,36 +345,36 @@ export default function ProductGrid({
                   },
                   sortOrder: 10
                 },
-                {
-                  component: {
-                    default: () => (
-                      <SortableHeader
-                        title="Price"
-                        name="price"
-                        currentFilters={currentFilters}
-                      />
-                    )
-                  },
-                  sortOrder: 15
-                },
+                // {
+                //   component: {
+                //     default: () => (
+                //       <SortableHeader
+                //         title="Price"
+                //         name="price"
+                //         currentFilters={currentFilters}
+                //       />
+                //     )
+                //   },
+                //   sortOrder: 15
+                // },
                 {
                   component: {
                     default: () => <DummyColumnHeader title="SKU" />
                   },
                   sortOrder: 20
                 },
-                {
-                  component: {
-                    default: () => (
-                      <SortableHeader
-                        title="Stock"
-                        name="qty"
-                        currentFilters={currentFilters}
-                      />
-                    )
-                  },
-                  sortOrder: 25
-                },
+                // {
+                //   component: {
+                //     default: () => (
+                //       <SortableHeader
+                //         title="Stock"
+                //         name="qty"
+                //         currentFilters={currentFilters}
+                //       />
+                //     )
+                //   },
+                //   sortOrder: 25
+                // },
                 {
                   component: {
                     default: () => (
@@ -536,7 +534,7 @@ export const layout = {
 export const query = `
   query Query($filters: [FilterInput]) {
     products (filters: $filters) {
-      items {
+      adminItems {
         productId
         uuid
         name

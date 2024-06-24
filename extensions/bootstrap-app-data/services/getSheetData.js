@@ -29,7 +29,7 @@ const getEvershopSheetData = async () => {
 
     const attributeOptionData = await googleSheetService.getRowsData(
         config.googleSheet.evershopData.id, 
-        config.googleSheet.evershopData.sheetColumns.attributeOption
+        config.googleSheet.evershopData.sheetColumns.attributeOptions
     );
 
     const categoryData = await googleSheetService.getRowsData(
@@ -41,6 +41,7 @@ const getEvershopSheetData = async () => {
         config.googleSheet.evershopData.id, 
         config.googleSheet.evershopData.sheetColumns.currency
     );
+
 
     return {
         productData,
