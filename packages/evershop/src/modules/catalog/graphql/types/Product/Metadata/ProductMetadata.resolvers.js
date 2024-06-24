@@ -51,8 +51,8 @@ module.exports = {
 
       return {
         totalDataAmount: `${totalDataAmount < 10 ? `0${totalDataAmount}` : totalDataAmount} ${calculateDataAmountUnit(totalDataAmount, foundDataAmountUnit ? foundDataAmountUnit.option_text : 'GB')}`,
-        supportedCountries: categories.length !== 0 ? categories.length - 1 : 0,
+        supportedCountries: categories.length !== 0 ? categories.length - 1 : 0
       };
-    },
+    }
   }
 };

@@ -5,8 +5,8 @@ import { Field } from '@components/common/form/Field';
 import { Card } from '@components/admin/cms/Card';
 import CkeditorField from '@components/common/form/fields/Ckeditor';
 import CategoryTree from '@components/admin/catalog/productEdit/category/CategoryTree';
-import { ProductType } from '../../../utils/enums/product-type';
 import { Select } from '@components/common/form/fields/Select';
+import { ProductType } from '../../../utils/enums/product-type';
 
 function SKUPrice({ sku, price, oldPrice, productType, setting }) {
   return (

@@ -5,13 +5,13 @@ const {
   toPrice
 } = require('@evershop/evershop/src/modules/checkout/services/toPrice');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
+const { select } = require('@evershop/postgres-query-builder');
+const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getTaxRates } = require('../../../../services/getTaxRates');
 const { getTaxPercent } = require('../../../../services/getTaxPercent');
 const {
   calculateTaxAmount
 } = require('../../../../services/calculateTaxAmount');
-const { select } = require('@evershop/postgres-query-builder');
-const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 
 
 module.exports = {
@@ -26,7 +26,7 @@ module.exports = {
       if (!taxClassId || !taxConfigDisplay || user) {
         return {
           regular: product.price ? parseFloat(product.price) : null,
-          oldPrice: product.oldPrice,
+          oldPrice: product.oldPrice
         };
       } else {
         const taxRates = await getTaxRates(

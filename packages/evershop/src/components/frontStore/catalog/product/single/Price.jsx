@@ -7,17 +7,6 @@ export function Price({ regular, oldPrice }) {
       <div>
         <span className="sale-price">{regular.text}</span>
       </div>
-      {/* {oldPrice.value === regular.value && (
-        <div>
-          <span className="sale-price">{regular.text}</span>
-        </div>
-      )}
-      {oldPrice.value < regular.value && (
-        <div>
-          <span className="sale-price">{oldPrice.text}</span>{' '}
-          <span className="regular-price">{regular.text}</span>
-        </div>
-      )} */}
     </h4>
   );
 }

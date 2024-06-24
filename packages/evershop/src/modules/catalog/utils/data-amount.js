@@ -1,7 +1,7 @@
 const DataAmount = {
     GB: 'GB',
     MB: 'MB',
-    TB: 'TB',
+    TB: 'TB'
 }
 
 module.exports.calculateDataAmountUnit = (totalDataAmount, currentDataAmountUnit) => {

@@ -97,6 +97,8 @@ Actions.propTypes = {
 export default function CategoryGrid({
   categories: { items: categories, total, currentFilters = [] }
 }) {
+  console.log('categories: ', categories);
+
   const page = currentFilters.find((filter) => filter.key === 'page')
     ? currentFilters.find((filter) => filter.key === 'page').value
     : 1;
@@ -145,7 +147,7 @@ export default function CategoryGrid({
             }
           }
         ]}
-       />
+      />
       <table className="listing sticky">
         <thead>
           <tr>
