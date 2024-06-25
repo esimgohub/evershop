@@ -1,4 +1,4 @@
 {
   "methods": ["GET"],
-  "path": "/gohub/:url_key"
+  "path": "/page/:url_key"
 }

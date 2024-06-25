@@ -5,6 +5,57 @@ type Setting {
   storeName: String
 }
 
+type StoreConfig {
+  name: String
+  description: String
+  currency: String
+  timeZone: String
+  email: String
+  country: String
+  address: String
+  city: String
+  province: String
+  postalCode: String
+  language: String
+  phoneNumber: String
+}
+
+type StripePaymentConfig {
+  paymentStatus: String
+  dislayName: String
+  publishableKey: String
+}
+
+type PaypalPaymentConfig {
+  dislayName: String
+  environment: String
+}
+
+type CodPaymentConfig {
+  status: String
+  displayName: String
+}
+
+type PaymentConfig {
+  stripe: StripePaymentConfig
+  paypal: PaypalPaymentConfig
+  cod: CodPaymentConfig
+}
+
+type SocialConfig {
+  facebook: Social
+  instagram: Social
+  thread: Social
+  tiktok: Social
+}
+
+type Config {
+  store: StoreConfig
+  payment: PaymentConfig
+  social: SocialConfig
+}
+
 extend type Query {
   setting: Setting
+  config: Config
 }
