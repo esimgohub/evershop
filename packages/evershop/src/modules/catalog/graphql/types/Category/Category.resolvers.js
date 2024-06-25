@@ -1,7 +1,6 @@
 const { select, selectDistinct, execute } = require('@evershop/postgres-query-builder');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
-const { CategoryType } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-type')
 const { CategoryStatus } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-status')
 const {
   getProductsByCategoryBaseQuery
@@ -15,8 +14,7 @@ const {
   getCategoriesBaseQuery
 } = require('../../../services/getCategoriesBaseQuery');
 const { CategoryCollection } = require('../../../services/CategoryCollection');
-const { CategoryType } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-type')
-const { CategoryStatus } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-status');
+const { CategoryType } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-type');
 
 
 module.exports = {
@@ -67,7 +65,7 @@ module.exports = {
         })
       }) : [];
     },
-    supportedCategories: async (_, {}, { pool }) => {
+    supportedCategories: async (_, {}, { pool, homeUrl }) => {
       const categories = await select().from('category').execute(pool);
 
       const query = selectDistinct(`category_description.name`, "*").from('category');
@@ -90,16 +88,17 @@ module.exports = {
 
       const supportedCountryRecords = await query.execute(pool);
 
-      const ne = supportedCountryRecords.length > 0 ? supportedCountryRecords.map(country => {
+      const mappedCategories = supportedCountryRecords.length > 0 ? supportedCountryRecords.map(country => {
         return camelCase({
           ...country,
           category_id: categories.find(
             category => category.uuid === country.uuid
-          ).category_id
+          ).category_id,
+          image: `${homeUrl}${country.image}`
         })
       }) : [];
 
-      return ne;
+      return mappedCategories;
     }
   },
   Category: {

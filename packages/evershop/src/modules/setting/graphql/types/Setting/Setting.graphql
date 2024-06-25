@@ -53,6 +53,7 @@ type Config {
   store: StoreConfig
   payment: PaymentConfig
   social: SocialConfig
+  sliders: [Slider]
 }
 
 extend type Query {

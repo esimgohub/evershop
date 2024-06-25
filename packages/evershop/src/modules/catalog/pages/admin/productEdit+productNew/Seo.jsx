@@ -4,15 +4,8 @@ import Area from '@components/common/Area';
 import { Field } from '@components/common/form/Field';
 import { get } from '@evershop/evershop/src/lib/util/get';
 import { Card } from '@components/admin/cms/Card';
-import { ProductType } from '../../../utils/enums/product-type';
 
 export default function SEO({ product }) {
-  const isSimpleProduct =
-    product && product.type === ProductType.variable.value;
-  if (isSimpleProduct) {
-    return null;
-  }
-
   const fields = [
     {
       component: { default: Field },

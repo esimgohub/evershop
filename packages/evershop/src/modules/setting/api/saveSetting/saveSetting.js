@@ -11,12 +11,11 @@ const {
   INTERNAL_SERVER_ERROR
 } = require('@evershop/evershop/src/lib/util/httpStatus');
 const { refreshSetting } = require('../../services/setting');
-
-// eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
   const { body } = request;
   const connection = await getConnection();
   try {
+
     // Loop through the body and insert the data
     const promises = [];
     Object.keys(body).forEach((key) => {
