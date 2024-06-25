@@ -92,8 +92,6 @@ module.exports = async (request, response, delegate, next) => {
           .execute(connection, false); 
       }
     }
-    console.log("saved");
-
 
     // Get product attribute values
     const query = select().from('product_attribute_value_index');
