@@ -162,6 +162,7 @@ class ProductCollection {
     else {
       this.baseQuery.orWhere('product.type', '=', ProductType.variable.value);
     }
+
     const currentFilters = [];
     // Attribute filter
     const filterableAttributes = await select()
@@ -193,6 +194,11 @@ class ProductCollection {
       }
     });
 
+    const page = productFilter.page ? parseInt(productFilter.page) : 1;
+    const perPage = productFilter.perPage ? parseInt(productFilter.perPage) : 10;
+
+    this.baseQuery.limit(page * perPage, perPage);
+    
     if (productFilter.categoryId) {
       const productCategory = await select()
         .from('product_category')
@@ -224,6 +230,7 @@ class ProductCollection {
     }
 
     // Clone the main query for getting total right before doing the paging
+
     const totalQuery = this.baseQuery.clone();
     totalQuery.select('COUNT(product.product_id)', 'total');
     totalQuery.removeOrderBy();
@@ -235,7 +242,6 @@ class ProductCollection {
 
   async items() {
     // Pick one per variant group.
-
     const items = await this.baseQuery.execute(pool);
 
     for (const item of items) {
@@ -253,9 +259,6 @@ class ProductCollection {
         item.parent_product_id
       );
       const matchedParentProductAttributes = await parentProductAttributeQuery.execute(pool);
-
-      console.log("matchedParentProductAttributes", matchedParentProductAttributes);
-
 
       const productAttributeQuery = select().from('product_attribute_value_index');
       productAttributeQuery
@@ -324,100 +327,11 @@ class ProductCollection {
   }
 
   async adminItems() {
+    this.baseQuery.removeLimit();
+
     const records = await this.baseQuery.execute(pool);
 
     return records.map((row) => camelCase(row));
-
-    // for (const item of items) {
-    //   const parentProductAttributeQuery = select().from('product_attribute_value_index');
-    //   parentProductAttributeQuery
-    //     .leftJoin('attribute')
-    //     .on(
-    //       'attribute.attribute_id',
-    //       '=',
-    //       'product_attribute_value_index.attribute_id'
-    //     );
-    //   parentProductAttributeQuery.where(
-    //     'product_attribute_value_index.product_id',
-    //     '=',
-    //     item.parent_product_id
-    //   );
-    //   const matchedParentProductAttributes = await parentProductAttributeQuery.execute(pool);
-
-    //   console.log("matchedParentProductAttributes", matchedParentProductAttributes);
-
-
-    //   const productAttributeQuery = select().from('product_attribute_value_index');
-    //   productAttributeQuery
-    //     .leftJoin('attribute')
-    //     .on(
-    //       'attribute.attribute_id',
-    //       '=',
-    //       'product_attribute_value_index.attribute_id'
-    //     );
-    //   productAttributeQuery.where(
-    //     'product_attribute_value_index.product_id',
-    //     '=',
-    //     item.product_id
-    //   );
-    //   const matchedProductAttributes = await productAttributeQuery.execute(pool);
-
-    //   const dataTypeAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'data-type');
-    //   const dayAmountAttribute = matchedProductAttributes.find(a => a.attribute_code === 'day-amount');
-    //   const dataAmountAttribute = matchedProductAttributes.find(a => a.attribute_code === 'data-amount');
-    //   const dataAmountUnitAttribute = matchedProductAttributes.find(a => a.attribute_code === 'data-amount-unit');
-    //   const localEsimAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'local-esim');
-
-    //   console.log("item.sku", item.sku);
-    //   console.log("dataTypeAttribute", dataTypeAttribute);
-    //   console.log("dayAmountAttribute", dayAmountAttribute);
-    //   console.log("dataAmountAttribute", dataAmountAttribute);
-    //   console.log("dataAmountUnitAttribute", dataAmountUnitAttribute);
-    //   console.log("localEsimAttribute", localEsimAttribute);
-
-    //   // Init attribute temp to sort by day-amount and total amount unit
-    //   item.attributeTemp = {
-    //     localEsim: localEsimAttribute.option_text,
-    //     dayAmount: parseInt(dayAmountAttribute.option_text),
-    //     totalDataAmount: dataTypeAttribute.option_text === DataType.DailyData ? parseInt(dayAmountAttribute.option_text) * parseInt(dataAmountAttribute.option_text) : parseInt(dataAmountAttribute.option_text),
-    //     dataAmountUnit: dataAmountUnitAttribute.option_text
-    //   };
-    // }
-
-    // const sortedItems = items.sort((a, b) => {
-    //   // Check if 'local esim' attribute exists and prioritize it
-    //   if (a.attributeTemp.localEsim.toLowerCase() === "yes" && b.attributeTemp.localEsim.toLowerCase() === "no") {
-    //     return -1; // 'a' has local esim, should come before 'b'
-    //   }
-
-    //   if (a.attributeTemp.localEsim.toLowerCase() === "no" && b.attributeTemp.localEsim.toLowerCase() === "yes") {
-    //     return 1; // 'b' has local esim, should come before 'a'
-    //   }
-
-    //   if (a.attributeTemp.dayAmount !== b.attributeTemp.dayAmount) {
-    //     return a.attributeTemp.dayAmount - b.attributeTemp.dayAmount;
-    //   } 
-      
-    //   if (a.attributeTemp.totalDataAmount !== b.attributeTemp.totalDataAmount) {
-    //     return a.attributeTemp.totalDataAmount - b.attributeTemp.totalDataAmount;
-    //   } 
-
-    //   // Compare data amount unit
-    //   if (a.attributeTemp.dataAmountUnit.toLowerCase() === "mb" && b.attributeTemp.dataAmountUnit.toLowerCase() === "gb") {
-    //     return -1; // "MB" should come before "GB"
-    //   } else if (a.attributeTemp.dataAmountUnit.toLowerCase() === "gb" && b.attributeTemp.dataAmountUnit.toLowerCase() === "mb") {
-    //     return 1; // "GB" should come after "MB"
-    //   } else {
-    //     return 0; // Same unit or both units are equal
-    //   }
-    // }).map((row) => camelCase(row));
-
-    // // Remove attribute temp.
-    // sortedItems.forEach((item) => {
-    //   delete item.attributeTemp
-    // });
-
-    // return sortedItems;
   }
 
   async total() {
