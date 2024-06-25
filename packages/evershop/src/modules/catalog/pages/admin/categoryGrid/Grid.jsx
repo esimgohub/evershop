@@ -145,7 +145,7 @@ export default function CategoryGrid({
             }
           }
         ]}
-       />
+      />
       <table className="listing sticky">
         <thead>
           <tr>

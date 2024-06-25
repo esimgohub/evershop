@@ -23,9 +23,6 @@ module.exports = async (request, response, delegate, next) => {
   // eslint-disable-next-line camelcase
   const { product_id } = request.body;
 
-  console.log("groupId", groupId);
-  console.log("product_id", product_id);
-
 
   const connection = await getConnection(pool);
   try {

@@ -1,10 +1,10 @@
 module.exports.ProductType = {
     simple: {
         value: 'simple',
-        label: 'Simple',
+        label: 'Simple'
     },
     variable: {
         value: 'variable',
-        label: 'Variable',
-    },
+        label: 'Variable'
+    }
 };

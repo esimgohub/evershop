@@ -1,11 +1,11 @@
 const { select } = require('@evershop/postgres-query-builder');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
+const { productDetailDescriptionHtmlTemplate } = require('@evershop/evershop/src/modules/catalog/utils/product-detail');
 const {
   getProductsBaseQuery
 } = require('../../../services/getProductsBaseQuery');
 const { ProductCollection } = require('../../../services/ProductCollection');
-const { productDetailDescriptionHtmlTemplate } = require('@evershop/evershop/src/modules/catalog/utils/product-detail');
 const { CategoryStatus } = require('../../../utils/enums/category-status');
 const { ProductType } = require('../../../utils/enums/product-type');
 

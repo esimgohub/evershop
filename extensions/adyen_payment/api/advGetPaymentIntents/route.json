@@ -1,7 +1,0 @@
-{
-    "methods": [
-        "POST"
-    ],
-    "path": "/getPaymentMethods",
-    "access": "public"
-}

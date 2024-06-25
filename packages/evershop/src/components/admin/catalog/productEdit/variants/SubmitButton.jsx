@@ -76,8 +76,6 @@ export function SubmitButton({
 
       const responseJson = await response.json();
 
-      console.log('create variant response: ', responseJson);
-
       if (responseJson.error) {
         toast.error(responseJson.error.message);
         setLoading(false);
@@ -92,7 +90,6 @@ export function SubmitButton({
           })
         });
         const responseMainJson = await responseMain.json();
-        console.log('responseMainJson', responseMainJson);
 
         const responseVariant = await fetch(addVariantItemApi, {
           method: 'POST',
@@ -104,7 +101,6 @@ export function SubmitButton({
           })
         });
         const responseVariantJson = await responseVariant.json();
-        console.log('responseVariantJson', responseVariantJson);
 
         const errorRes = responseMainJson.error || responseVariantJson.error;
         if (errorRes) {
