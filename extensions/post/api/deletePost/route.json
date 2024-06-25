@@ -1,5 +1,0 @@
-{
-  "methods": ["DELETE"],
-  "path": "/posts/:id",
-  "access": "private"
-}
