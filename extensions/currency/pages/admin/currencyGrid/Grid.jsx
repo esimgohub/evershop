@@ -22,7 +22,6 @@ function Actions({ currencies = [], selectedIds = [] }) {
   const { openAlert, closeAlert } = useAlertContext();
   const [isLoading, setIsLoading] = useState(false);
 
-  console.log('to currencies');
   const deleteCurrencies = async () => {
     setIsLoading(true);
     try {
@@ -117,8 +116,6 @@ Actions.propTypes = {
 export default function CurrencyGrid(props) {
   const { getCurrencies } = props;
   const { items: currencies, total, currentFilters = [] } = getCurrencies;
-
-  console.log('items', currencies);
 
   const page = currentFilters.find((filter) => filter.key === 'page')
     ? currentFilters.find((filter) => filter.key === 'page').value
