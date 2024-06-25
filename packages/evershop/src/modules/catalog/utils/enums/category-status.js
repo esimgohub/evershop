@@ -1,4 +1,4 @@
 module.exports.CategoryStatus = {
     Enabled: true,
-    Disabled: false,
+    Disabled: false
 };

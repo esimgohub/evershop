@@ -1,0 +1,18 @@
+{
+  "system": {
+    "extensions": [
+      {
+        "name": "google_login",
+        "resolve": "extensions/google_login",
+        "enabled": true,
+        "priority": 10
+      }
+    ]
+  },
+  "facebook_login": {
+    "client_id": "FACEBOOK_CLIENT_ID",
+    "app_secret": "FACEBOOK_APP_SECRET",
+    "success_redirect_url": "FACEBOOK_SUCCESS_REDIRECT_URL",
+    "failure_redirect_url": "FACEBOOK_SUCCESS_REDIRECT_URL"
+  }
+}

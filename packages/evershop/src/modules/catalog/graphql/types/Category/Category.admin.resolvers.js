@@ -42,7 +42,7 @@ module.exports = {
       const foundProducts = await query.execute(pool);
 
       return foundProducts.length > 0 ? foundProducts.map(product => camelCase(product)) : []
-    },
+    }
   },
 
   Query: {
@@ -58,7 +58,7 @@ module.exports = {
       query.where('category_id', '=', id);
       const result = await query.load(pool);
       return result ? camelCase(result) : null;
-    },
+    }
   },
   Product: {
     removeFromCategoryUrl: async (product, { id }, { pool }) => {

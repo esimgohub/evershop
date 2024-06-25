@@ -22,6 +22,8 @@ const server = http.createServer(app);
 module.exports.start = async function start(cb) {
   const modules = [...getCoreModules(), ...getEnabledExtensions()];
 
+  console.log("enable extensions: ", getEnabledExtensions())
+
   /** Loading bootstrap script from modules */
   try {
     // eslint-disable-next-line no-restricted-syntax

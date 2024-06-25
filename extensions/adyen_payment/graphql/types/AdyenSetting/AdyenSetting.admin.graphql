@@ -1,5 +1,0 @@
-extend type Setting {
-  adyenApiKey: String
-  adyenMerchantAccount: String
-  adyenHmacKey: String
-}

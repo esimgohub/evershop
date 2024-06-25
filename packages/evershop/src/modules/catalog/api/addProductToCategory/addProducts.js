@@ -62,7 +62,7 @@ module.exports = async (request, response, delegate, next) => {
     const result = await insert('product_category')
       .given({
         category_id: category.uuid,
-        product_id: product.uuid,
+        product_id: product.uuid
       })
       .execute(connection);
 
