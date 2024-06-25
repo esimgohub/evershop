@@ -1,0 +1,20 @@
+type Currency {
+  id: ID!
+  code: String!
+  rate: Float!
+  signature: String!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type CurrencyCollection {
+  items: [Currency]
+  currentPage: Int!
+  total: Int!
+  currentFilters: [Filter]
+}
+
+extend type Query {
+  getCurrencies(filters: [FilterInput]): CurrencyCollection
+  getCurrency(id: String): Currency
+}

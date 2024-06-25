@@ -7,19 +7,6 @@ function Price({ regular, oldPrice }) {
       <div>
         <span className="sale-price font-semibold">{regular.text}</span>
       </div>
-      {/* {regular.value === oldPrice.value && (
-        <div>
-          <span className="sale-price font-semibold">{regular.text}</span>
-        </div>
-      )}
-      {oldPrice.value < regular.value && (
-        <div>
-          <span className="sale-price text-critical font-semibold">
-            {oldPrice.text}
-          </span>{' '}
-          <span className="regular-price font-semibold">{regular.text}</span>
-        </div>
-      )} */}
     </div>
   );
 }

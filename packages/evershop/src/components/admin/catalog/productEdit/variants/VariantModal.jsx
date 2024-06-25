@@ -32,8 +32,6 @@ export function VariantModal({
   variantAttributes,
   productImageUploadUrl
 }) {
-  console.log('variant product', variant?.product);
-
   const formContext = useFormContext();
   const image = variant?.product?.image;
   let gallery = variant?.product?.gallery || [];

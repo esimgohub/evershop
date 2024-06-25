@@ -169,8 +169,6 @@ export default function ProductGrid({
     : 20;
   const [selectedRows, setSelectedRows] = useState([]);
 
-  console.log('products ne: ', products.length);
-
   return (
     <Card>
       <Card.Session

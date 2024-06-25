@@ -200,8 +200,6 @@ class ProductCollection {
 
       this.baseQuery.andWhere("product.uuid", "IN", productCategory.map(p => p.product_id));
     }
-    
-    console.log("productFilter: ", productFilter);
 
     if (productFilter.tripPeriod) {
       this.baseQuery
@@ -237,9 +235,7 @@ class ProductCollection {
   async items() {
     const items = await this.baseQuery.execute(pool);
 
-    return items.map((row) => {
-      return camelCase(row);
-    });
+    return items.map((row) => camelCase(row));
   }
 
   async total() {
