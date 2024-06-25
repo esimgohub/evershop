@@ -15,6 +15,8 @@ const {
   getCategoriesBaseQuery
 } = require('../../../services/getCategoriesBaseQuery');
 const { CategoryCollection } = require('../../../services/CategoryCollection');
+const { CategoryType } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-type')
+const { CategoryStatus } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-status');
 
 
 module.exports = {
@@ -38,7 +40,36 @@ module.exports = {
       await root.init(filters, !!user);
       return root;
     },
+    popularCountries: async (_, { filter = {}}, { pool, homeUrl }) => {
+
+      const query = selectDistinct(`category_description.name`, "*").from('category');
+      query
+        .leftJoin('category_description')
+        .on(
+          'category_description.category_description_category_id',
+          '=',
+          'category.category_id'
+        );
+      query.where("category.category_type", "=", CategoryType.Country);
+      query.andWhere("category.status", "=", CategoryStatus.Enabled)
+      query.orderByRandomOnFields(['category_description.name', 'category.category_status']);
+
+      if (filter.limit) {
+        query.limit(0, filter.limit);
+      }
+
+      const popularCountryRecords = await query.execute(pool);
+
+      return popularCountryRecords.length > 0 ? popularCountryRecords.map(country => {
+        return camelCase({
+          ...country,
+          image: `${homeUrl}${country.image}`,
+        })
+      }) : [];
+    },
     supportedCategories: async (_, {}, { pool }) => {
+      const categories = await select().from('category').execute(pool);
+
       const query = selectDistinct(`category_description.name`, "*").from('category');
       query
         .leftJoin('category_description')
@@ -59,7 +90,17 @@ module.exports = {
 
       const supportedCountryRecords = await query.execute(pool);
 
-      return supportedCountryRecords.length > 0 ? supportedCountryRecords.map(country => camelCase(country)) : [];
+      const ne = supportedCountryRecords.length > 0 ? supportedCountryRecords.map(country => {
+        return camelCase({
+          ...country,
+          category_id: categories.find(
+            category => category.uuid === country.uuid
+          ).category_id
+        })
+      }) : [];
+
+      console.log("ne: ", ne);
+      return ne;
     }
   },
   Category: {

@@ -16,7 +16,10 @@ function Area(props) {
   } = props;
 
   const areaComponents = (() => {
-    const areaCoreComponents = coreComponents || [];
+    const areaCoreComponents = coreComponents
+      ? coreComponents.filter((c) => c)
+      : [];
+
     const cs =
       components[id] === undefined
         ? areaCoreComponents

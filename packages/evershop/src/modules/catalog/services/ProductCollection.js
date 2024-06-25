@@ -5,6 +5,7 @@ const { select, node } = require('@evershop/postgres-query-builder');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getValue } = require('@evershop/evershop/src/lib/util/registry');
 const { ProductType } = require('../utils/enums/product-type');
+const { getTimeDifferenceInDays } = require('@evershop/evershop/src/lib/util/date');
 
 class ProductCollection {
   constructor(baseQuery) {
@@ -130,7 +131,7 @@ class ProductCollection {
   //   this.totalQuery = totalQuery;
   // }
 
-  async init(filters = [], isAdmin = false) {
+  async init(filters = [], productFilter = {}, isAdmin = false) {
     // this.baseQuery.orWhere('product.type', '=', ProductType.simple.value);
     // this.baseQuery.orWhere('product.status', '=', 1);
 
@@ -147,15 +148,15 @@ class ProductCollection {
       this.baseQuery.orWhere('product.type', '=', ProductType.simple.value);
       this.baseQuery.andWhere('product.visibility', '=', true);
       this.baseQuery.andWhere('product.status', '=', true);
-      if (getConfig('catalog.showOutOfStockProduct', false) === false) {
-        this.baseQuery
-          .andWhere('product_inventory.manage_stock', '=', false)
-          .addNode(
-            node('OR')
-              .addLeaf('AND', 'product_inventory.qty', '>', 0)
-              .addLeaf('AND', 'product_inventory.stock_availability', '=', true)
-          );
-      }
+      // if (getConfig('catalog.showOutOfStockProduct', false) === false) {
+      //   this.baseQuery
+      //     .andWhere('product_inventory.manage_stock', '=', false)
+      //     .addNode(
+      //       node('OR')
+      //         .addLeaf('AND', 'product_inventory.qty', '>', 0)
+      //         .addLeaf('AND', 'product_inventory.stock_availability', '=', true)
+      //     );
+      // }
     }
     else {
       this.baseQuery.orWhere('product.type', '=', ProductType.variable.value);
@@ -191,43 +192,35 @@ class ProductCollection {
       }
     });
 
-    // if (!isAdmin) {
-    //   // Visibility. For variant group
-    //   const copy = this.baseQuery.clone();
-    //   // Get all group that have at lease 1 item visibile
-    //   const visibleGroups = (
-    //     await select('variant_group_id')
-    //       .from('variant_group')
-    //       .where('visibility', '=', 't')
-    //       .execute(pool)
-    //   ).map((v) => v.variant_group_id);
+    if (productFilter.categoryId) {
+      const productCategory = await select()
+        .from('product_category')
+        .where('category_id', '=', productFilter.categoryId)
+        .execute(pool);
 
-    //   if (visibleGroups) {
-    //     // Get all invisible variants from current query
-    //     copy
-    //       .select('bool_or(product.visibility)', 'sumv')
-    //       .select('max(product.product_id)', 'product_id')
-    //       .andWhere('product.variant_group_id', 'IN', visibleGroups);
-    //     copy.groupBy('product.variant_group_id');
-    //     copy.orderBy('product.variant_group_id', 'ASC');
-    //     copy.having('bool_or(product.visibility)', '=', 'f');
-    //     const invisibleIds = (await copy.execute(pool)).map(
-    //       (v) => v.product_id
-    //     );
+      this.baseQuery.andWhere("product.uuid", "IN", productCategory.map(p => p.product_id));
+    }
 
-    //     if (invisibleIds.length > 0) {
-    //       const n = node('AND');
-    //       n.addLeaf('AND', 'product.product_id', 'IN', invisibleIds).addNode(
-    //         node('OR').addLeaf('OR', 'product.visibility', '=', 't')
-    //       );
-    //       this.baseQuery.getWhere().addNode(n);
-    //     } else {
-    //       this.baseQuery.andWhere('product.visibility', '=', 't');
-    //     }
-    //   } else {
-    //     this.baseQuery.andWhere('product.visibility', '=', 't');
-    //   }
-    // }
+    if (productFilter.tripPeriod) {
+      this.baseQuery
+        .innerJoin("product_attribute_value_index")
+        .on(
+          "product_attribute_value_index.product_id",
+          "=",
+          "product.product_id"
+        )
+
+      this.baseQuery
+        .innerJoin("attribute")
+        .on(
+          "attribute.attribute_id",
+          "=",
+          "product_attribute_value_index.attribute_id"
+        );
+
+      this.baseQuery.andWhere("attribute.attribute_code", "=", "day-amount")
+      this.baseQuery.andWhere("product_attribute_value_index.option_text", "<=", productFilter.tripPeriod < 10 ? `0${productFilter.tripPeriod}` : productFilter.tripPeriod);
+    }
 
     // Clone the main query for getting total right before doing the paging
     const totalQuery = this.baseQuery.clone();
