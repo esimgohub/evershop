@@ -99,7 +99,6 @@ module.exports = {
         })
       }) : [];
 
-      console.log("ne: ", ne);
       return ne;
     }
   },

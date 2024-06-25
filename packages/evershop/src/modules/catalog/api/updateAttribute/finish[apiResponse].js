@@ -3,12 +3,7 @@ const { OK } = require('@evershop/evershop/src/lib/util/httpStatus');
 
 // eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
-  console.log("delegate ne: ", delegate)
-
-
   const attribute = await delegate.updateAttribute;
-
-  console.log("updated attribute ne: ", attribute)
   
   response.status(OK);
   response.json({

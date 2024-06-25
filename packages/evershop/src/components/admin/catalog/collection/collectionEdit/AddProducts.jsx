@@ -44,15 +44,13 @@ function AddProducts({ addProductApi, addedProductIDs, closeModal }) {
     }
   };
 
-  console.log('addedProductIds', addedProductIds);
-
   return (
     <ProductSkuSelector
       onSelect={addProduct}
       closeModal={closeModal}
-      selectedChecker={(product) => 
+      selectedChecker={(product) =>
         // eslint-disable-next-line eqeqeq
-         addedProductIds.find((id) => id == product.uuid)
+        addedProductIds.find((id) => id == product.uuid)
       }
       // TODO: Implement un select products
       onUnSelect={removeProduct}

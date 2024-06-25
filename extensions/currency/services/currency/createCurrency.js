@@ -63,9 +63,6 @@ async function createCurrency(data, context) {
       connection
     );
 
-  console.log("created currency: ", currency);
-
-
     await commit(connection);
     return currency;
   } catch (e) {
