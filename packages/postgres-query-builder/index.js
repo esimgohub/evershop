@@ -814,12 +814,7 @@ class UpdateQuery extends Query {
 
   async execute(connection, releaseConnection = true) {
     const rows = await super.execute(connection, releaseConnection);
-    console.log("rows: ", rows);
-
     const updatedRow = rows[0];
-
-    console.log("updatedRow: ", updatedRow);
-
     if (this._primaryColumn && updatedRow) {
       updatedRow['updatedId'] = updatedRow[this._primaryColumn];
     }
@@ -868,7 +863,7 @@ class InsertQuery extends Query {
       `SELECT 
         table_name, 
         column_name, 
-        data-type, 
+        data_type, 
         is_nullable, 
         column_default, 
         is_identity, 
@@ -958,7 +953,7 @@ class InsertOnUpdateQuery extends Query {
       text: `SELECT 
         table_name, 
         column_name, 
-        data-type, 
+        data_type, 
         is_nullable, 
         column_default, 
         is_identity, 
