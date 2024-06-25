@@ -39,16 +39,16 @@ module.exports = {
       
       
       // TODO: I want to extract attribute code name: data-amount and day-amount and multiply it
-      const foundDayAmountAttribute = productVariantAttributes.find((a) => a.attribute_code === 'day_amounts');
+      const foundDayAmountAttribute = productVariantAttributes.find((a) => a.attribute_code === 'day-amount');
       const dayAmountValue = foundDayAmountAttribute ? parseInt(foundDayAmountAttribute.option_text) : 1;
 
-      const foundDataTypeAttribute = parentProductAttributes.find((a) => a.attribute_code === 'data_type');
+      const foundDataTypeAttribute = parentProductAttributes.find((a) => a.attribute_code === 'data-type');
 
-      const foundDataAmountAttribute = productVariantAttributes.find((a) => a.attribute_code === 'data_amounts');
+      const foundDataAmountAttribute = productVariantAttributes.find((a) => a.attribute_code === 'data-amount');
       const dataAmountValue = foundDataAmountAttribute ? parseInt(foundDataAmountAttribute.option_text) : 1;
 
       // NOTE: The Data Amount Unit must be required always.
-      const foundDataAmountUnit = productVariantAttributes.find((a) => a.attribute_code === 'data_amount_units');
+      const foundDataAmountUnit = productVariantAttributes.find((a) => a.attribute_code === 'data-amount-unit');
 
       const totalDataAmount = foundDataTypeAttribute.option_text === DataType.DailyData ? dayAmountValue * dataAmountValue : dataAmountValue;
 

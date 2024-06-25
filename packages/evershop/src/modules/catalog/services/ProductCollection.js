@@ -272,11 +272,11 @@ class ProductCollection {
       );
       const matchedProductAttributes = await productAttributeQuery.execute(pool);
 
-      const dataTypeAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'data_type');
-      const dayAmountAttribute = matchedProductAttributes.find(a => a.attribute_code === 'day_amounts');
-      const dataAmountAttribute = matchedProductAttributes.find(a => a.attribute_code === 'data_amounts');
-      const dataAmountUnitAttribute = matchedProductAttributes.find(a => a.attribute_code === 'data_amount_units');
-      const localEsimAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'local_esims');
+      const dataTypeAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'data-type');
+      const dayAmountAttribute = matchedProductAttributes.find(a => a.attribute_code === 'day-amount');
+      const dataAmountAttribute = matchedProductAttributes.find(a => a.attribute_code === 'data-amount');
+      const dataAmountUnitAttribute = matchedProductAttributes.find(a => a.attribute_code === 'data-amount-unit');
+      const localEsimAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'local-esim');
 
       // Init attribute temp to sort by day-amount and total amount unit
       item.attributeTemp = {
@@ -362,11 +362,11 @@ class ProductCollection {
     //   );
     //   const matchedProductAttributes = await productAttributeQuery.execute(pool);
 
-    //   const dataTypeAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'data_type');
-    //   const dayAmountAttribute = matchedProductAttributes.find(a => a.attribute_code === 'day_amounts');
-    //   const dataAmountAttribute = matchedProductAttributes.find(a => a.attribute_code === 'data_amounts');
-    //   const dataAmountUnitAttribute = matchedProductAttributes.find(a => a.attribute_code === 'data_amount_units');
-    //   const localEsimAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'local_esims');
+    //   const dataTypeAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'data-type');
+    //   const dayAmountAttribute = matchedProductAttributes.find(a => a.attribute_code === 'day-amount');
+    //   const dataAmountAttribute = matchedProductAttributes.find(a => a.attribute_code === 'data-amount');
+    //   const dataAmountUnitAttribute = matchedProductAttributes.find(a => a.attribute_code === 'data-amount-unit');
+    //   const localEsimAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'local-esim');
 
     //   console.log("item.sku", item.sku);
     //   console.log("dataTypeAttribute", dataTypeAttribute);

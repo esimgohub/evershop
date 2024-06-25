@@ -778,6 +778,7 @@ class UpdateQuery extends Query {
       FROM information_schema.columns 
       WHERE table_name = '${this._table}'`
     );
+
     let set = [];
     rows.forEach((field) => {
       if (['BY DEFAULT', 'ALWAYS'].includes(field['identity_generation'])) {
@@ -806,12 +807,19 @@ class UpdateQuery extends Query {
     ]
       .filter((e) => e !== '')
       .join(' ');
+
+    console.log("sql: ", sql);
     return sql;
   }
 
   async execute(connection, releaseConnection = true) {
     const rows = await super.execute(connection, releaseConnection);
+    console.log("rows: ", rows);
+
     const updatedRow = rows[0];
+
+    console.log("updatedRow: ", updatedRow);
+
     if (this._primaryColumn && updatedRow) {
       updatedRow['updatedId'] = updatedRow[this._primaryColumn];
     }
@@ -860,7 +868,7 @@ class InsertQuery extends Query {
       `SELECT 
         table_name, 
         column_name, 
-        data_type, 
+        data-type, 
         is_nullable, 
         column_default, 
         is_identity, 
@@ -950,7 +958,7 @@ class InsertOnUpdateQuery extends Query {
       text: `SELECT 
         table_name, 
         column_name, 
-        data_type, 
+        data-type, 
         is_nullable, 
         column_default, 
         is_identity, 

@@ -61,7 +61,7 @@ module.exports = {
       return popularCountryRecords.length > 0 ? popularCountryRecords.map(country => {
         return camelCase({
           ...country,
-          image: `${homeUrl}${country.image}`,
+          image: country.image ? `${homeUrl}${country.image}` : null,
         })
       }) : [];
     },
@@ -96,7 +96,7 @@ module.exports = {
           category_id: categories.find(
             category => category.uuid === country.uuid
           ).category_id,
-          image: `${homeUrl}${country.image}`
+          image: country.image ? `${homeUrl}${country.image}` : null,
         })
       }) : [];
 

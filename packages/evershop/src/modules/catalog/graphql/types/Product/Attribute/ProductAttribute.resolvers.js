@@ -6,7 +6,7 @@ const { unescape } = require('lodash');
 module.exports = {
   Product: {
     description: async (product, _, { pool, user }) => {
-      return `<label style="color: #848B91">Note: </label><label style="line-height: 20px">${product.description.replace(/<\/?p>/g, "")}</label>`;
+      return `<label style="color: #848B91">Note: </label><label style="line-height: 20px">${product.description ? product.description.replace(/<\/?p>/g, "") : "-"}</label>`;
     },
     attribute: async (product, _, { pool, user }) => {
       const productAttributeQuery = select().from('product_attribute_value_index');
@@ -28,9 +28,16 @@ module.exports = {
       const productAttributes = await productAttributeQuery.execute(pool);
 
       // if product is variant
-      const isSimpleProduct = product.type === 'simple';
-      if (isSimpleProduct) {
-        const productVariantAttributeQuery = select().from('product_attribute_value_index');
+      const isVariableProduct = product.type === 'variable';
+      if (isVariableProduct) {
+        return productAttributes.reduce((response, attribute) => {
+          response[attribute.attribute_code] = attribute.option_text;
+          
+          return response;
+        }, {});
+      }
+
+      const productVariantAttributeQuery = select().from('product_attribute_value_index');
         productVariantAttributeQuery
           .leftJoin('attribute')
           .on(
@@ -43,55 +50,35 @@ module.exports = {
           '=',
           product.parentProductId
         );
-        const productVariantAttributes = await productVariantAttributeQuery.execute(pool);
+      const productVariantAttributes = await productVariantAttributeQuery.execute(pool);
 
-        const attributes = [...productAttributes, ...productVariantAttributes];
-
-        console.log("attributes", attributes);
-        
-        return attributes.reduce((response, attribute) => {
-          response[attribute.attribute_code] = attribute.option_text;
-          
-          return response;
-        }, {});
-      }
-
-      return productAttributes.reduce((response, attribute) => {
+      const attributes = [...productAttributes, ...productVariantAttributes];
+      
+      const responses = attributes.reduce((response, attribute) => {
         response[attribute.attribute_code] = attribute.option_text;
         
         return response;
       }, {});
 
-      // const foundDataType = Object.entries(responses).find(([key, value]) => key === 'data_type');
-      // if (!foundDataType) {
-      //   console.log("Data type not found");
-      // }
+      const foundDataType = Object.entries(responses).find(([key, value]) => key === 'data-type');
+      if (!foundDataType) {
+        console.log("Data type not found");
+      }
 
-      // const foundDayAmount = Object.entries(responses).find(([key, value]) => key === 'day_amounts');
-      // if (!foundDayAmount) {
-      //   console.log("Day amount not found");
-      // }
+      const foundDayAmount = Object.entries(responses).find(([key, value]) => key === 'day-amount');
+      if (!foundDayAmount) {
+        console.log("Day amount not found");
+      }
 
-      // const foundDataAmount = Object.entries(responses).find(([key, value]) => key === 'data_amounts');
-      // if (!foundDataAmount) {
-      //   console.log("Data amount not found");
-      // }
+      const foundDataAmount = Object.entries(responses).find(([key, value]) => key === 'data-amount');
+      if (!foundDataAmount) {
+        console.log("Data amount not found");
+      }
 
-      // Combine data amount and data amount unit
-      // switch(foundDataType[1]) {
-      //   case DataType.DailyData:
-      //     responses['data-amount'] = parseInt(foundDataAmount[1]);
-      //     break;
-      //   case DataType.FixedData:
-      //     responses['data-amount'] = parseInt(foundDataAmount[1]);
-      //     break;
-      //   default:
-      //     break;
-      // }
-
-      // responses['day-amount'] = parseInt(foundDayAmount[1]);
+      responses['data-amount'] = parseInt(foundDataAmount[1]);
+      responses['day-amount'] = parseInt(foundDayAmount[1]);
       
-      // return responses;
+      return responses;
     },
     attributeIndex: async (product, _, { pool, user }) => {
       const query = select().from('product_attribute_value_index');
@@ -113,10 +100,10 @@ module.exports = {
       let attributes = await query.execute(pool);
 
       const foundDataAmount = attributes.find(
-        (a) => a.attribute_code === 'data_amounts'
+        (a) => a.attribute_code === 'data-amount'
       );
       const foundDataAmountUnit = attributes.find(
-        (a) => a.attribute_code === 'data_amount_units'
+        (a) => a.attribute_code === 'data-amount-unit'
       );
 
       // Combine data amount and data amount unit
