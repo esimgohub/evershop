@@ -37,13 +37,16 @@ module.exports = async (request, response, delegate, next) => {
         .given({
           email: payload.email,
           status: AccountStatus.ENABLED,
-          login_source: LoginSource.GOOGLE
+          login_source: LoginSource.MAGIC_LINK
         })
         .execute(pool);
       delegate.createCustomer = customer;
     }
 
     request.locals.customer = customer;
+    request.session.customerID = customer.customer_id;
+    request.session.loginSource = LoginSource.MAGIC_LINK;
+
     response.status(OK);
     response.$body = {
       data: {
