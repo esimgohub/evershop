@@ -71,7 +71,7 @@ async function saveProductAttributes(productId, attributes, connection) {
       }
       
 
-      if (attr.type_a === 'textarea' || attr.type === 'text') {
+      if (attr.type === 'textarea' || attr.type === 'text') {
         const flag = await select('attribute_id')
           .from('product_attribute_value_index')
           .where('product_id', '=', productId)
