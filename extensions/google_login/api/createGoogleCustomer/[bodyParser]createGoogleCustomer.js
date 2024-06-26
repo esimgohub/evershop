@@ -8,6 +8,12 @@ const {
 } = require('@evershop/evershop/src/modules/customer/constant');
 const { getDefaultLanguage } = require('../../services/getDefaultLanguage');
 const { getDefaultCurrency } = require('../../services/getDefaultCurrency');
+const {
+  createLanguageResponse
+} = require('../../services/mapper/createLanguageResponse');
+const {
+  createCurrencyResponse
+} = require('../../services/mapper/createCurrencyResponse');
 
 const facebookUserInfoExample = {
   id: '115665475172743656167',
@@ -24,7 +30,6 @@ module.exports = async (request, response, delegate, next) => {
   const { accessToken } = request.body;
 
   const googleUserInfo = await getGoogleUserInfo(accessToken);
-  console.log('googleUserInfo', googleUserInfo);
   if (!googleUserInfo) {
     response.status(400);
     return response.json({
@@ -35,10 +40,28 @@ module.exports = async (request, response, delegate, next) => {
     });
   }
 
-  let customer = await select()
-    .from('customer')
-    .where('email', '=', googleUserInfo.email)
-    .load(pool);
+  let customerQuery = select('customer.customer_id', 'customer_id')
+    .select('customer.status', 'status')
+    .select('customer.first_name', 'first_name')
+    .select('customer.last_name', 'last_name')
+    .select('customer.email', 'email')
+    .select('customer.avatar_url', 'avatar_url')
+    .select('language.code', 'language_code')
+    .select('language.name', 'language_name')
+    .select('language.icon', 'language_icon')
+    .select('currency.code', 'currency_code')
+    .select('currency.name', 'currency_name')
+    .from('customer');
+
+  customerQuery
+    .leftJoin('language', 'language')
+    .on('customer.language_id', '=', 'language.id');
+
+  customerQuery
+    .leftJoin('currency', 'currency')
+    .on('customer.currency_id', '=', 'currency.id');
+
+  let [customer] = await customerQuery.execute(pool);
 
   if (customer && customer.status !== AccountStatus.ENABLED) {
     response.status(400);
@@ -50,11 +73,24 @@ module.exports = async (request, response, delegate, next) => {
     });
   }
 
+  let language = customer && {
+    code: customer.language_code,
+    name: customer.language_name,
+    icon: customer.language_icon
+  };
+  let currency = customer && {
+    code: customer.currency_code,
+    name: customer.currency_name
+  };
+
   if (!customer) {
     const [defaultLanguage, defaultCurrency] = await Promise.all([
-      getDefaultLanguage,
-      getDefaultCurrency
+      getDefaultLanguage(),
+      getDefaultCurrency()
     ]);
+
+    language = defaultLanguage;
+    currency = defaultCurrency;
 
     customer = await insert('customer')
       .given({
@@ -70,18 +106,24 @@ module.exports = async (request, response, delegate, next) => {
       })
       .execute(pool);
   }
+
+  const customerResponseData = {
+    email: customer.email,
+    firstName: customer.first_name,
+    lastName: customer.last_name,
+    avatarUrl: customer.avatar_url,
+    language: createLanguageResponse(language),
+    currency: createCurrencyResponse(currency)
+  };
+
   request.locals.customer = customer;
   request.session.customerID = customer.customer_id;
   request.session.loginSource = LoginSource.GOOGLE;
+
   delegate.createCustomer = customer;
   response.status(OK);
   response.$body = {
-    data: {
-      email: customer.email,
-      firstName: customer.first_name,
-      lastName: customer.last_name,
-      avatarUrl: customer.avatar_url
-    }
+    data: customerResponseData
   };
   next();
 };

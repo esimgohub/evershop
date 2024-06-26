@@ -29,9 +29,6 @@ module.exports = async (request, response, delegate, next) => {
       return response.redirect(failureUrl);
     }
 
-    console.log('access_token', access_token);
-    console.log('id_token', id_token);
-
     const userInfo = await getGoogleUserInfo(access_token, id_token);
     if (!userInfo) {
       return response.redirect(failureUrl);

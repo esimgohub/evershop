@@ -13,6 +13,8 @@ const {
   AccountStatus,
   LoginSource
 } = require('@evershop/evershop/src/modules/customer/constant');
+const { getDefaultLanguage } = require('../../../services/getDefaultLanguage');
+const { getDefaultCurrency } = require('../../../services/getDefaultCurrency');
 
 /* eslint-disable-next-line no-unused-vars */
 module.exports = async (request, response, delegate, next) => {
@@ -50,17 +52,9 @@ module.exports = async (request, response, delegate, next) => {
     }
 
     if (!customer) {
-      const getDefaultLanguageQuery = select()
-        .from('language')
-        .where('is_default', '=', 1);
-
-      const getDefaultCurrencyQuery = select()
-        .from('currency')
-        .where('is_default', '=', 1);
-
       const [defaultLanguage, defaultCurrency] = await Promise.all([
-        getDefaultLanguageQuery,
-        getDefaultCurrencyQuery
+        getDefaultLanguage(),
+        getDefaultCurrency()
       ]);
 
       customer = await insert('customer')

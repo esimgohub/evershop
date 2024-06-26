@@ -13,6 +13,12 @@ const {
 } = require('../../services/getFacebookUserInfoByLimitedToken');
 const { getDefaultLanguage } = require('../../services/getDefaultLanguage');
 const { getDefaultCurrency } = require('../../services/getDefaultCurrency');
+const {
+  createLanguageResponse
+} = require('../../services/mapper/createLanguageResponse');
+const {
+  createCurrencyResponse
+} = require('../../services/mapper/createCurrencyResponse');
 
 const facebookUserExample = {
   iss: 'https://www.facebook.com',
@@ -30,7 +36,7 @@ const facebookUserExample = {
     'https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=7724592770990970&height=100&width=100&ext=1721968393&hash=Aba6ZC0BjTmhKlF8aWU6WJei'
 };
 
-module.exports = async (request, response, stack, next) => {
+module.exports = async (request, response, delegate, next) => {
   const { accessToken, limitedToken, userId } = request.body;
   if (!accessToken && !limitedToken) {
     response.status(400);
@@ -60,10 +66,32 @@ module.exports = async (request, response, stack, next) => {
     });
   }
 
-  let customer = await select()
-    .from('customer')
-    .where('external_id', '=', facebookUserInfo.id)
-    .load(pool);
+  const facebookUserId = facebookUserInfo.id || userId;
+
+  let customerQuery = select('customer.customer_id', 'customer_id')
+    .select('customer.status', 'status')
+    .select('customer.first_name', 'first_name')
+    .select('customer.last_name', 'last_name')
+    .select('customer.email', 'email')
+    .select('customer.avatar_url', 'avatar_url')
+    .select('language.code', 'language_code')
+    .select('language.name', 'language_name')
+    .select('language.icon', 'language_icon')
+    .select('currency.code', 'currency_code')
+    .select('currency.name', 'currency_name')
+    .from('customer');
+
+  customerQuery
+    .leftJoin('language')
+    .on('customer.language_id', '=', 'language.id');
+
+  customerQuery
+    .leftJoin('currency')
+    .on('customer.currency_id', '=', 'currency.id');
+
+  customerQuery.where('customer.external_id', '=', facebookUserId);
+
+  let [customer] = await customerQuery.execute(pool);
 
   if (customer && customer.status !== AccountStatus.ENABLED) {
     response.status(400);
@@ -75,15 +103,28 @@ module.exports = async (request, response, stack, next) => {
     });
   }
 
+  let language = customer && {
+    code: customer.language_code,
+    name: customer.language_name,
+    icon: customer.language_icon
+  };
+  let currency = customer && {
+    code: customer.currency_code,
+    name: customer.currency_name
+  };
+
   if (!customer) {
     const [defaultLanguage, defaultCurrency] = await Promise.all([
-      getDefaultLanguage,
-      getDefaultCurrency
+      getDefaultLanguage(),
+      getDefaultCurrency()
     ]);
+
+    language = defaultLanguage;
+    currency = defaultCurrency;
 
     customer = await insert('customer')
       .given({
-        external_id: facebookUserInfo.id,
+        external_id: facebookUserInfo.id || userId,
         login_source: LoginSource.FACEBOOK,
         email: facebookUserInfo.email,
         first_name: facebookUserInfo.given_name,
@@ -96,19 +137,23 @@ module.exports = async (request, response, stack, next) => {
       .execute(pool);
   }
 
-  delete customer.password;
+  const customerResponseData = {
+    email: customer.email,
+    firstName: customer.first_name,
+    lastName: customer.last_name,
+    avatarUrl: customer.avatar_url,
+    language: createLanguageResponse(language),
+    currency: createCurrencyResponse(currency)
+  };
+
   request.locals.customer = customer;
   request.session.customerID = customer.customer_id;
   request.session.loginSource = LoginSource.FACEBOOK;
+
   delegate.createCustomer = customer;
   response.status(OK);
   response.$body = {
-    data: {
-      email: customer.email,
-      firstName: customer.full_name,
-      lastName: customer.last_name,
-      avatarUrl: customer.avatar_url
-    }
+    data: customerResponseData
   };
   next();
 };
