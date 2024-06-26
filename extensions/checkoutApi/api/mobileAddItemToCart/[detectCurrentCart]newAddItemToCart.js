@@ -12,6 +12,7 @@ const { createNewCart } = require('@evershop/evershop/src/modules/checkout/servi
 const { getCartByUUID } = require('@evershop/evershop/src/modules/checkout/services/getCartByUUID');
 const { saveCart } = require('@evershop/evershop/src/modules/checkout/services/saveCart');
 const { getContextValue, setContextValue } = require('@evershop/evershop/src/modules/graphql/services/contextHelper');
+const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 
 
 module.exports = async (request, response, delegate, next) => {
@@ -21,7 +22,7 @@ module.exports = async (request, response, delegate, next) => {
     if (!cartId) {
       // Create a new cart
       const { sessionID, customer } = request.locals;
-      cart = await createNewCart(sessionID, customer || {});
+      cart = await createNewCart(sessionID, request.cookies.isoCode || getConfig('shop.currency', 'USD'), customer || {});
       cartId = cart.getData('uuid');
     } else {
       cart = await getCartByUUID(cartId); // Cart object
