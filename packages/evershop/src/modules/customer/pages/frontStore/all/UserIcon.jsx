@@ -16,7 +16,8 @@ UserIcon.propTypes = {
   accountUrl: PropTypes.string,
   customer: PropTypes.shape({
     email: PropTypes.string.isRequired,
-    fullName: PropTypes.string.isRequired,
+    firstName: PropTypes.string.isRequired,
+    lastName: PropTypes.string.isRequired,
     uuid: PropTypes.string.isRequired
   }),
   loginUrl: PropTypes.string.isRequired
@@ -36,7 +37,8 @@ export const query = `
   query Query {
     customer: currentCustomer {
       uuid
-      fullName
+      firstName
+      lastName
       email
     }
     accountUrl: url(routeId: "account")

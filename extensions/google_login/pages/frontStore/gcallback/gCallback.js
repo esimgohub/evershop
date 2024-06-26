@@ -29,6 +29,9 @@ module.exports = async (request, response, delegate, next) => {
       return response.redirect(failureUrl);
     }
 
+    console.log('access_token', access_token);
+    console.log('id_token', id_token);
+
     const userInfo = await getGoogleUserInfo(access_token, id_token);
     if (!userInfo) {
       return response.redirect(failureUrl);
@@ -47,7 +50,9 @@ module.exports = async (request, response, delegate, next) => {
       customer = await insert('customer')
         .given({
           email: userInfo.email,
-          full_name: userInfo.name,
+          first_name: userInfo.given_name,
+          last_name: userInfo.family_name,
+          avatar_url: userInfo.picture,
           status: AccountStatus.ENABLED,
           login_source: LoginSource.GOOGLE,
           external_id: userInfo.id

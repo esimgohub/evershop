@@ -5,8 +5,8 @@ const {
   getFacebookAuthToken
 } = require('../../../services/getFacebookAuthToken');
 const {
-  getFacebookUserInfo
-} = require('../../../services/getFacebookUserInfo');
+  getFacebookUserInfoByAccessToken
+} = require('../../../services/getFacebookUserInfoByAccessToken');
 const { select, insert } = require('@evershop/postgres-query-builder');
 const { error } = require('@evershop/evershop/src/lib/log/logger');
 const {
@@ -39,7 +39,7 @@ module.exports = async (request, response, delegate, next) => {
       return response.redirect(failureUrl);
     }
 
-    const userInfo = await getFacebookUserInfo(access_token);
+    const userInfo = await getFacebookUserInfoByAccessToken(access_token);
     let customer = await select()
       .from('customer')
       .where('external_id', '=', userInfo.id)
@@ -50,12 +50,30 @@ module.exports = async (request, response, delegate, next) => {
     }
 
     if (!customer) {
+      const getDefaultLanguageQuery = select()
+        .from('language')
+        .where('is_default', '=', 1);
+
+      const getDefaultCurrencyQuery = select()
+        .from('currency')
+        .where('is_default', '=', 1);
+
+      const [defaultLanguage, defaultCurrency] = await Promise.all([
+        getDefaultLanguageQuery,
+        getDefaultCurrencyQuery
+      ]);
+
       customer = await insert('customer')
         .given({
-          full_name: userInfo.name,
           external_id: userInfo.id,
+          login_source: LoginSource.FACEBOOK,
+          email: userInfo.email,
+          first_name: userInfo.given_name,
+          last_name: userInfo.family_name,
+          avatar_url: userInfo.picture,
           status: AccountStatus.ENABLED,
-          login_source: LoginSource.FACEBOOK
+          language_id: defaultLanguage.id,
+          currency_id: defaultCurrency.id
         })
         .execute(pool);
     }
