@@ -178,7 +178,7 @@ module.exports = {
     // Check if the initValue is a function, then add this function to the processors as the first processor
     if (typeof initialization === 'function') {
       // Add this function to the processors, add this to the biginning of the processors
-      const processors = this.values[name] ? this.values[name].processors : [];
+      const processors = registry.values[name] ? registry.values[name]?.processors : [];
       processors.unshift({
         callback: initialization,
         priority: 0

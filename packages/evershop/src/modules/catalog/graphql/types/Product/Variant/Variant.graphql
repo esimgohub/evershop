@@ -33,6 +33,7 @@ Represents a product variant
 type Variant {
   id: String!
   product: Product!
+  attribute: JSON!
   attributes: [VariantAttributeIndex]!
   removeUrl: String!
 }
@@ -48,5 +49,6 @@ type VariantGroup {
 }
 
 extend type Product {
+  variants: [Product]
   variantGroup: VariantGroup
 }

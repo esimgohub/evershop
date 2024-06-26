@@ -1,0 +1,11 @@
+"""
+The ProductAttributeIndex object defines the attribute index for a product.
+"""
+type ProductMetadata {
+  totalDataAmount: String!
+  supportedCountries: Int!
+}
+
+extend type Product {
+  metadata: ProductMetadata
+}

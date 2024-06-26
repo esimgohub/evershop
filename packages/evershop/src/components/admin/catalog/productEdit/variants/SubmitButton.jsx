@@ -7,6 +7,7 @@ import { serializeForm } from '@evershop/evershop/src/lib/util/formToJson';
 
 export function SubmitButton({
   productId,
+  productUuid,
   createProductApi,
   addVariantItemApi,
   productFormContextDispatch,
@@ -52,11 +53,10 @@ export function SubmitButton({
         }
       }
       // Modify the url key to be unique
-      formData.set(
-        'url_key',
-        `${formData.get('url_key')}-${formData.get('sku')}`
-      );
+      formData.set('url_key', `${formData.get('sku')}`);
       const productData = serializeForm(formData.entries());
+
+      productData.parent_product_id = parseInt(productData.parent_product_id);
       productData.attributes = productData.attributes || [];
       productData.attributes = productData.attributes.map((attribute) => {
         if (variantFormData.has(attribute.attribute_code)) {
@@ -75,6 +75,7 @@ export function SubmitButton({
       });
 
       const responseJson = await response.json();
+
       if (responseJson.error) {
         toast.error(responseJson.error.message);
         setLoading(false);
@@ -89,13 +90,14 @@ export function SubmitButton({
           })
         });
         const responseMainJson = await responseMain.json();
+
         const responseVariant = await fetch(addVariantItemApi, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            product_id: productId
+            product_id: productUuid
           })
         });
         const responseVariantJson = await responseVariant.json();

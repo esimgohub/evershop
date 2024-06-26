@@ -8,6 +8,9 @@
       "type": "string",
       "skipEscape": true
     },
+    "category_type": {
+      "type": "string"
+    },
     "image": {
       "type": "string"
     },

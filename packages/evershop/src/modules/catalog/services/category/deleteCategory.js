@@ -11,6 +11,8 @@ const {
 } = require('@evershop/evershop/src/lib/postgres/connection');
 
 async function deleteCategoryData(uuid, connection) {
+  await del('product_category').where("category_id", "=", uuid).execute(connection);
+
   await del('category').where('uuid', '=', uuid).execute(connection);
 }
 /**

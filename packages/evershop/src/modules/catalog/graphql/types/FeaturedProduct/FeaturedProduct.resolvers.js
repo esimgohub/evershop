@@ -33,15 +33,15 @@ module.exports = {
         .on('cart_item.product_id', '=', 'product.product_id');
       query.where('product.status', '=', 1);
       query.andWhere('product.visibility', '=', 1);
-      if (getConfig('catalog.showOutOfStockProduct', false) === false) {
-        query
-          .andWhere('product_inventory.manage_stock', '=', false)
-          .addNode(
-            node('OR')
-              .addLeaf('AND', 'product_inventory.qty', '>', 0)
-              .addLeaf('AND', 'product_inventory.stock_availability', '=', true)
-          );
-      }
+      // if (getConfig('catalog.showOutOfStockProduct', false) === false) {
+      //   query
+      //     .andWhere('product_inventory.manage_stock', '=', false)
+      //     .addNode(
+      //       node('OR')
+      //         .addLeaf('AND', 'product_inventory.qty', '>', 0)
+      //         .addLeaf('AND', 'product_inventory.stock_availability', '=', true)
+      //     );
+      // }
       query.groupBy(
         'product.product_id',
         'product_description.product_description_id'

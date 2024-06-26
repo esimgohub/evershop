@@ -43,6 +43,10 @@ class Item extends DataObject {
     return this.getData('uuid');
   }
 
+  getIsActive() {
+    return this.getData('is_active');
+  }
+
   getCart() {
     return this.#cart;
   }
@@ -63,6 +67,141 @@ class Cart extends DataObject {
    */
   getItems() {
     return this.getData('items') ?? [];
+  }
+
+  /**
+   * @returns {Array<Item>}
+   */
+  getActiveItems() {
+    const items = this.getData('items') ?? [];
+    let res;
+    if (items && items.length > 0) {
+      res = items.filter(item => item.getIsActive() === true);
+    } else {
+      res = [...items];
+    }
+    return res;
+  }
+
+  /**
+   * @returns {Array<Item>}
+   */
+  getUnActiveItems() {
+    const items = this.getData('items') ?? [];
+    let res;
+    if (items && items.length > 0) {
+      res = items.filter(item => item.getIsActive() === false);
+    } else {
+      res = [...items];
+    }
+    return res;
+  }
+
+  /**
+   * Set all items in the cart to active.
+   * @returns {Array} Updated items
+   * @throws {Error}
+   */
+  async updateSelectAllItems() {
+    const items = this.getItems();
+
+    // Iterate over all items and set is_active to true
+    for (let i = 0; i < items.length; i += 1) {
+      await items[i].setData('is_active', true, true);
+      if (items[i].hasError()) {
+        throw new Error(Object.values(items[i].getErrors())[0]);
+      }
+    }
+
+    // Save the updated items list
+    await this.setData('items', items, true);
+
+    return items;
+  }
+
+
+  /**
+   * Set all items in the cart to un-active.
+   * @returns {Array} Updated items
+   * @throws {Error}
+   */
+  async updateDeselectAllItems() {
+    const items = this.getItems();
+
+    // Iterate over all items and set is_active to true
+    for (let i = 0; i < items.length; i += 1) {
+      await items[i].setData('is_active', false, true);
+      if (items[i].hasError()) {
+        throw new Error(Object.values(items[i].getErrors())[0]);
+      }
+    }
+
+    // Save the updated items list
+    await this.setData('items', items, true);
+
+    return items;
+  }
+
+  /**
+   * Update the active status of an item.
+   * @param {string||int} uuid
+   * @param {boolean} isActive
+   * @returns {Item}
+   * @throws {Error}
+   */
+  async updateItemSelection(uuid, isActive) {
+    const items = this.getItems();
+    const item = this.getItem(uuid);
+
+    if (!item) {
+      throw new Error('Item not found');
+    }
+
+    // Check for errors after updating quantity
+    if (item.hasError()) {
+      throw new Error(Object.values(item.getErrors())[0]);
+    }
+
+    // Update the is_active status
+    await item.setData('is_active', isActive, true);
+
+    // Check for errors after updating is_active
+    if (item.hasError()) {
+      throw new Error(Object.values(item.getErrors())[0]);
+    }
+
+    // Update the items list with the modified item
+    const updatedItems = items.map(i => (i.getData('uuid') === uuid ? item : i));
+    await this.setData('items', updatedItems, true);
+
+    return item;
+  }
+
+  /**
+   * Update the quantity of an item.
+   * @param {string||int} uuid
+   * @param {number} newQty
+   * @returns {Item}
+   * @throws {Error}
+   */
+  async updateItemQuantity(uuid, newQty) {
+    const items = this.getItems();
+    const item = this.getItem(uuid);
+
+    if (!item) {
+      throw new Error('Item not found');
+    }
+
+    await item.setData('qty', newQty, true);
+
+    if (item.hasError()) {
+      throw new Error(Object.values(item.getErrors())[0]);
+    }
+
+    const updatedItems = items.map(i => (i.getData('uuid') === uuid ? item : i));
+    await this.setData('items', updatedItems, true);
+
+    return item;
   }
 
   /**

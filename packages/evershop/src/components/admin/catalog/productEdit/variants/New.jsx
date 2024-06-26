@@ -13,7 +13,7 @@ export function New({ createVariantGroupApi, setGroup }) {
             <div className="justify-center text-center">
               <div className="mb-4">
                 <span className="pr-1">
-                  This product has some variants like color or size?
+                  Not have any variant on this product.
                 </span>
                 <a
                   className="text-interactive hover:underline"

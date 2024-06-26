@@ -3,6 +3,7 @@ import React from 'react';
 import { New } from '@components/admin/catalog/productEdit/variants/New';
 import { Card } from '@components/admin/cms/Card';
 import { Variants } from '@components/admin/catalog/productEdit/variants/Variants';
+import { ProductType } from '../../../utils/enums/product-type';
 
 export default function VariantGroup({
   product,
@@ -11,27 +12,36 @@ export default function VariantGroup({
   productImageUploadUrl
 }) {
   const [group, setGroup] = React.useState(product?.variantGroup || null);
+
+  const isProductVariantType =
+    product && product.type && product.type === ProductType.variable.value;
+
+  // TODO: Have no product type field
+  const haveNoProductTypeField = product && !product.type;
+
   return (
-    <Card title="Variant">
-      {!group && (
-        <New
-          createVariantGroupApi={createVariantGroupApi}
-          setGroup={setGroup}
-        />
-      )}
-      {group && (
-        <Variants
-          productId={product.productId}
-          productUuid={product.uuid}
-          variantGroup={group}
-          variantAttributes={group.attributes}
-          variantProducts={group.items || []}
-          addVariantItemApi={group.addItemApi}
-          createProductApi={createProductApi}
-          productImageUploadUrl={productImageUploadUrl}
-        />
-      )}
-    </Card>
+    (isProductVariantType || haveNoProductTypeField) && (
+      <Card title="Variant" contentClassName=":w-[100%]">
+        {!group && (
+          <New
+            createVariantGroupApi={createVariantGroupApi}
+            setGroup={setGroup}
+          />
+        )}
+        {group && (
+          <Variants
+            productId={product.productId}
+            productUuid={product.uuid}
+            variantGroup={group}
+            variantAttributes={group.attributes}
+            variantProducts={group.items || []}
+            addVariantItemApi={group.addItemApi}
+            createProductApi={createProductApi}
+            productImageUploadUrl={productImageUploadUrl}
+          />
+        )}
+      </Card>
+    )
   );
 }
 
@@ -72,6 +82,7 @@ query Query {
   product(id: getContextValue('productId', null)) {
     productId
     uuid
+    type
     variantGroup {
       variantGroupId
       attributes: variantAttributes {

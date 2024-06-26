@@ -10,8 +10,23 @@ const {
   getConnection
 } = require('@evershop/evershop/src/lib/postgres/connection');
 
-async function deleteProductData(uuid, connection) {
-  await del('product').where('uuid', '=', uuid).execute(connection);
+async function deleteProductData(product, connection) {
+  // Delete variant
+  const variants = await select()
+    .from('product')
+    .where('parent_product_uuid', '=', product.uuid)
+    .execute(connection);
+
+  for (const variant of variants) {
+    await del('product').where('uuid', '=', variant.uuid).execute(connection);
+  }
+
+  await del('product_attribute_value_index').where('product_id', '=', product.product_id).execute(connection);
+  await del('product_category').where('product_id', '=', product.uuid).execute(connection);
+  await del('product_description').where('product_description_product_id', '=', product.product_id).execute(connection);
+  await del('product_image').where('product_image_product_id', '=', product.product_id).execute(connection);
+
+  await del('product').where('uuid', '=', product.uuid).execute(connection);
 }
 
 /**
@@ -36,10 +51,12 @@ async function deleteProduct(uuid, context) {
     if (!product) {
       throw new Error('Invalid product id');
     }
+
     await hookable(deleteProductData, { ...context, connection, product })(
-      uuid,
+      product,
       connection
     );
+    
     await commit(connection);
     return product;
   } catch (e) {

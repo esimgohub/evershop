@@ -71,6 +71,7 @@ export default function SEO({ product }) {
 
 SEO.propTypes = {
   product: PropTypes.shape({
+    type: PropTypes.string,
     urlKey: PropTypes.string,
     metaTitle: PropTypes.string,
     metaKeywords: PropTypes.string,
@@ -80,6 +81,7 @@ SEO.propTypes = {
 
 SEO.defaultProps = {
   product: {
+    type: '',
     urlKey: '',
     metaTitle: '',
     metaKeywords: '',
@@ -95,6 +97,7 @@ export const layout = {
 export const query = `
   query Query {
     product(id: getContextValue('productId', null)) {
+      type
       urlKey
       metaTitle
       metaKeywords
