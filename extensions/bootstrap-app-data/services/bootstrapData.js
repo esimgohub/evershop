@@ -42,6 +42,8 @@ const clearData = async () => {
     console.log("===== Clear Product Category Data =====");
     await del('product_category').execute(connection);
 
+    console.log("===== Clear Product Image =====");
+    await del('product_image').execute(connection);
 
     console.log("===== Clear Category Data =====");
     await del('category').execute(connection);
@@ -501,7 +503,6 @@ const bootstrapData = async (data) => {
 
     console.log("\n\n===== Finish bootstrap Product Variant Description =====");
 
-    
     // Product Attribute
     console.log("\n\n===== Start bootstrap Product Attribute =====");
 
