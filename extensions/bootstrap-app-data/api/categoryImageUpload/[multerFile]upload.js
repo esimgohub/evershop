@@ -32,7 +32,7 @@ module.exports = async (request, response, delegate, next) => {
           .given({
             image: url
           })
-          .where('url_key', '=', code.toUpperCase())
+          .where('url_key', '=', code.substring(0, 2).toUpperCase())
           .execute(connection);
       }
 
