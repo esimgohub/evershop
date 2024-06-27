@@ -4,9 +4,9 @@ import { toast } from 'react-toastify';
 import ProductSkuSelector from '@components/admin/promotion/couponEdit/ProductSkuSelector';
 
 function AddProducts({ addProductApi, addedProductIDs, closeModal }) {
-  const [addedProducts, setAddedProducts] = React.useState(addedProductIDs);
+  const [addedProductIds, setAddedProductIds] = React.useState(addedProductIDs);
 
-  const addProduct = async (sku, uuid) => {
+  const addProduct = async (sku, uuid, productId) => {
     const response = await fetch(addProductApi, {
       method: 'POST',
       headers: {
@@ -21,7 +21,26 @@ function AddProducts({ addProductApi, addedProductIDs, closeModal }) {
     if (!data.success) {
       toast.error(data.message);
     } else {
-      setAddedProducts([...addedProducts, data.data.product_id]);
+      setAddedProductIds([...addedProductIds, uuid]);
+    }
+  };
+
+  const removeProduct = async (sku, uuid, productId) => {
+    const response = await fetch(`${addProductApi}/${uuid}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
+    });
+
+    const data = await response.json();
+    if (!data.success) {
+      toast.error(data.message);
+    } else {
+      setAddedProductIds(
+        addedProductIds.filter((productId) => productId !== uuid)
+      );
     }
   };
 
@@ -31,9 +50,10 @@ function AddProducts({ addProductApi, addedProductIDs, closeModal }) {
       closeModal={closeModal}
       selectedChecker={(product) =>
         // eslint-disable-next-line eqeqeq
-        addedProducts.find((p) => p == product.productId)
+        addedProductIds.find((id) => id == product.uuid)
       }
-      onUnSelect={() => {}}
+      // TODO: Implement un select products
+      onUnSelect={removeProduct}
     />
   );
 }

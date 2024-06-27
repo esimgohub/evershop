@@ -3,8 +3,14 @@ extend type Category {
   updateApi: String!
   deleteApi: String!
   addProductUrl: String
+  categoryType: String
+  queryProducts: [Product]
 }
 
 extend type Product {
-  removeFromCategoryUrl: String
+  removeFromCategoryUrl(id: Int): String
+}
+
+extend type Query {
+  adminCategoryDetail(id: Int): Category
 }

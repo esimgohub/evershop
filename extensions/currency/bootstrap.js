@@ -198,7 +198,6 @@ module.exports = () => {
 
         const priceByRatio = convertFromUSD(parseFloat(rawPrice), foundCurrency.rate, isoCode);
 
-        console.log("price by ratio: ", priceByRatio);
         return priceByRatio;
     });
     addProcessor('priceTextByExnRatio', async ({ rawPrice, isoCode }) => {

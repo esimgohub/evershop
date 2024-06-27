@@ -20,7 +20,7 @@ export default function Image({ category, imageUploadUrl }) {
     }
     setLoading(true);
     fetch(
-      `${imageUploadUrl}/catalog/${
+      `${imageUploadUrl}catalog/${
         Math.floor(Math.random() * (9999 - 1000)) + 1000
       }/${Math.floor(Math.random() * (9999 - 1000)) + 1000}`,
       {

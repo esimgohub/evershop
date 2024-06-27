@@ -86,8 +86,6 @@ async function updateCurrency(id, data, context) {
       connection
     );
 
-    console.log("currency update ne: ", currency);
-
     await commit(connection);
     return currency;
   } catch (e) {
@@ -107,8 +105,6 @@ module.exports = async (id, data, context) => {
     data,
     context
   );
-
-  console.log("con me no: ", currency)
 
   return currency;
 };

@@ -1,9 +1,11 @@
-const { select, execute } = require('@evershop/postgres-query-builder');
+const { select, selectDistinct, execute } = require('@evershop/postgres-query-builder');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
+const { CategoryStatus } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-status')
 const {
   getProductsByCategoryBaseQuery
 } = require('../../../services/getProductsByCategoryBaseQuery');
+
 const {
   getFilterableAttributes
 } = require('../../../services/getFilterableAttributes');
@@ -12,6 +14,8 @@ const {
   getCategoriesBaseQuery
 } = require('../../../services/getCategoriesBaseQuery');
 const { CategoryCollection } = require('../../../services/CategoryCollection');
+const { CategoryType } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-type');
+
 
 module.exports = {
   Query: {
@@ -33,6 +37,68 @@ module.exports = {
       const root = new CategoryCollection(query);
       await root.init(filters, !!user);
       return root;
+    },
+    popularCountries: async (_, { filter = {}}, { pool, homeUrl }) => {
+
+      const query = selectDistinct(`category_description.name`, "*").from('category');
+      query
+        .leftJoin('category_description')
+        .on(
+          'category_description.category_description_category_id',
+          '=',
+          'category.category_id'
+        );
+      query.where("category.category_type", "=", CategoryType.Country);
+      query.andWhere("category.status", "=", CategoryStatus.Enabled)
+      query.orderByRandomOnFields(['category_description.name', 'category.category_status']);
+
+      if (filter.limit) {
+        query.limit(0, filter.limit);
+      }
+
+      const popularCountryRecords = await query.execute(pool);
+
+      return popularCountryRecords.length > 0 ? popularCountryRecords.map(country => {
+        return camelCase({
+          ...country,
+          image: `${homeUrl}${country.image}`,
+        })
+      }) : [];
+    },
+    supportedCategories: async (_, {}, { pool, homeUrl }) => {
+      const categories = await select().from('category').execute(pool);
+
+      const query = selectDistinct(`category_description.name`, "*").from('category');
+      query
+        .leftJoin('category_description')
+        .on(
+          'category_description.category_description_category_id',
+          '=',
+          'category.category_id'
+        );
+
+      query.innerJoin("product_category").on(
+        'product_category.category_id',
+        '=',
+        'category.uuid'
+      );
+
+      query.where("category.category_type", "=", CategoryType.Country);
+      query.andWhere("category.status", "=", CategoryStatus.Enabled);
+
+      const supportedCountryRecords = await query.execute(pool);
+
+      const mappedCategories = supportedCountryRecords.length > 0 ? supportedCountryRecords.map(country => {
+        return camelCase({
+          ...country,
+          category_id: categories.find(
+            category => category.uuid === country.uuid
+          ).category_id,
+          image: `${homeUrl}${country.image}`
+        })
+      }) : [];
+
+      return mappedCategories;
     }
   },
   Category: {
@@ -148,15 +214,28 @@ module.exports = {
     }
   },
   Product: {
-    category: async (product, _, { pool }) => {
-      if (!product.categoryId) {
-        return null;
-      } else {
-        const categoryQuery = getCategoriesBaseQuery();
-        categoryQuery.where('category_id', '=', product.categoryId);
-        const category = await categoryQuery.load(pool);
-        return camelCase(category);
+    categories: async (product, _, { pool }) => {
+      const productCategoryQuery = select().from('product_category')
+      
+      productCategoryQuery.innerJoin("category").on(
+        'product_category.category_id',
+        '=',
+        'category.uuid'
+      )
+      
+      productCategoryQuery.innerJoin("category_description").on(
+        'category_description.category_description_category_id',
+        '=',
+        'category.category_id'
+      );
+      productCategoryQuery.where('product_id', '=', product.uuid);
+      const productCategoryRecords = await productCategoryQuery.execute(pool);
+
+      if (productCategoryRecords.length === 0) {
+        return [];
       }
+
+      return productCategoryRecords.map((row) => camelCase(row));
     }
   }
 };

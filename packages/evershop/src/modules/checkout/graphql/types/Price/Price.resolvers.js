@@ -4,11 +4,6 @@ module.exports = {
   Price: {
     value: (rawPrice) => parseFloat(rawPrice), // TODO: Format for decimal value?
     currency: async (_, { currency }) => {
-      console.log("currency context value ne: ", getContextValue(
-        request,
-        'currency'
-      ));
-
       const curr = currency || getConfig('shop.currency', 'USD');
       return curr;
     },
