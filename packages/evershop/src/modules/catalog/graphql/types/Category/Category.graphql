@@ -2,7 +2,7 @@
 The `Category` type represents a category object.
 """
 type Category {
-  categoryId: ID!
+  categoryId: Int!
   uuid: String!
   name: String!
   status: Int!
@@ -95,10 +95,17 @@ type PriceRange {
 }
 
 extend type Product {
-  category: Category,
+  categories: [Category]
+}
+
+input PopularCountryFilter {
+  limit: Int
 }
 
 extend type Query {
   categories(filters: [FilterInput]): CategoryCollection
+  supportedCategories: [Category]
+  popularCountries(filter: PopularCountryFilter): [Category]
+
   category(id: Int): Category
 }

@@ -5,7 +5,7 @@ type Customer {
   customerId: Int!
   uuid: String!
   status: Int!
-  email: String!
+  email: String
   fullName: String!
   createdAt: Date!
   languageCode: String!

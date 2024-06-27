@@ -1,0 +1,14 @@
+{
+  "name": "google_login",
+  "version": "1.0.0",
+  "description": "A Google authentication extension for EverShop.",
+  "keywords": [],
+  "author": "",
+  "license": "",
+  "engines": {
+    "node": ">= 14.0.0"
+  },
+  "dependencies": {
+    "googleapis": "139.0.0"
+  }
+}

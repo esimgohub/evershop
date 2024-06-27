@@ -3,7 +3,8 @@ const {
   update,
   startTransaction,
   commit,
-  rollback
+  rollback,
+  insert
 } = require('@evershop/postgres-query-builder');
 const uniqid = require('uniqid');
 const {
@@ -21,6 +22,8 @@ module.exports = async (request, response, delegate, next) => {
   const { id: groupId } = request.params;
   // eslint-disable-next-line camelcase
   const { product_id } = request.body;
+
+
   const connection = await getConnection(pool);
   try {
     await startTransaction(connection);
@@ -72,6 +75,23 @@ module.exports = async (request, response, delegate, next) => {
       attributeFour: group.attribute_four,
       attributeFive: group.attribute_five
     }).filter((a) => a !== null);
+
+    const parentProductCategories = await select()
+      .from('product_category')
+      .where('product_id', '=', product.parent_product_uuid)
+      .execute(connection, false);
+    console.log("parentProductCategories", parentProductCategories);
+
+    if (parentProductCategories.length > 0) {
+      for (const category of parentProductCategories) {
+        await insert('product_category')
+          .given({
+            product_id: product.uuid,
+            category_id: category.category_id
+          })
+          .execute(connection, false); 
+      }
+    }
 
     // Get product attribute values
     const query = select().from('product_attribute_value_index');

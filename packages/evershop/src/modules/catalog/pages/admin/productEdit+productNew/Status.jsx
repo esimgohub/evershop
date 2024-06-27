@@ -60,7 +60,7 @@ export const query = `
     product(id: getContextValue("productId", null)) {
       status
       visibility
-      category {
+      categories {
         value: categoryId
         label: name
       }

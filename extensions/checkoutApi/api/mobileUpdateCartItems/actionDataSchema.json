@@ -1,0 +1,98 @@
+{
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "update-quantity",
+        "update-item-selection-for-checkout",
+        "select-all-items-for-checkout",
+        "deselect-all-items-for-checkout",
+        "remove-cart-item"
+      ],
+      "errorMessage": {
+        "type": "Type must be a string",
+        "enum": "Type must be a valid action"
+      }
+    }
+  },
+  "required": [
+    "action"
+  ],
+  "additionalProperties": true,
+  "oneOf": [
+    {
+      "properties": {
+        "action": {
+          "const": "update-quantity"
+        },
+        "cart_item_uuid": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "qty": {
+          "type": [
+            "string",
+            "number"
+          ]
+        }
+      },
+      "required": [
+        "cart_item_uuid",
+        "qty"
+      ]
+    },
+    {
+      "properties": {
+        "action": {
+          "const": "update-item-selection-for-checkout"
+        },
+        "cart_item_uuid": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "is_active": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "cart_item_uuid",
+        "is_active"
+      ]
+    },
+    {
+      "properties": {
+        "action": {
+          "const": "remove-cart-item"
+        },
+        "cart_item_uuid": {
+          "type": [
+            "string",
+            "number"
+          ]
+        }
+      },
+      "required": [
+        "cart_item_uuid"
+      ]
+    },
+    {
+      "properties": {
+        "action": {
+          "const": "select-all-items-for-checkout"
+        }
+      }
+    },
+    {
+      "properties": {
+        "action": {
+          "const": "deselect-all-items-for-checkout"
+        }
+      }
+    }
+  ]
+}

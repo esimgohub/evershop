@@ -10,11 +10,13 @@
     "icon": {
       "type": "string"
     },
-    "isDefault": {
-      "type": "number"
+    "is_default": {
+      "type": "number",
+      "enum": [0, 1]
     },
-    "isDisabled": {
-      "type": "number"
+    "is_disabled": {
+      "type": "number",
+      "enum": [0, 1]
     }
   },
   "additionalProperties": true

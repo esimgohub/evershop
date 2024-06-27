@@ -26,7 +26,7 @@ Products.propTypes = {
             value: PropTypes.float,
             text: PropTypes.string
           }),
-          special: PropTypes.shape({
+          oldPrice: PropTypes.shape({
             value: PropTypes.float,
             text: PropTypes.string
           })
@@ -70,7 +70,7 @@ export const fragments = `
         value
         text
       }
-      special {
+      oldPrice {
         value
         text
       }

@@ -7,11 +7,15 @@ const {
   INTERNAL_SERVER_ERROR,
   OK
 } = require('@evershop/evershop/src/lib/util/httpStatus');
+const { saveCart } = require('@evershop/evershop/src/modules/checkout/services/saveCart');
 const { getCartByUUID } = require('../../services/getCartByUUID');
 const { createOrder } = require('../../services/orderCreator');
+const { setContextValue } = require('../../../graphql/services/contextHelper');
+const { createNewCart } = require('../../services/createNewCart');
 
 // eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
+
   try {
     const { cart_id } = request.body;
     // Verify cart
@@ -37,7 +41,31 @@ module.exports = async (request, response, delegate, next) => {
       return;
     }
 
+
     const orderId = await createOrder(cart);
+
+    // TODO: create new cart with un-purchased items by customerId (in `request.session.customerID`)
+    const customerId = cart.getData('customer_id');
+    if (customerId && request.locals.sessionID) {
+      // Create a new cart for the customer
+      const newCart = await createNewCart(request.locals.sessionID, {
+        customerId
+      });
+
+      // Add items from the current cart to the new cart with `is_active` set to `false`
+      const unPurchasedItems = cart.getUnActiveItems();
+
+      if (unPurchasedItems && unPurchasedItems.length > 0) {
+        await Promise.all(unPurchasedItems.map(async (item) => {
+          const prod = await item.getProduct();
+          const qty = await item.getData('qty');
+          await newCart.addItem(prod.product_id, qty);
+        }));
+        await saveCart(newCart);
+
+        setContextValue(request, 'cartId', cart.getData('uuid'));
+      }
+    }
 
     // Load created order
     const order = await select()

@@ -31,15 +31,20 @@ module.exports = async function graphql(request, response, delegate, next) {
 
         const validationErrors = validate(schema, document);
         if (validationErrors.length > 0) {
+          console.log("graphqlQuery", graphqlQuery);
+
           const formatedErrorMessage = graphqlErrorMessageFormat(
             graphqlQuery,
             validationErrors[0].locations[0].line,
             validationErrors[0].locations[0].column
           );
-          debug(
-            'critical',
-            `GraphQL validation error: ${formatedErrorMessage}`
-          );
+
+          console.log("formatedErrorMessage: ", validationErrors.map(validationError => validationError.message));
+
+          // debug(
+          //   'critical',
+          //   `GraphQL validation error: ${formatedErrorMessage}`
+          // );
           next(validationErrors[0]);
         } else {
           const context = getContext(request);

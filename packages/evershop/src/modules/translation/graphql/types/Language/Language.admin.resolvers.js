@@ -52,8 +52,11 @@ module.exports = {
         });
       }
 
-      const languages = await query.execute(pool).map((row) => camelCase(row));
-      return { languages, filters: currentFilters };
+      const languages = await query.execute(pool);
+      const camelCasedLanguages = languages.map((language) =>
+        camelCase(language)
+      );
+      return camelCasedLanguages;
     }
   }
 };

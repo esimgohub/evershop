@@ -4,19 +4,41 @@ import React from 'react';
 import Error from '@components/common/form/fields/Error';
 import '../Field.scss';
 
-function CheckedIcon() {
+function CheckedIcon(props) {
+  const { disabled } = props;
+
   return (
-    <span className="radio-checked">
-      <span />
+    <span
+      className={`radio-checked ${
+        disabled ? '!border-[lightgray] cursor-not-allowed' : ''
+      }`}
+    >
+      <span className={disabled ? '!bg-[lightgray]' : ''} />
     </span>
   );
 }
 
-function UnCheckedIcon() {
-  return <span className="radio-unchecked" />;
+function UnCheckedIcon(props) {
+  const { disabled } = props;
+
+  return (
+    <span
+      className={`radio-unchecked ${disabled ? 'cursor-not-allowed' : ''}`}
+    />
+  );
 }
 
-function Radio({ name, value, label, onChange, error, instruction, options }) {
+function Radio(props) {
+  const {
+    name,
+    value,
+    label,
+    onChange,
+    error,
+    instruction,
+    options,
+    disabled
+  } = props;
   const [_value, setValue] = React.useState(value || '');
   const onChangeFunc = (e) => {
     setValue(e.target.value);
@@ -38,12 +60,13 @@ function Radio({ name, value, label, onChange, error, instruction, options }) {
                 type="radio"
                 name={name}
                 id={name + i}
+                disabled={disabled}
                 value={o.value}
                 checked={_value == o.value}
                 onChange={onChangeFunc}
               />
-              {_value == o.value && <CheckedIcon />}
-              {_value != o.value && <UnCheckedIcon />}
+              {_value == o.value && <CheckedIcon disabled={disabled} />}
+              {_value != o.value && <UnCheckedIcon disabled={disabled} />}
               <span className="pl-1">{o.text}</span>
             </label>
           </div>

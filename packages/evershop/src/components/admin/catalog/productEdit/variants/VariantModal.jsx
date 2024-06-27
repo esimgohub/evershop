@@ -7,6 +7,7 @@ import ProductMediaManager from '@components/admin/catalog/productEdit/media/Pro
 import { Field } from '@components/common/form/Field';
 import { useFormContext } from '@components/common/form/Form';
 import Spinner from '@components/common/Spinner';
+import { ProductType } from '@evershop/evershop/src/modules/catalog/utils/enums/product-type';
 
 const AttributesQuery = `
   query Query($filters: [FilterInput]) {
@@ -25,6 +26,8 @@ const AttributesQuery = `
 `;
 
 export function VariantModal({
+  productId,
+  productUuid,
   variant,
   variantAttributes,
   productImageUploadUrl
@@ -63,14 +66,14 @@ export function VariantModal({
   }
   return (
     <div className="variant-item pb-15 border-b border-solid border-divider mb-15 last:border-b-0 last:pb-0">
-      <div className="grid grid-cols-2 gap-x-1">
-        <div className="col-span-1">
+      <div className="grid grid-cols-1">
+        {/* <div className="col-span-1">
           <ProductMediaManager
             id="images"
             productImageUploadUrl={productImageUploadUrl}
             productImages={gallery}
           />
-        </div>
+        </div> */}
         <div className="col-span-1">
           <div className="grid grid-cols-2 gap-x-1 border-b border-divider pb-15 mb-15">
             {data?.attributes?.items.map((a, index) => (
@@ -118,12 +121,21 @@ export function VariantModal({
               />
             </div>
             <div>
-              <div>Qty</div>
+              <div>Price</div>
               <Field
-                name="qty"
+                name="price"
                 formId="product-edit-form"
                 validationRules={['notEmpty']}
-                value={variant?.product?.inventory?.qty}
+                value={variant?.product?.price?.regular?.value}
+                type="text"
+              />
+            </div>
+            <div>
+              <div>Old Price</div>
+              <Field
+                name="old_price"
+                formId="product-edit-form"
+                value={variant?.product?.price?.oldPrice?.value}
                 type="text"
               />
             </div>
@@ -148,6 +160,24 @@ export function VariantModal({
               />
             </div>
           </div>
+          <Field
+            name="parent_product_id"
+            formId="product-edit-form"
+            value={productId}
+            type="hidden"
+          />
+          <Field
+            name="parent_product_uuid"
+            formId="product-edit-form"
+            value={productUuid}
+            type="hidden"
+          />
+          <Field
+            name="type"
+            formId="product-edit-form"
+            value={ProductType.simple.value}
+            type="hidden"
+          />
         </div>
       </div>
     </div>

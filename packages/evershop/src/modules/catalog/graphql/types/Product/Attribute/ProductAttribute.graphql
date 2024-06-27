@@ -10,6 +10,7 @@ type ProductAttributeIndex {
 }
 
 extend type Product {
+  attribute: JSON!
   attributeIndex: [ProductAttributeIndex]
   attributes: [Attribute]
 }

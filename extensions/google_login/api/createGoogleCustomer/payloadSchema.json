@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "accessToken": {
+      "type": "string"
+    },
+    "idToken": {
+      "type": "string"
+    }
+  },
+  "required": ["accessToken", "idToken"],
+  "additionalProperties": true,
+  "errorMessage": {
+    "properties": {
+      "accessToken": "Access Token is required",
+      "idToken": "Id Token is required"
+    }
+  }
+}

@@ -4,7 +4,7 @@ import Error from '@components/common/form/fields/Error';
 import '../Field.scss';
 import { _ } from '@evershop/evershop/src/lib/locale/translate';
 
-const Select = React.forwardRef((props, ref) => {
+export const Select = React.forwardRef((props, ref) => {
   const {
     name,
     placeholder,
@@ -14,7 +14,8 @@ const Select = React.forwardRef((props, ref) => {
     onChange,
     error,
     instruction,
-    options
+    options,
+    disabled
   } = props;
   const [_value, setValue] = React.useState(value || '');
 
@@ -29,7 +30,11 @@ const Select = React.forwardRef((props, ref) => {
       {label && <label htmlFor={name}>{label}</label>}
       <div className="field-wrapper flex flex-grow items-baseline">
         <select
-          className="form-field"
+          className={`form-field ${
+            disabled
+              ? 'bg-[lightgray] cursor-not-allowed pointer-events-none'
+              : ''
+          }`}
           id={name}
           name={name}
           placeholder={placeholder}
@@ -43,7 +48,11 @@ const Select = React.forwardRef((props, ref) => {
           }}
           ref={ref}
         >
-          <option value="" disabled={disableDefaultOption}>
+          <option
+            value=""
+            className={`${disableDefaultOption ? 'text-lightgray' : ''}`}
+            disabled={disableDefaultOption}
+          >
             {placeholder || _('Please select')}
           </option>
           {options &&
@@ -91,7 +100,8 @@ Select.propTypes = {
   ),
   placeholder: PropTypes.string,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  disableDefaultOption: PropTypes.bool
+  disableDefaultOption: PropTypes.bool,
+  disabled: PropTypes.bool
 };
 
 Select.defaultProps = {
@@ -103,7 +113,6 @@ Select.defaultProps = {
   placeholder: undefined,
   name: undefined,
   value: undefined,
-  disableDefaultOption: true
+  disableDefaultOption: true,
+  disabled: false
 };
-
-export { Select };

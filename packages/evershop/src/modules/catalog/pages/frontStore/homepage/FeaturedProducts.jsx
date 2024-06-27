@@ -33,7 +33,7 @@ FeaturedProducts.propTypes = {
               value: PropTypes.number.isRequired,
               text: PropTypes.string.isRequired
             }).isRequired,
-            special: PropTypes.shape({
+            oldPrice: PropTypes.shape({
               value: PropTypes.number.isRequired,
               text: PropTypes.string.isRequired
             }).isRequired
@@ -69,7 +69,7 @@ export const query = `
               value
               text
             }
-            special {
+            oldPrice {
               value
               text
             }

@@ -10,8 +10,9 @@
     "icon": {
       "type": "string"
     },
-    "isDefault": {
-      "type": "number"
+    "is_default": {
+      "type": "number",
+      "enum": [0, 1]
     }
   },
   "required": ["code"]
