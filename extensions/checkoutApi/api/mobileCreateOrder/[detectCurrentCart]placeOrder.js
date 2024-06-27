@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-const { select } = require('@evershop/postgres-query-builder');
+const { select, insert } = require('@evershop/postgres-query-builder');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const {
@@ -12,6 +12,8 @@ const { getCartByUUID } = require('@evershop/evershop/src/modules/checkout/servi
 const { createNewCart } = require('@evershop/evershop/src/modules/checkout/services/createNewCart');
 const { setContextValue } = require('@evershop/evershop/src/modules/graphql/services/contextHelper');
 const { createOrder } = require('../../services/orderCreator');
+const { getSetting } = require('@evershop/evershop/src/modules/setting/services/setting');
+const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 
 // eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
@@ -41,6 +43,21 @@ module.exports = async (request, response, delegate, next) => {
       return;
     }
 
+    // Default address for cart
+    const address = {
+      address_1: await getSetting('storeAddress', '3/12 Phổ Quang, Phường 2, Quận Tân Bình (Khu biệt thự Mekong)'),
+      city: await getSetting('storeCity', 'Ho Chi Minh'),
+      country: await getSetting('storeCountry', 'VN'),
+      full_name: await getSetting('storeName', 'SIM & eSIM Quốc Tế Gohub'),
+      postcode: await getSetting('storePostalCode', '72108'),
+      province: await getSetting('storeProvince', 'VN-SG'),
+      telephone: await getSetting('storePhoneNumber', '0866440022')
+    }
+
+    const result = await insert('cart_address').given(address).execute(pool);
+    await cart.setData('billing_address_id', parseInt(result.insertId, 10));
+    await saveCart(cart);
+
 
     const orderId = await createOrder(cart);
 
@@ -52,9 +69,9 @@ module.exports = async (request, response, delegate, next) => {
         .from('customer')
         .where('customer_id', '=', customerId)
         .and('status', '=', 1)
-        .load(pool)
+        .load(pool);
       // Create a new cart for the customer
-      const newCart = await createNewCart(request.locals.sessionID, customer);
+      const newCart = await createNewCart(request.locals.sessionID, request.cookies.isoCode || getConfig('shop.currency', 'USD'), customer || {});
 
       // Add items from the current cart to the new cart with `is_active` set to `false`
       const unPurchasedItems = cart.getUnActiveItems();

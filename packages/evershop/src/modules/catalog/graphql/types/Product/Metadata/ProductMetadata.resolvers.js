@@ -74,6 +74,6 @@ module.exports = {
         totalDataAmount: `${totalDataAmountValue}${calculateDataAmountUnit(totalDataAmount, foundDataAmountUnit ? foundDataAmountUnit.option_text : 'GB')}`,
         supportedCountries: categories.length !== 0 ? categories.length - 1 : 0,
       };
-    },
+    }
   }
 };

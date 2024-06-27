@@ -9,6 +9,7 @@ module.exports = {
   Query: {
     cmsPage: async (root, { id }, { pool }) => {
       const query = getCmsPagesBaseQuery();
+      query.where('cms_page_id', '=', id);
       const page = await query.load(pool);
       return page ? camelCase(page) : null;
     },

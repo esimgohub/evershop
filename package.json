@@ -55,8 +55,6 @@
     "googleapis": "128.0.0"
   },
   "dependencies": {
-    "@adyen/adyen-web": "^5.65.0",
-    "@adyen/api-library": "^17.0.0",
-    "swr": "^2.2.5"
+    "@evershop/evershop": "^1.1.0"
   }
 }

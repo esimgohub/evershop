@@ -106,8 +106,6 @@ export default function Products({ collection: { code, addProductApi } }) {
     );
   }
   if (data || fetching) {
-    console.log('data collection product uuids: ', data);
-
     return (
       <Card
         title="Products"

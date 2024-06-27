@@ -1,4 +1,5 @@
 const { select } = require('@evershop/postgres-query-builder');
+
 module.exports.getCategoriesBaseQuery = () => {
   const query = select().from('category');
   query

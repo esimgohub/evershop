@@ -1,6 +1,7 @@
 const { select, selectDistinct, execute } = require('@evershop/postgres-query-builder');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
+const { CategoryStatus } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-status')
 const {
   getProductsByCategoryBaseQuery
 } = require('../../../services/getProductsByCategoryBaseQuery');
@@ -13,8 +14,7 @@ const {
   getCategoriesBaseQuery
 } = require('../../../services/getCategoriesBaseQuery');
 const { CategoryCollection } = require('../../../services/CategoryCollection');
-const { CategoryType } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-type')
-const { CategoryStatus } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-status');
+const { CategoryType } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-type');
 
 
 module.exports = {
@@ -89,8 +89,6 @@ module.exports = {
       const supportedCountryRecords = await query.execute(pool);
 
       const mappedCategories = supportedCountryRecords.length > 0 ? supportedCountryRecords.map(country => {
-        console.log("country: ", country);
-
         return camelCase({
           ...country,
           category_id: categories.find(

@@ -97,7 +97,7 @@ module.exports = {
       if (!user) {
         query.andWhere('attribute.display_on_frontend', '=', true);
       }
-      let attributes = await query.execute(pool);
+      const attributes = await query.execute(pool);
 
       const foundDataAmount = attributes.find(
         (a) => a.attribute_code === 'data-amount'

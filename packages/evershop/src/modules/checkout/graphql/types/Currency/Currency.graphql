@@ -1,0 +1,12 @@
+type Currency {
+  id: ID!
+  code: String!
+  rate: Float!
+  signature: String!
+  createdAt: String!
+  updatedAt: String!
+}
+
+extend type Query {
+  getSummaryCurrencies: [Currency]
+}
