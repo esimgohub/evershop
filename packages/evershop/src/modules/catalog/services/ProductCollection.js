@@ -149,15 +149,6 @@ class ProductCollection {
       this.baseQuery.orWhere('product.type', '=', ProductType.simple.value);
       this.baseQuery.andWhere('product.visibility', '=', true);
       this.baseQuery.andWhere('product.status', '=', true);
-      // if (getConfig('catalog.showOutOfStockProduct', false) === false) {
-      //   this.baseQuery
-      //     .andWhere('product_inventory.manage_stock', '=', false)
-      //     .addNode(
-      //       node('OR')
-      //         .addLeaf('AND', 'product_inventory.qty', '>', 0)
-      //         .addLeaf('AND', 'product_inventory.stock_availability', '=', true)
-      //     );
-      // }
     }
     else {
       this.baseQuery.orWhere('product.type', '=', ProductType.variable.value);
@@ -200,12 +191,14 @@ class ProductCollection {
     this.baseQuery.limit(page * perPage, perPage);
     
     if (productFilter.categoryId) {
-      const productCategory = await select()
+      const productCategories = await select()
         .from('product_category')
         .where('category_id', '=', productFilter.categoryId)
         .execute(pool);
 
-      this.baseQuery.andWhere("product.uuid", "IN", productCategory.map(p => p.product_id));
+      console.log("product category: ", productCategories);
+
+      this.baseQuery.andWhere("product.parent_product_uuid", "IN", productCategories.map(p => p.product_id));
     }
 
     if (productFilter.tripPeriod) {
@@ -242,6 +235,8 @@ class ProductCollection {
 
   async items() {
     // Pick one per variant group.
+    console.log("thisbasequery: ", this.baseQuery.sql());
+
     const items = await this.baseQuery.execute(pool);
 
     for (const item of items) {
