@@ -1,10 +1,9 @@
+import { DeepLinkModal } from '../../../components/DeepLinkModal';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { DeepLinkModal } from '../../../components/DeepLinkModal';
 import { useDevice } from '../hooks/use-device';
-import Spinner from '@components/common/Spinner';
 
-export default function MagicLink() {
+export default function ProductShared() {
   const { isMobile } = useDevice();
 
   if (isMobile) {
@@ -18,7 +17,7 @@ export default function MagicLink() {
   return <DeepLinkModal title="Nofication" content="Do you want to continue?" webPageUrl="https://esimgohub.com" />
 }
 
-MagicLink.propTypes = {
+ProductShared.propTypes = {
   action: PropTypes.string.isRequired
 };
 

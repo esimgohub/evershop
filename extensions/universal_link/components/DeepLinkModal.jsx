@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useModal } from '@components/common/modal/useModal';
 import { Card } from '@components/admin/cms/Card';
@@ -10,11 +10,20 @@ export function DeepLinkModal({
     title,
     content,
     webPageUrl,
-    appUrl,
+    // appUrl,
 }) {
   const modal = useModal();
 
-  return (
+  useEffect(() => {
+    modal.openModal();
+  }, [])
+
+  const handleNavigate = () => {
+    window.open(webPageUrl, '_blank');
+    modal.closeModal();
+  }
+
+  return modal.state.showing && (
     <div>
         <div className={modal.className}>
           <div
@@ -23,52 +32,14 @@ export function DeepLinkModal({
             role="dialog"
           >
             <div className="modal">
-              {/* <Form id="variantForm" submitBtn={false}>
-                <Card title="Create a new variant">
-                  <Card.Session>
-                    <VariantModal
-                      productId={productId}
-                      productUuid={productUuid}
-                      variantAttributes={variantGroup.attributes}
-                      productImageUploadUrl={productImageUploadUrl}
-                    />
-                  </Card.Session>
-                  <Card.Session>
-                    <div className="flex justify-end">
-                      <div className="grid grid-cols-2 gap-1">
-                        <SubmitButton
-                          productId={productId}
-                          productUuid={productUuid}
-                          attributes={variantGroup.attributes}
-                          createProductApi={createProductApi}
-                          addVariantItemApi={addVariantItemApi}
-                          productFormContextDispatch={
-                            productFormContextDispatch
-                          }
-                          modal={modal}
-                          refresh={refresh}
-                        />
-                        <Button
-                          title="Cancel"
-                          variant="secondary"
-                          onAction={modal.closeModal}
-                        />
-                      </div>
-                    </div>
-                  </Card.Session>
-                </Card>
-              </Form> */}
-              {/* <button>
-                Go to web page
-              </button>
-
-              <button>
-                Go to app
-              </button> */}
-
-                <Card title="Select Products">
+                <Card title={title}>
                     <div className="modal-content">
-                        <Button title="Close" variant="secondary" onAction={closeModal} />
+                        <Card.Session title={content}>
+                          <div className="flex justify-between gap-2">
+                            <Button title="To Web Page" className="w-full" variant="secondary" onAction={handleNavigate} />
+                            <Button title="To App" className="w-full" variant="primary" onAction={handleNavigate} />
+                          </div>
+                        </Card.Session>
                     </div>
                 </Card>
             </div>
@@ -82,5 +53,5 @@ DeepLinkModal.propTypes = {
     title: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
     webPageUrl: PropTypes.string.isRequired,
-    appUrl: PropTypes.string.isRequired
+    // appUrl: PropTypes.string.isRequired
 };
