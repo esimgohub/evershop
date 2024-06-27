@@ -15,6 +15,7 @@ const {
 } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getAjv } = require('../../../base/services/getAjv');
 const customerDataSchema = require('./customerDataSchema.json');
+const { LoginSource } = require('../../constant');
 
 function validateCustomerDataBeforeInsert(data) {
   const ajv = getAjv();
@@ -33,26 +34,48 @@ function validateCustomerDataBeforeInsert(data) {
 
 async function updateCustomerData(data, connection) {
   const query = select().from('customer');
-  const { id, full_name, language_code, currency_code } = data;
+  const { id, first_name, last_name, email, language_code, currency_code } =
+    data;
   const customer = await query.where('uuid', '=', id).load(connection);
   if (!customer) {
     throw new Error('Requested customer not found');
   }
 
+  const updatedEmail =
+    email?.trim() !== customer.email &&
+    customer.login_source !== LoginSource.MAGIC_LINK
+      ? email.trim()
+      : customer.email;
+
+  let languageId = customer.language_id;
+  if (language_code) {
+    languageId = select('id')
+      .from('language')
+      .where('code', '=', language_code.trim())
+      .load(connection);
+  }
+
+  let currencyId = customer.currency_id;
+  if (currency_code) {
+    currencyId = select('id')
+      .from('currency')
+      .where('code', '=', currency_code.trim())
+      .load(connection);
+  }
+
   const updatedCustomer = {
     ...customer,
-    language_code:
-      language_code && language_code !== customer.language_code
-        ? language_code
-        : customer.language_code,
-    currency_code:
-      currency_code && currency_code !== customer.currency_code
-        ? currency_code
-        : customer.currency_code,
-    full_name:
-      full_name && full_name.trim() !== customer.full_name
-        ? full_name
-        : customer.full_name
+    language_id: languageId,
+    currency_id: currencyId,
+    first_name:
+      first_name && first_name.trim() !== customer.first_name
+        ? first_name
+        : customer.first_name,
+    last_name:
+      last_name && last_name.trim() !== customer.last_name
+        ? last_name
+        : customer.last_name,
+    email: updatedEmail
   };
 
   try {
@@ -60,7 +83,9 @@ async function updateCustomerData(data, connection) {
       .given(updatedCustomer)
       .where('uuid', '=', id)
       .execute(connection);
-    Object.assign(customer, newCustomer);
+
+    if (newCustomer.login_source === LoginSource.MAGIC_LINK)
+      Object.assign(customer, newCustomer);
     return newCustomer;
   } catch (e) {
     if (!e.message.includes('No data was provided')) {

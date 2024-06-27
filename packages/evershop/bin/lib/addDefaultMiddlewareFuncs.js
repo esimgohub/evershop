@@ -105,12 +105,7 @@ exports.addDefaultMiddlewareFuncs = function addDefaultMiddlewareFuncs(
     // TODO: Investigate why next 2 time, it call the upload twice
     if (currentRoute?.isApi) {
       // We don't need session for api routes. Restful api should be stateless
-      if (!currentRoute?.isAdmin) {
-        frontStoreSessionMiddleware(request, response, next);
-      }
-      else {
-        next();
-      }
+      frontStoreSessionMiddleware(request, response, next);
     } else if (currentRoute?.isAdmin) {
       adminSessionMiddleware(request, response, next);
     } else {

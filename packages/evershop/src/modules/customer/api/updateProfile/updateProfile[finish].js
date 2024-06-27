@@ -2,12 +2,15 @@ const { updateCustomer } = require('../../services/customer/updateCustomer');
 
 module.exports = async (request) => {
   const currentCustomer = request.getCurrentCustomer();
-  const { full_name, language_code, currency_code } = request.body;
+  const { first_name, last_name, email, language_code, currency_code } =
+    request.body;
 
   const result = await updateCustomer(
     {
       id: currentCustomer.uuid,
-      full_name,
+      first_name,
+      last_name,
+      email,
       language_code,
       currency_code
     },

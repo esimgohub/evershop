@@ -1,0 +1,18 @@
+{
+  "system": {
+    "extensions": [
+      {
+        "name": "magic_login",
+        "resolve": "extensions/magic_login",
+        "enabled": true,
+        "priority": 10
+      }
+    ]
+  },
+  "magic_login": {
+    "jwt_secret": "JWT_SECRET",
+    "jwt_expiration_time": "JWT_EXPIRATION_TIME",
+    "email_service_url": "EMAIL_SERVICE_URL",
+    "email_service_token": "EMAIL_SERVICE_TOKEN"
+  }
+}
