@@ -1,5 +1,5 @@
 {
   "methods": ["GET"],
-  "path": "/.well-known/apple-app-site-association",
+  "path": "/apple-app-site-association",
   "access": "public"
 }

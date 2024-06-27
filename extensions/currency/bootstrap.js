@@ -192,7 +192,7 @@ module.exports = () => {
         .load(pool);
 
         if (!foundCurrency) {
-            console.log("Not found currency with code: " + code);
+            // console.log("Not found currency with code: " + code);
             return;
         }
 
@@ -207,7 +207,7 @@ module.exports = () => {
         .load(pool);
 
         if (!foundCurrency) {
-            console.log("Not found currency with code: " + code);
+            // console.log("Not found currency with code: " + code);
             return;
         }
 
