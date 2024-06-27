@@ -8,6 +8,6 @@ module.exports = exports = async (connection) => {
   rate float NOT NULL,
   signature varchar(255),
   created_at timestamp NOT NULL DEFAULT now(),
-  updated_at timestamp NOT NULL DEFAULT now()
+  updated_at timestamp NOT NULL DEFAULT now())
 `);
 };
