@@ -1,3 +1,5 @@
+const { getConfig } = require("@evershop/evershop/src/lib/util/getConfig")
+
 const sheetColumnIndex = {
     product: {
         code: 0,
@@ -72,7 +74,7 @@ const sheetColumnIndex = {
 }
 
 const evershopData = {
-    id: process.env.EVERSHOP_DATA_SHEET_ID,
+    id: getConfig("googleSheet.data.evershop.id"),
     sheetColumns: {
         product: 'product',
         productVariant: 'product-variant',
