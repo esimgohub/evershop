@@ -111,6 +111,11 @@ type CartItem implements ShoppingCartItem {
   productUrl: String!
   errors: [String!]
   isActive: Boolean
+  attribute: JSON!
+  category: [JSON!]
+  oldPrice: Price
+  categoryId: Int!
+  tripText: String
 }
 
 """

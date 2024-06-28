@@ -17,6 +17,7 @@ const {
 module.exports = {
   Product: {
     price: async (product, _, { user }) => {
+      const price = parseFloat(product.price);
       const taxConfigDisplay = getConfig(
         'pricing.tax.display_catalog_price_including_tax',
         false

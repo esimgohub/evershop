@@ -27,7 +27,18 @@ module.exports = async (request, response, delegate, next) => {
     } else {
       cart = await getCartByUUID(cartId); // Cart object
     }
-    const { sku, qty } = request.body;
+    const { sku, qty, categoryId, trip } = request.body;
+
+    if (!categoryId || !trip?.fromDate || !trip?.toDate) {
+      response.status(INVALID_PAYLOAD);
+      response.json({
+        error: {
+          status: INVALID_PAYLOAD,
+          message: translate('Missing required param')
+        }
+      });
+      return;
+    }
 
     // Load the product by sku
     const product = await select()
@@ -49,6 +60,9 @@ module.exports = async (request, response, delegate, next) => {
 
     // If everything is fine, add the product to the cart
     const item = await cart.addItem(product.product_id, parseInt(qty, 10));
+    await item.updateCategoryId(parseInt(categoryId, 10));
+    await item.updateTripDate(trip.fromDate.toString(), trip.toDate.toString());
+
     await saveCart(cart);
     // Set the new cart id to the context, so next middleware can use it
     setContextValue(request, 'cartId', cart.getData('uuid'));
