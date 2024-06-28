@@ -4,13 +4,10 @@ Represents a customer
 type Customer {
   customerId: Int!
   uuid: String!
-  status: Int!
   email: String
   firstName: String
   lastName: String
   createdAt: Date!
-  languageCode: String!
-  currencyCode: String!
 }
 
 extend type Query {

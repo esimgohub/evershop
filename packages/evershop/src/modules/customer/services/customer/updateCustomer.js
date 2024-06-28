@@ -41,11 +41,19 @@ async function updateCustomerData(data, connection) {
     throw new Error('Requested customer not found');
   }
 
-  const updatedEmail =
-    email?.trim() !== customer.email &&
-    customer.login_source !== LoginSource.MAGIC_LINK
-      ? email.trim()
-      : customer.email;
+  let updatedEmail = null;
+  if (email) {
+    const existingCustomerEmail = await query
+      .where('email', '=', email)
+      .load(connection);
+    if (existingCustomerEmail) throw new Error('Email already exists');
+
+    updatedEmail =
+      email.trim() !== customer.email &&
+      customer.login_source !== LoginSource.MAGIC_LINK
+        ? email.trim()
+        : customer.email;
+  }
 
   let languageId = customer.language_id;
   if (language_code) {
