@@ -6,6 +6,7 @@ const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const {
   getFrontStoreSessionCookieName
 } = require('../../../auth/services/getFrontStoreSessionCookieName');
+const { setContextValue } = require('../../../graphql/services/contextHelper');
 
 /**
  * This is the session based authentication middleware.
@@ -47,7 +48,9 @@ module.exports = async (request, response, delegate, next) => {
             // Delete the password field
             delete currentCustomer.password;
             request.locals.customer = currentCustomer;
+            setContextValue(request, 'customer', currentCustomer);
           }
+          setContextValue(request, 'customer', currentCustomer);
         }
         // We also keep the session id in the request.
         // This is for anonymous customer authentication.
