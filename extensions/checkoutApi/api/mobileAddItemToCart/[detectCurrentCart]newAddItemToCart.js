@@ -27,6 +27,8 @@ module.exports = async (request, response, delegate, next) => {
     } else {
       cart = await getCartByUUID(cartId); // Cart object
     }
+
+    const { action } = request.query;
     const { sku, qty, categoryId, trip } = request.body;
 
     if (!categoryId || !trip?.fromDate || !trip?.toDate) {
@@ -62,6 +64,12 @@ module.exports = async (request, response, delegate, next) => {
     const item = await cart.addItem(product.product_id, parseInt(qty, 10));
     await item.updateCategoryId(parseInt(categoryId, 10));
     await item.updateTripDate(trip.fromDate.toString(), trip.toDate.toString());
+
+    // Buy now options
+    if (action && action === 'item-buy-now') {
+      await cart.updateDeselectAllItems();
+      await cart.updateItemSelection(item.getId(), true);
+    }
 
     await saveCart(cart);
     // Set the new cart id to the context, so next middleware can use it
