@@ -57,6 +57,9 @@ const clearData = async () => {
     console.log("===== Clear Product Data =====");
     await del('product').execute(connection);
 
+    console.log("===== Clear Currencies =====");
+    await del('currency').execute(connection);
+
     await commit(connection);
   } catch (error) {
     console.log("error: ", error);
@@ -85,6 +88,23 @@ const bootstrapData = async (data) => {
       currencyData,
       attributeGroupData,
     } = await getEvershopSheetData();
+
+    // Currency
+    console.log("\n\n===== Start bootstrap Currency =====");
+
+    const currencyRecords = await currencyData.rows.map(row => {
+      return {
+        code: row[evershopSheetColumnIndex.currency.code],
+        rate: parseFloat(row[evershopSheetColumnIndex.currency.rate]),
+        signature: row[evershopSheetColumnIndex.currency.signature],
+      }
+    });
+    for (const record of currencyRecords) {
+      await insert('currency').given(record).execute(connection);
+    }
+
+    console.log("\n\n===== Finish bootstrap Attribute Group =====");
+    
 
     console.log("\n\n===== Start bootstrap Attribute Group =====");
 
@@ -227,8 +247,6 @@ const bootstrapData = async (data) => {
     console.log("\n\n===== Finish bootstrap Category =====");
 
     console.log("\n\n===== Start bootstrap Category Description =====");
-
-    console.log("inserted categories: ", insertedCategories);
 
     // Category Description
     const categoryDescriptionRecords = await categoryData.rows.map(row => {
@@ -567,7 +585,6 @@ const bootstrapData = async (data) => {
         if (!foundedAttribute) {
           throw new Error(`Attribute with code '${productVariantData.header[attributeIndex]}' not found`);
         }
-        console.log("founded product variant Attribute", foundedAttribute);
 
         const isSelectionAttribute = foundedAttribute.type === 'select';
         if (isSelectionAttribute) {

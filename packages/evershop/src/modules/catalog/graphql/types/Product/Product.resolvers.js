@@ -28,6 +28,12 @@ module.exports = {
       }
     },
     categories: async (product, _, { homeUrl, pool }) => {
+      const foundedProduct = await select()
+        .from('product')
+        .where('product_id', '=', product.productId)
+        .load(pool);
+      console.log("foundedProduct: ", foundedProduct)
+
       const originCategories = await select().from('category').execute(pool);
 
       const query = select().from('category');
@@ -43,20 +49,28 @@ module.exports = {
       query.innerJoin('product_category')
         .on('product_category.category_id', '=', 'category.uuid');
 
-
-      query.where('product_category.product_id', '=', product.uuid);
+      const isSimpleProduct = foundedProduct.type === ProductType.simple.value;
+      if (isSimpleProduct) {
+        console.log("product: ", product.parentProductUuid)
+        query.where('product_category.product_id', '=', product.parentProductUuid);
+      }
+      else {
+        query.where('product_category.product_id', '=', product.uuid);
+      }
         
       query.andWhere('category.status', '=', CategoryStatus.Enabled);
 
       const categories = await query.execute(pool);
 
+      console.log("categories: ", categories)
 
       const mappedCategories = categories.length > 0 ? categories.map(country => {
         return camelCase({
           ...country,
           category_id: originCategories.find(
             category => category.uuid === country.uuid
-          ).category_id
+          ).category_id,
+          image: country.image ? `${homeUrl}${country.image}` : null,
         })
       }) : [];
 

@@ -1,10 +1,12 @@
+const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
+
 require('dotenv').config();
 
 const config = {
-  project_id: process.env.GOOGLE_API_PROJECT_ID,
-  private_key: process.env.GOOGLE_API_PRIVATE_KEY,
-  client_email: process.env.GOOGLE_API_CLIENT_EMAIL,
-  client_id: process.env.GOOGLE_API_CLIENT_ID,
+  project_id: getConfig("googleSheet.config.project_id"),
+  private_key: getConfig("googleSheet.config.private_key"),
+  client_email: getConfig("googleSheet.config.client_email"),
+  client_id: getConfig("googleSheet.config.client_id"),
 };
 
 module.exports = {
