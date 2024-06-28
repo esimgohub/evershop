@@ -23,6 +23,8 @@ module.exports.buildEntry = async function buildEntry(
 ) {
   await Promise.all(
     routes.map(async (route) => {
+      console.log("route: ", route);
+
       const subPath = getRouteBuildPath(route);
       const components = getComponentsByRoute(route);
       if (!components) {
