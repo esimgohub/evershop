@@ -5,6 +5,10 @@ type Language {
   icon: String
 }
 
+extend type Customer {
+  language: Language!
+}
+
 extend type Query {
   language(code: String): Language
   languages(filters: [FilterInput]): [Language]

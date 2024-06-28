@@ -2,6 +2,8 @@ const { updateCustomer } = require('../../services/customer/updateCustomer');
 
 module.exports = async (request) => {
   const currentCustomer = request.getCurrentCustomer();
+  if (!currentCustomer) throw new Error('Unauthorized');
+
   const { first_name, last_name, email, language_code, currency_code } =
     request.body;
 
