@@ -186,9 +186,12 @@ class ProductCollection {
     });
 
     const page = productFilter.page ? parseInt(productFilter.page) : 1;
+    const offset = page - 1;
     const perPage = productFilter.perPage ? parseInt(productFilter.perPage) : 10;
 
-    this.baseQuery.limit(page * perPage, perPage);
+    this.baseQuery.limit(offset * perPage, perPage);
+
+    // Clone the main query for getting total right before doing the paging
     
     if (productFilter.categoryId) {
       const foundedCategory = await select()
@@ -225,8 +228,6 @@ class ProductCollection {
       this.baseQuery.andWhere("product_attribute_value_index.option_text", ">=", productFilter.tripPeriod < 10 ? `0${productFilter.tripPeriod}` : productFilter.tripPeriod);
     }
 
-    // Clone the main query for getting total right before doing the paging
-
     const totalQuery = this.baseQuery.clone();
     totalQuery.select('COUNT(product.product_id)', 'total');
     totalQuery.removeOrderBy();
@@ -238,7 +239,6 @@ class ProductCollection {
 
   async items() {
     // Pick one per variant group.
-    console.log("thisbasequery: ", this.baseQuery.sql());
 
     const items = await this.baseQuery.execute(pool);
 
