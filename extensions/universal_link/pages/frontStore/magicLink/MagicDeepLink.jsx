@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import { DeepLinkModal } from '../../../components/DeepLinkModal';
-import { useDevice } from '../hooks/use-device';
+import { useDevice } from '../../../hooks/useDevice';
 import Spinner from '@components/common/Spinner';
 
 export default function MagicLink() {
@@ -23,7 +23,7 @@ MagicLink.propTypes = {
 };
 
 export const layout = {
-  areaId: 'content',
+  areaId: 'body',
   sortOrder: 10
 };
 

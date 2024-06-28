@@ -1,7 +1,7 @@
 import { DeepLinkModal } from '../../../components/DeepLinkModal';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { useDevice } from '../hooks/use-device';
+import { useDevice } from '../../../hooks/useDevice';
 
 export default function ProductShared() {
   const { isMobile } = useDevice();
@@ -22,7 +22,7 @@ ProductShared.propTypes = {
 };
 
 export const layout = {
-  areaId: 'content',
+  areaId: 'body',
   sortOrder: 10
 };
 
