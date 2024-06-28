@@ -112,7 +112,7 @@ type CartItem implements ShoppingCartItem {
   errors: [String!]
   isActive: Boolean
   attribute: JSON!
-  category: [JSON!]
+  category: JSON!
   oldPrice: Price
   categoryId: Int!
   tripText: String

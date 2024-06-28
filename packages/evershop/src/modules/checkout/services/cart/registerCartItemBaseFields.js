@@ -9,7 +9,6 @@ const {
 const { getSetting } = require('../../../setting/services/setting');
 const { getTaxPercent } = require('../../../tax/services/getTaxPercent');
 const { getTaxRates } = require('../../../tax/services/getTaxRates');
-const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 
 module.exports.registerCartItemBaseFields =
   function registerCartItemBaseFields() {
@@ -488,31 +487,21 @@ module.exports.registerCartItemBaseFields =
         key: 'category',
         resolvers: [
           async function resolver() {
-            const product = await this.getProduct();
-            const productCategoryQuery = select().from('product_category');
+            const categoryDescriptionQuery = select().from('category_description');
 
-            productCategoryQuery.innerJoin('category').on(
-              'product_category.category_id',
-              '=',
-              'category.uuid'
-            );
-
-            productCategoryQuery.innerJoin('category_description').on(
-              'category_description.category_description_category_id',
-              '=',
-              'category.category_id'
-            );
-            productCategoryQuery.where('product_id', '=', product.uuid);
-            const productCategoryRecords = await productCategoryQuery.execute(pool);
-
-            if (productCategoryRecords.length === 0) {
-              return [];
+            const categoryId = await this.getData('category_id');
+            if (categoryId == null) {
+              return {}
             }
-
-            return productCategoryRecords.map((row) => camelCase(row));
+            categoryDescriptionQuery.where('category_description_id', '=', categoryId);
+            const rows = await categoryDescriptionQuery.execute(pool);
+            if (!rows?.length) {
+              return {}
+            }
+            return rows[0]
           }
         ],
-        dependencies: ['product_id']
+        dependencies: ['category_id']
       },
       {
         key: 'product_old_price',
