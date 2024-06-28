@@ -28,7 +28,6 @@ module.exports = async (request, response, delegate, next) => {
       }
     });
   }
-
   let customerQuery = select('customer.customer_id', 'customer_id')
     .select('customer.status', 'status')
     .select('customer.first_name', 'first_name')
@@ -49,6 +48,7 @@ module.exports = async (request, response, delegate, next) => {
   customerQuery
     .leftJoin('currency', 'currency')
     .on('customer.currency_id', '=', 'currency.id');
+  customerQuery.where('customer.email', googleUserInfo.email);
 
   let [customer] = await customerQuery.execute(pool);
 
