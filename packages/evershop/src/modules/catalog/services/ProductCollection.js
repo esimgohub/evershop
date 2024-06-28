@@ -191,12 +191,15 @@ class ProductCollection {
     this.baseQuery.limit(page * perPage, perPage);
     
     if (productFilter.categoryId) {
+      const foundedCategory = await select()
+        .from('category')
+        .where('category_id', '=', productFilter.categoryId)
+        .load(pool);
+
       const productCategories = await select()
         .from('product_category')
-        .where('category_id', '=', productFilter.categoryId)
+        .where('category_id', '=', foundedCategory.uuid)
         .execute(pool);
-
-      console.log("product category: ", productCategories);
 
       this.baseQuery.andWhere("product.parent_product_uuid", "IN", productCategories.map(p => p.product_id));
     }
