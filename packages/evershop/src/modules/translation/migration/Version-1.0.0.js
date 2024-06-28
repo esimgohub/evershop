@@ -40,8 +40,8 @@ module.exports = exports = async (connection) => {
   await execute(
     connection,
     `ALTER TABLE customer
-    ADD COLUMN language_id uuid,
-    ADD CONSTRAINT "FK_CUSTOMER_LANGUAGE" FOREIGN KEY ("language_id") REFERENCES "language" ("id") ON DELETE SET NULL;`
+    ADD COLUMN language_code varchar(20),
+    ADD CONSTRAINT "FK_CUSTOMER_LANGUAGE" FOREIGN KEY ("language_code") REFERENCES "language" ("code") ON DELETE SET NULL;`
   );
 
   await execute(

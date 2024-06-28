@@ -14,6 +14,6 @@ module.exports = exports = async (connection) => {
     `ALTER TABLE customer
     ADD COLUMN first_name VARCHAR(50),
     ADD COLUMN last_name VARCHAR(50),
-    ADD COLUMN avatar_url TEXT`
+    ADD COLUMN avatar_url TEXT;`
   );
 };

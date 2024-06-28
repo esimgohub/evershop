@@ -15,17 +15,6 @@ const {
   createCurrencyResponse
 } = require('../../services/mapper/createCurrencyResponse');
 
-const facebookUserInfoExample = {
-  id: '115665475172743656167',
-  email: 'nguyenonkhoi123@gmail.com',
-  verified_email: true,
-  name: 'Khoi Nguyen',
-  given_name: 'Khoi',
-  family_name: 'Nguyen',
-  picture:
-    'https://lh3.googleusercontent.com/a/ACg8ocKKkh5veW62XS5BhnieEauRyIlPlS6N2jw6jjpDSL48e4F-KA=s96-c'
-};
-
 module.exports = async (request, response, delegate, next) => {
   const { accessToken } = request.body;
 
