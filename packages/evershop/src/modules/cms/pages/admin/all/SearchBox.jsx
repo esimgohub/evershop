@@ -27,7 +27,8 @@ const SearchQuery = `
       items {
         customerId
         uuid
-        fullName
+        firstName
+        lastName
         email
         url: editUrl
       }
