@@ -808,7 +808,6 @@ class UpdateQuery extends Query {
       .filter((e) => e !== '')
       .join(' ');
 
-    console.log("sql: ", sql);
     return sql;
   }
 
