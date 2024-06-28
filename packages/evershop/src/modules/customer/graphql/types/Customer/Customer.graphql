@@ -9,6 +9,8 @@ type Customer {
   firstName: String
   lastName: String
   createdAt: Date!
+  languageCode: String!
+  currencyCode: String!
 }
 
 extend type Query {
