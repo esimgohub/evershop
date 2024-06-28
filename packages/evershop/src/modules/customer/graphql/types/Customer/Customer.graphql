@@ -6,7 +6,8 @@ type Customer {
   uuid: String!
   status: Int!
   email: String
-  fullName: String!
+  firstName: String
+  lastName: String
   createdAt: Date!
   languageCode: String!
   currencyCode: String!
