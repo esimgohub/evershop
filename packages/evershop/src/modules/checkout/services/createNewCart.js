@@ -16,14 +16,15 @@ exports.createNewCart = async (sid, currency, customer = {}) => {
     customerId: customer_id,
     email: customer_email,
     groupId: customer_group_id,
-    fullName: customer_full_name
+    firstName: customer_first_name,
+    lastName: customer_last_name
   } = customer;
   const cart = await create({
     sid,
     customer_id,
     customer_email,
     customer_group_id,
-    customer_full_name,
+    customer_full_name: `${customer_first_name} ${customer_last_name}`,
     currency
   });
   return cart;

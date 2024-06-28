@@ -50,6 +50,7 @@ module.exports = async (request, response, delegate, next) => {
             request.locals.customer = currentCustomer;
             setContextValue(request, 'customer', currentCustomer);
           }
+          setContextValue(request, 'customer', currentCustomer);
         }
         // We also keep the session id in the request.
         // This is for anonymous customer authentication.
