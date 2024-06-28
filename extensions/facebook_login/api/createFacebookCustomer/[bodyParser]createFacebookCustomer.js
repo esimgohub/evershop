@@ -7,7 +7,7 @@ const {
   LoginSource
 } = require('@evershop/evershop/src/modules/customer/constant');
 
-module.exports = async (request, response, stack, next) => {
+module.exports = async (request, response, delegate, next) => {
   const { accessToken } = request.body;
 
   const facebookUserInfo = await getFacebookUserInfo(accessToken);
@@ -49,6 +49,8 @@ module.exports = async (request, response, stack, next) => {
 
   delete customer.password;
   request.locals.customer = customer;
+  request.session.customerID = customer.customer_id;
+  request.session.loginSource = LoginSource.FACEBOOK;
   delegate.createCustomer = customer;
   response.status(OK);
   response.$body = {
