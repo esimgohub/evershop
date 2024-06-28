@@ -35,6 +35,7 @@ module.exports = async (request, response, delegate, next) => {
         insertingRecords.push({
           product_image_product_id: product.product_id,
           origin_image: files[0].url,
+          is_main: true
         })
       }
 
