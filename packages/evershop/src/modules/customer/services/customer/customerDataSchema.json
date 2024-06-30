@@ -1,17 +1,19 @@
 {
   "type": "object",
   "properties": {
-    "status": {
-      "type": ["string", "integer"],
-      "enum": ["0", "1", 0, 1]
-    },
-    "fullName": {
+    "first_name": {
       "type": "string"
     },
-    "languageCode": {
+    "last_name": {
       "type": "string"
     },
-    "currencyCode": {
+    "email": {
+      "type": "string"
+    },
+    "language_code": {
+      "type": "string"
+    },
+    "currency_code": {
       "type": "string"
     }
   },

@@ -20,8 +20,8 @@ const { LoginSource } = require('../../constant');
 function validateCustomerDataBeforeInsert(data) {
   const ajv = getAjv();
   customerDataSchema.required = [];
-
   const jsonSchema = getValueSync('customerDataSchema', customerDataSchema);
+
   const validate = ajv.compile(jsonSchema);
 
   const valid = validate(data);
@@ -49,18 +49,20 @@ async function updateCustomerData(data, connection) {
 
   let languageId = customer.language_id;
   if (language_code) {
-    languageId = select('id')
+    const existingLanguage = await select('id')
       .from('language')
       .where('code', '=', language_code.trim())
       .load(connection);
+    languageId = existingLanguage?.id || customer.language_id;
   }
 
   let currencyId = customer.currency_id;
   if (currency_code) {
-    currencyId = select('id')
+    const existingCurrency = await select('id')
       .from('currency')
       .where('code', '=', currency_code.trim())
       .load(connection);
+    currencyId = existingCurrency?.id || customer.currency_id;
   }
 
   const updatedCustomer = {
