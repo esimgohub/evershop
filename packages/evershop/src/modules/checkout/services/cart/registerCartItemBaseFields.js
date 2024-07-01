@@ -633,6 +633,7 @@ module.exports.registerCartItemBaseFields =
                 dataAmountUnit: '',
                 dataType: '',
                 dayAmount: '',
+                categoryName: '',
                 imgUrl: '',
                 imgAlt: ''
               };
@@ -651,6 +652,7 @@ module.exports.registerCartItemBaseFields =
               dataAmountUnit: attrObj['data-amount-unit'],
               dataType: attrObj['data-type'],
               dayAmount: attrObj['day-amount'],
+              categoryName: cateObj.name,
               imgUrl: `${homeUrl}${cateObj.image}`,
               imgAlt: cateObj.name
             };
