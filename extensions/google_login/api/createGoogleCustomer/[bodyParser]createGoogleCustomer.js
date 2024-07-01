@@ -50,6 +50,8 @@ module.exports = async (request, response, delegate, next) => {
     .leftJoin('currency', 'currency')
     .on('customer.currency_id', '=', 'currency.id');
 
+  customerQuery.where('customer.external_id', '=', googleUserInfo.id);
+
   let [customer] = await customerQuery.execute(pool);
 
   if (customer && customer.status !== AccountStatus.ENABLED) {
