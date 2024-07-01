@@ -67,6 +67,7 @@ const sheetColumnIndex = {
     currency: {
         code: 0,
         rate: 1,
+        signature: 2,
     },
     attributeGroup: {
         name: 0

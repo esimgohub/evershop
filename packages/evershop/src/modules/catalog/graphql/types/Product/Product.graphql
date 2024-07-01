@@ -32,7 +32,7 @@ type Product {
 }
 
 input ProductFilterInput {
-  categoryId: String
+  categoryId: Int
   tripPeriod: String
   page: Int
   perPage: Int
