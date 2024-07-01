@@ -1,11 +1,12 @@
+const { select } = require('@evershop/postgres-query-builder');
+
 module.exports = {
-  Setting: {
-    slidersSetting: (setting) => {
+  Query: {
+    sliders: async (root, _, { pool }) => {
+      const setting = await select().from('setting').execute(pool);
+
       const sliders = setting
         .filter((s) => s.name.startsWith('slider'));
-
-      const sliderGroups = setting
-        .filter((s) => s.name.startsWith('sliderGroup'));
 
       const numberOfSliderFields = 5;
       const totalSlider = sliders.length / numberOfSliderFields;
@@ -16,21 +17,21 @@ module.exports = {
 
         const sliderSortOrder = matchedSliders.find((s) => s.name.toLowerCase().includes('sortorder'));
         const sliderVisibility = matchedSliders.find((s) => s.name.toLowerCase().includes('visibility'));
-        const sliderUrl = matchedSliders.find((s) => s.name.toLowerCase().includes('url'));
         const sliderIndex = matchedSliders.find((s) => s.name.toLowerCase().includes('index'));
         const sliderImageUrl = matchedSliders.find((s) => s.name.toLowerCase().includes('imageurl'));
+        const sliderUrl = matchedSliders.find((s) => s.name.toLowerCase().includes('url'));
+
 
         results.push({
           sortOrder: parseInt(sliderSortOrder.value),
           index: parseInt(sliderIndex.value),
           url: sliderUrl.value,
-          group: sliderGroup ?? null,
           visibility: parseInt(sliderVisibility.value) === 1,
           imageUrl: sliderImageUrl.value
-        })
+        });
       }
 
-      results.filter((s) => s.visibility === true).sort((a, b) => a.sortOrder - b.sortOrder);
+      results.sort((a, b) => a.index - b.index);
 
       return results;
     },

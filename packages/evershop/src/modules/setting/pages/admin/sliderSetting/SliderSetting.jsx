@@ -19,6 +19,7 @@ function SliderSetting(props) {
           {
             index: 1,
             sortOrder: 1,
+            sliderGroup: null,
             url: null,
             visibility: true,
             imageUrl: null
@@ -26,13 +27,9 @@ function SliderSetting(props) {
         ]
   );
 
-  console.log('slidersSetting: ', slidersSetting);
-
   const [loading, setLoading] = useState(false);
 
   const handleSliderImageChange = (e, index) => {
-    console.log('upload index: ', index);
-
     e.persist();
 
     const formData = new FormData();
@@ -118,6 +115,34 @@ function SliderSetting(props) {
                       placeholder="Example: https://abc.com"
                       value={slider?.url}
                     />
+                  </div>
+                </div>
+              </Card.Session>
+
+              <Card.Session>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="col-span-1 items-center flex">
+                    <h4>Group</h4>
+                  </div>
+                  <div className="col-span-2">
+                    <Field
+                      name={`slider[${index}]GroupBelong`}
+                      validationRules={['notEmpty']}
+                      value={
+                        variant?.attributes.find(
+                          (v) => v.attributeCode === a.attributeCode
+                        )?.optionId
+                      }
+                      options={}
+                      type="select"
+                    />
+                    {/* <Field
+                      type="text"
+                      name={`slider${slider?.index}SortOrder`}
+                      validationRules={['notEmpty']}
+                      placeholder="Example: 1"
+                      value={slider?.sortOrder}
+                    /> */}
                   </div>
                 </div>
               </Card.Session>
@@ -360,6 +385,9 @@ export const query = `
       visibility
       url
       imageUrl
+    }
+    sliderGroups {
+      name
     }
     imageUploadUrl: url(routeId: "imageUpload", params: [{key: "0", value: ""}])
   }

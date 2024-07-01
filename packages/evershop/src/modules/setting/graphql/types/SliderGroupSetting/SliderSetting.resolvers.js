@@ -4,9 +4,6 @@ module.exports = {
       const sliders = setting
         .filter((s) => s.name.startsWith('slider'));
 
-      const sliderGroups = setting
-        .filter((s) => s.name.startsWith('sliderGroup'));
-
       const numberOfSliderFields = 5;
       const totalSlider = sliders.length / numberOfSliderFields;
       
