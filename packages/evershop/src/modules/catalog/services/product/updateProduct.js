@@ -14,13 +14,15 @@ const {
   del
 } = require('@evershop/postgres-query-builder');
 const {
-  getConnection
+  getConnection,
+  pool
 } = require('@evershop/evershop/src/lib/postgres/connection');
 const { error } = require('@evershop/evershop/src/lib/log/logger');
 const { getAjv } = require('../../../base/services/getAjv');
 const productDataSchema = require('./productDataSchema.json');
+const { getProductsBaseQuery } = require('../getProductsBaseQuery');
 
-function validateProductDataBeforeUpdate(data) {
+async function validateProductDataBeforeUpdate(data) {
   const ajv = getAjv();
   productDataSchema.required = [];
   const jsonSchema = getValueSync(
@@ -29,11 +31,20 @@ function validateProductDataBeforeUpdate(data) {
   );
   const validate = ajv.compile(jsonSchema);
   const valid = validate(data);
-  if (valid) {
-    return data;
-  } else {
+  if (!valid) {
     throw new Error(validate.errors[0].message);
   }
+
+  const productQuery = getProductsBaseQuery();
+  productQuery.where('product_description.url_key', '=', data.url_key);
+  productQuery.andWhere('product.uuid', '!=', data.uuid);
+  const product = await productQuery.load(pool);
+
+  if (product) {
+    throw new Error('URL key already exists');
+  }
+
+  return data;
 }
 
 async function updateProductInventory(inventoryData, productId, connection) {
@@ -262,6 +273,7 @@ async function updateProductImages(images, productId, connection) {
 
 async function updateProductData(uuid, data, connection) {
   const query = select().from('product');
+
   query
     .leftJoin('product_description')
     .on(
@@ -276,10 +288,40 @@ async function updateProductData(uuid, data, connection) {
 
   let newProduct;
   try {
+    if (data.old_price === '') {
+      data.old_price = null;
+    }
+
     newProduct = await update('product')
       .given(data)
       .where('uuid', '=', uuid)
       .execute(connection);
+
+    console.log("update product data: ", data);
+
+    if (data.category_ids) {
+      const splittedCategoryIdsByComma = data.category_ids.split(',').map(id => id.trim());
+
+      const deleteQuery = await del("product_category");
+        deleteQuery.where("product_id", "=", newProduct.uuid);
+
+      const deleteResult = await deleteQuery.execute(connection);
+      console.log("delete result: ", deleteResult);
+      
+      for (const category_id of splittedCategoryIdsByComma) {
+
+        const upsertQuery = await insertOnUpdate('product_category', ['product_id', 'category_id']);
+
+        upsertQuery.where('product_id', '=', newProduct.uuid)
+
+        upsertQuery.prime("product_id", newProduct.uuid);
+        upsertQuery.prime("category_id", category_id);
+
+        const upsertProductCategoryResult = await upsertQuery.execute(connection);
+
+        console.log("upsertProductCategoryResult: ", upsertProductCategoryResult);
+      }
+    }
   } catch (e) {
     if (!e.message.includes('No data was provided')) {
       throw e;
@@ -341,7 +383,7 @@ async function updateProduct(uuid, data, context) {
     const productData = await getValue('productDataBeforeUpdate', data);
 
     // Validate product data
-    validateProductDataBeforeUpdate(productData);
+    await validateProductDataBeforeUpdate(productData);
 
     // Insert product data
     const product = await hookable(updateProductData, {

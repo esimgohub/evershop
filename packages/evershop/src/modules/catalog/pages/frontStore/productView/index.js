@@ -83,20 +83,20 @@ module.exports = async (request, response, delegate, next) => {
             .where('p.variant_group_id', '=', product.variant_group_id)
             .and('p.status', '=', 1);
 
-          if (getConfig('catalog.showOutOfStockProduct') === false) {
-            vsQuery
-              .andWhere('product_inventory.manage_stock', '=', false)
-              .addNode(
-                node('OR')
-                  .addLeaf('AND', 'product_inventory.qty', '>', 0)
-                  .addLeaf(
-                    'AND',
-                    'product_inventory.stock_availability',
-                    '=',
-                    true
-                  )
-              );
-          }
+          // if (getConfig('catalog.showOutOfStockProduct') === false) {
+          //   vsQuery
+          //     .andWhere('product_inventory.manage_stock', '=', false)
+          //     .addNode(
+          //       node('OR')
+          //         .addLeaf('AND', 'product_inventory.qty', '>', 0)
+          //         .addLeaf(
+          //           'AND',
+          //           'product_inventory.stock_availability',
+          //           '=',
+          //           true
+          //         )
+          //     );
+          // }
           vsQuery
             .andWhere(
               'a.attribute_id',

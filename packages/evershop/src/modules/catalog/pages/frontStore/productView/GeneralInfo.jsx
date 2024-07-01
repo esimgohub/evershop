@@ -24,7 +24,7 @@ export default function GeneralInfo({ product }) {
           component: { default: Price },
           props: {
             regular: product.price.regular,
-            special: product.price.special
+            oldPrice: product.price.oldPrice
           },
           sortOrder: 10,
           id: 'productSinglePrice'
@@ -51,7 +51,7 @@ GeneralInfo.propTypes = {
         value: PropTypes.number.isRequired,
         text: PropTypes.string.isRequired
       }),
-      special: PropTypes.shape({
+      oldPrice: PropTypes.shape({
         value: PropTypes.number.isRequired,
         text: PropTypes.string.isRequired
       })
@@ -74,7 +74,7 @@ export const query = `
           value
           text
         }
-        special {
+        oldPrice {
           value
           text
         }

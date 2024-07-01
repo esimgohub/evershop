@@ -6,10 +6,9 @@ module.exports.getProductsByCategoryBaseQuery = async (
   categoryId,
   fromSubCategories = false
 ) => {
-  const query = getProductsBaseQuery();
-
+  const productQuery = getProductsBaseQuery();
   if (!fromSubCategories) {
-    query.where('product.category_id', '=', categoryId);
+    productQuery.where('product.category_id', '=', categoryId);
   } else {
     // Get all the sub categories recursively
     const subCategoriesQuery = await execute(
@@ -23,8 +22,8 @@ module.exports.getProductsByCategoryBaseQuery = async (
     );
     const subCategories = subCategoriesQuery.rows;
     const categoryIds = subCategories.map((category) => category.category_id);
-    query.where('product.category_id', 'IN', categoryIds);
+    productQuery.where('product.category_id', 'IN', categoryIds);
   }
 
-  return query;
+  return productQuery;
 };

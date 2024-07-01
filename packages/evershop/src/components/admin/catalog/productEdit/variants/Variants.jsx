@@ -31,12 +31,11 @@ query Query($productId: ID!) {
               currency
               text
             }
-          }
-          inventory {
-            qty
-            isInStock
-            stockAvailability
-            manageStock
+            oldPrice {
+              value
+              currency
+              text
+            }
           }
           editUrl
           updateApi
@@ -95,18 +94,17 @@ export function Variants({
 
   return (
     <Card.Session>
-      <div className="variant-list">
+      <div className="variant-list overflow-x-scroll">
         <table>
           <thead>
-            <tr>
-              <th>Image</th>
+            <tr className="[&>th]:text-center [&>th]:min-w-[140px]">
+              <th>SKU</th>
+              <th>Status</th>
               {variantAttributes.map((attribute) => (
                 <th key={attribute.attributeId}>{attribute.attributeName}</th>
               ))}
-              <th>SKU</th>
               <th>Price</th>
-              <th>Stock</th>
-              <th>Status</th>
+              <th>Old Price</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -128,7 +126,8 @@ export function Variants({
       </div>
       <div className="self-center">
         <CreateVariant
-          productId={productUuid}
+          productId={productId}
+          productUuid={productUuid}
           variantGroup={variantGroup}
           createProductApi={createProductApi}
           addVariantItemApi={addVariantItemApi}

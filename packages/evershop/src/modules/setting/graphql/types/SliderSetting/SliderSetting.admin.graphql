@@ -1,0 +1,8 @@
+type Slider {
+  sortOrder: Int
+  visibility: Int
+}
+
+extend type Query {
+  sliders: [Slider]
+}

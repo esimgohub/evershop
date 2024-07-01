@@ -6,37 +6,36 @@ import { useModal } from '@components/common/modal/useModal';
 import './Products.scss';
 import AddProducts from '@components/admin/catalog/collection/collectionEdit/AddProducts';
 import Spinner from '@components/common/Spinner';
+// const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 
 const ProductsQuery = `
-  query Query ($id: Int, $filters: [FilterInput!]) {
-    category (id: $id) {
-      products (filters: $filters) {
-        items {
-          productId
-          uuid
-          name
-          sku
-          price {
-            regular {
-              text
-            }
+  query Query ($id: Int) {
+    adminCategoryDetail (id: $id) {
+      queryProducts {
+        productId
+        uuid
+        name
+        sku
+        price {
+          regular {
+            text
           }
-          image {
-            url: thumb
-          }
-          editUrl
-          removeFromCategoryUrl
         }
-        total
+        image {
+          url: thumb
+        }
+        removeFromCategoryUrl(id: $id)
       }
     }
   }
 `;
 
-export default function Products({ category: { categoryId, addProductApi } }) {
+export default function Products(props) {
+  const { adminCategoryDetail } = props;
+  const { categoryId, addProductApi } = adminCategoryDetail;
+
   const [keyword, setKeyword] = React.useState('');
   const [page, setPage] = React.useState(1);
-  const [removing, setRemoving] = React.useState([]);
   const modal = useModal();
 
   // Run query again when page changes
@@ -68,9 +67,8 @@ export default function Products({ category: { categoryId, addProductApi } }) {
     modal.closeModal();
   };
 
-  const removeProduct = async (api, uuid) => {
-    setRemoving([...removing, uuid]);
-    await fetch(api, {
+  const removeProduct = async (apiUrl, uuid) => {
+    await fetch(apiUrl, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -78,6 +76,7 @@ export default function Products({ category: { categoryId, addProductApi } }) {
       credentials: 'same-origin'
     });
     setPage(1);
+
     reexecuteQuery({ requestPolicy: 'network-only' });
   };
 
@@ -132,8 +131,8 @@ export default function Products({ category: { categoryId, addProductApi } }) {
                 <AddProducts
                   addProductApi={addProductApi}
                   closeModal={closeModal}
-                  addedProductIDs={data.category.products.items.map(
-                    (p) => p.productId
+                  addedProductIDs={data.adminCategoryDetail.queryProducts.map(
+                    (p) => p.uuid
                   )}
                 />
               </div>
@@ -152,15 +151,15 @@ export default function Products({ category: { categoryId, addProductApi } }) {
             </div>
             {data && (
               <>
-                {data.category.products.items.length === 0 && (
+                {data.adminCategoryDetail.queryProducts.length === 0 && (
                   <div>No product to display.</div>
                 )}
                 <div className="flex justify-between">
                   <div>
-                    <i>{data.category.products.total} items</i>
+                    <i>{data.adminCategoryDetail.queryProducts.total} items</i>
                   </div>
                   <div>
-                    {data.category.products.total > 10 && (
+                    {data.adminCategoryDetail.queryProducts.total > 10 && (
                       <div className="flex justify-between gap-1">
                         {page > 1 && (
                           <a
@@ -174,7 +173,8 @@ export default function Products({ category: { categoryId, addProductApi } }) {
                             Previous
                           </a>
                         )}
-                        {page < data.category.products.total / 10 && (
+                        {page <
+                          data.adminCategoryDetail.queryProducts.total / 10 && (
                           <a
                             className="text-interactive"
                             href="#"
@@ -191,7 +191,7 @@ export default function Products({ category: { categoryId, addProductApi } }) {
                   </div>
                 </div>
                 <div className="divide-y">
-                  {data.category.products.items.map((p) => (
+                  {data.adminCategoryDetail.queryProducts.map((p) => (
                     // eslint-disable-next-line react/no-array-index-key
                     <div
                       key={p.uuid}
@@ -279,9 +279,24 @@ export const layout = {
 
 export const query = `
   query Query {
-    category(id: getContextValue("categoryId", null)) {
+    adminCategoryDetail(id: getContextValue("categoryId", null)) {
       categoryId
       addProductApi: addProductUrl
+      queryProducts {
+        productId
+        uuid
+        name
+        sku
+        price {
+          regular {
+            text
+          }
+        }
+        image {
+          url: thumb
+        }
+        removeFromCategoryUrl(id: getContextValue("categoryId", null))
+      }
     }
   }
 `;

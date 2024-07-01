@@ -74,7 +74,7 @@ export default function BestSellers({ bestSellers, listUrl }) {
                   </div>
                 </td>
                 <td />
-                <td>{p.price.regular.text}</td>
+                <td>{p.price.regular?.text}</td>
                 <td>{p.soldQty} sold</td>
               </tr>
             ))}

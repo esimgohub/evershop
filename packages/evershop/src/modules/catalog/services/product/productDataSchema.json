@@ -15,11 +15,7 @@
       "type": "string"
     },
     "url_key": {
-      "type": "string",
-      "pattern": "^\\S+$",
-      "errorMessage": {
-        "pattern": "Url key should not contain spaces"
-      }
+      "type": "string"
     },
     "meta_title": {
       "type": "string"
@@ -39,34 +35,19 @@
       "type": "string"
     },
     "price": {
-      "type": ["string", "number"],
-      "pattern": "^\\d+(\\.\\d{1,2})?$",
-      "errorMessage": {
-        "pattern": "Price should be a number with maximum 2 decimal places"
-      }
+      "type": ["string", "number"]
     },
-    "weight": {
-      "type": ["string", "number"],
-      "pattern": "^[0-9]+(\\.[0-9]{1,2})?$",
-      "errorMessage": {
-        "pattern": "Weight should be a number with maximum 2 decimal places"
-      }
+
+    "old_price": {
+      "type": ["string", "number"]
     },
-    "qty": {
-      "type": ["string", "number"],
-      "pattern": "^[0-9]+$",
-      "errorMessage": {
-        "pattern": "Quantity should be a number"
-      }
+    "type": {
+      "type": "string"
     },
     "tax_class": {
       "type": ["string", "number", "null"],
       "pattern": "^[0-9]+$",
       "default": null
-    },
-    "manage_stock": {
-      "type": ["string", "number"],
-      "enum": [0, 1, "0", "1"]
     },
     "stock_availability": {
       "type": ["string", "number"],
@@ -103,9 +84,9 @@
         }
       }
     },
-    "category_id": {
-      "type": ["string", "number", "null"],
-      "pattern": "^[0-9]+$"
+    "category_ids": {
+      "type": "string",
+      "skipEscape": true
     },
     "options": {
       "type": "array",

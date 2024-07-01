@@ -9,16 +9,21 @@ class Select {
     this._fields = [];
   }
 
-  select(field, alias) {
+  select(field, alias, distinctOnField) {
     // Resolve field name
     let f = '';
+
+    if (distinctOnField) {
+      f = ` DISTINCT ON (${distinctOnField}) `;
+    }
+
     if (isValueASQL(field) || field === '*') {
       // If field is an object has property "isSQL" and it's true
       // or field is a string and it's "*"
       if (typeof field === 'object' && field.isSQL === true) {
-        f = field.value;
+        f += field.value;
       } else {
-        f = field;
+        f += field;
       }
     } else {
       f += `"${field}"`;
@@ -79,6 +84,7 @@ class RawLeaf {
 class Leaf {
   constructor(link, field, operator, value, node) {
     this._binding = [];
+
     if (value.isSQL === true) {
       this._value = value.value;
     } else {
@@ -158,18 +164,19 @@ class Node {
     // check if value is an object, not null and not an array
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       this._tree.push(new Leaf(link, field, operator, value, this));
-    } else {
-      this._tree.push(
-        new Leaf(
-          link,
-          field,
-          operator,
-          { value: value, isSQL: this._defaultValueTreatment === 'sql' },
-          this
-        )
-      );
+      return this;
     }
 
+    this._tree.push(
+      new Leaf(
+        link,
+        field,
+        operator,
+        { value: value, isSQL: this._defaultValueTreatment === 'sql' },
+        this
+      )
+    );
+    
     // Return this for chaining
     return this;
   }
@@ -538,7 +545,7 @@ class Query {
 }
 
 class SelectQuery extends Query {
-  constructor() {
+  constructor(distinctOnField) {
     super();
     this._table = undefined;
     this._alias = undefined;
@@ -548,10 +555,11 @@ class SelectQuery extends Query {
     this._limit = new Limit();
     this._groupBy = new GroupBy();
     this._orderBy = new OrderBy();
+    this._distinct_on_field = distinctOnField;
   }
 
   select(field, alias) {
-    this._select.select(field, alias);
+    this._select.select(field, alias, this._distinct_on_field);
     return this;
   }
 
@@ -595,6 +603,17 @@ class SelectQuery extends Query {
   }
 
   orderBy(field, direction = 'ASC') {
+    this._orderBy.add(field, direction);
+    return this;
+  }
+
+  orderByRandomOnFields(fields) {
+    const directions = ['ASC', 'DESC'];
+
+    // random in fields
+    const field = fields[Math.floor(Math.random() * fields.length)];
+    const direction = directions[Math.floor(Math.random() * directions.length)];
+
     this._orderBy.add(field, direction);
     return this;
   }
@@ -1017,6 +1036,7 @@ module.exports = {
   update,
   node,
   del,
+  selectDistinct,
   insertOnUpdate,
   getConnection,
   startTransaction,
@@ -1039,6 +1059,22 @@ function select() {
     if (typeof arg == 'string') select.select(arg);
   });
   return select;
+}
+
+function selectDistinct(distinctOnField, fields) {
+  let select = new SelectQuery(distinctOnField);
+
+  let args = [...arguments];
+
+  if (args[1] === '*') {
+    select.select('*');
+    return select;
+  }
+  args.forEach((arg) => {
+    if (typeof arg == 'string') select.select(arg);
+  });
+
+  return select.select('*');
 }
 
 function insert(table) {

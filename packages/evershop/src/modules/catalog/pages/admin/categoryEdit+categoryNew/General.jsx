@@ -4,6 +4,7 @@ import Area from '@components/common/Area';
 import { get } from '@evershop/evershop/src/lib/util/get';
 import { Field } from '@components/common/form/Field';
 import { Card } from '@components/admin/cms/Card';
+import { Select } from '@components/common/form/fields/Select';
 import CkeditorField from '@components/common/form/fields/Ckeditor';
 import CategoryTree from '@components/admin/catalog/productEdit/category/CategoryTree';
 
@@ -127,6 +128,36 @@ export default function General({
       sortOrder: 20
     },
     {
+      component: { default: Select },
+      props: {
+        name: 'category_type',
+        label: 'Category Type',
+        placeholder: 'Select category type',
+        value: category && category.categoryType ? category.categoryType : '',
+        options: [
+          // TODO: Move this 4 options to enum or category option table
+          {
+            text: 'Global',
+            value: 'global'
+          },
+          {
+            text: 'Continent',
+            value: 'continent'
+          },
+          {
+            text: 'Region',
+            value: 'region'
+          },
+          {
+            text: 'Country',
+            value: 'country'
+          }
+        ]
+      },
+      id: 'categoryType',
+      sortOrder: 25
+    },
+    {
       component: { default: CkeditorField },
       props: {
         id: 'description',
@@ -164,6 +195,7 @@ General.propTypes = {
   category: PropTypes.shape({
     name: PropTypes.string,
     description: PropTypes.string,
+    categoryType: PropTypes.string,
     categoryId: PropTypes.number,
     parent: PropTypes.shape({
       categoryId: PropTypes.number.isRequired,
@@ -193,8 +225,10 @@ export const query = `
       name
       description
       status
+      categoryType
       parent {
         categoryId
+        uuid
         name
         path {
           name

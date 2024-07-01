@@ -22,8 +22,6 @@ function Actions({ attributes = [], selectedIds = [] }) {
   const { openAlert, closeAlert } = useAlertContext();
   const [isLoading, setIsLoading] = useState(false);
 
-  console.log('attributess nenenenene: ', attributes);
-
   const deleteAttributes = async () => {
     setIsLoading(true);
     try {
@@ -117,8 +115,6 @@ Actions.propTypes = {
 export default function AttributeGrid({
   attributes: { items: attributes, total, currentFilters = [] }
 }) {
-  console.log('attributes', attributes);
-
   const page = currentFilters.find((filter) => filter.key === 'page')
     ? currentFilters.find((filter) => filter.key === 'page').value
     : 1;

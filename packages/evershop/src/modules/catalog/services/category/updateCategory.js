@@ -18,7 +18,7 @@ const categoryDataSchema = require('./categoryDataSchema.json');
 
 function validateCategoryDataBeforeInsert(data) {
   const ajv = getAjv();
-  categoryDataSchema.required = [];
+  categoryDataSchema.required = ['category_type'];
   const jsonSchema = getValueSync(
     'updateCategoryDataJsonSchema',
     categoryDataSchema

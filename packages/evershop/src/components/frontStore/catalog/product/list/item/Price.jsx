@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-function Price({ regular, special }) {
+function Price({ regular, oldPrice }) {
   return (
     <div className="product-price-listing">
       <div>
@@ -16,7 +16,7 @@ Price.propTypes = {
     value: PropTypes.number,
     text: PropTypes.string
   }).isRequired,
-  special: PropTypes.shape({
+  oldPrice: PropTypes.shape({
     value: PropTypes.number,
     text: PropTypes.string
   }).isRequired

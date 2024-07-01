@@ -12,26 +12,12 @@ export function Variant({
   variantGroup
 }) {
   return (
-    <tr>
-      <td>
-        <img
-          style={{ maxWidth: '50px', height: 'auto' }}
-          src={variant?.product?.image?.url}
-          alt=""
-        />
-      </td>
-      {variant.attributes.map((a) => (
-        <td key={a.attributeId}>
-          <label>{a.optionText || '--'}</label>
-        </td>
-      ))}
+    <tr className="[&>td]:text-center">
       <td>
         <a href={variant.product.editUrl} className="hover:text-interactive">
           {variant.product?.sku}
         </a>
       </td>
-      <td>{variant.product?.price?.regular?.text}</td>
-      <td>{variant.product?.inventory?.qty}</td>
       <td>
         {variant.product?.status === 1 ? (
           <span className="text-success">Enabled</span>
@@ -39,6 +25,14 @@ export function Variant({
           <span className="text-critical">Disabled</span>
         )}
       </td>
+      {variant.attributes.map((a) => (
+        <td key={a.attributeId}>
+          <label>{a.optionText || '--'}</label>
+        </td>
+      ))}
+      <td>{variant.product?.price?.regular?.text}</td>
+      <td>{variant.product?.price?.oldPrice?.text || '-'}</td>
+
       <td>
         <EditVariant
           variant={variant}

@@ -1,11 +1,8 @@
 module.exports = {
   Product: {
-    price: (product) => {
-      const price = parseFloat(product.price);
-      return {
-        regular: price,
-        special: price // TODO: implement special price
-      };
-    }
+    price: (product) => ({
+        regular: product.price ? product.price : null,
+        oldPrice: product.oldPrice ? product.oldPrice : null // TODO: implement special price
+      })
   }
 };
