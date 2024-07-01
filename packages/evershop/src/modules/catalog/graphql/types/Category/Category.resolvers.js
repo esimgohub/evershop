@@ -39,24 +39,33 @@ module.exports = {
       return root;
     },
     popularCountries: async (_, { filter = {}}, { pool, homeUrl }) => {
+      let limit = filter.limit || 3;
 
-      const query = selectDistinct(`category_description.name`, "*").from('category');
-      query
-        .leftJoin('category_description')
-        .on(
-          'category_description.category_description_category_id',
-          '=',
-          'category.category_id'
-        );
-      query.where("category.category_type", "=", CategoryType.Country);
-      query.andWhere("category.status", "=", CategoryStatus.Enabled)
-      query.orderByRandomOnFields(['category_description.name', 'category.category_status']);
+      const directions = ['ASC', 'DESC'];
+      const randomOrFields = ['category_description.name', 'category_description.url_key', 'c.category_id', 'c.status'];
 
-      if (filter.limit) {
-        query.limit(0, filter.limit);
-      }
+      // random in fields
+      const field = randomOrFields[Math.floor(Math.random() * randomOrFields.length)];
+      const direction = directions[Math.floor(Math.random() * directions.length)];
 
-      const popularCountryRecords = await query.execute(pool);
+      const popularCountryQueryResult = await execute(pool, `
+        SELECT DISTINCT category_description."name", category_description.image, category_description.url_key,  c.* 
+        FROM category c
+        LEFT JOIN category_description ON category_description.category_description_category_id = c.category_id 
+        INNER JOIN product_category ON product_category.category_id = c.uuid
+        WHERE c.category_type = '${CategoryType.Country}'
+          AND c.status = ${CategoryStatus.Enabled}
+          AND (
+            SELECT COUNT(pc.product_id)
+            FROM product_category pc
+            INNER JOIN product p ON p.uuid = pc.product_id
+            WHERE p.status = true AND p.visibility = true AND pc.category_id = c.uuid
+          ) >= 1
+        ORDER BY ${field} ${direction}
+        LIMIT ${limit}
+    `);
+
+      const popularCountryRecords = popularCountryQueryResult.rows || [];
 
       return popularCountryRecords.length > 0 ? popularCountryRecords.map(country => {
         return camelCase({
@@ -66,39 +75,29 @@ module.exports = {
       }) : [];
     },
     supportedCategories: async (_, {}, { pool, homeUrl }) => {
-      const categories = await select().from('category').execute(pool);
+      const supportedCountryQueryResult = await execute(pool, `
+          SELECT DISTINCT category_description."name", category_description.image, c.* 
+          FROM category c
+          LEFT JOIN category_description ON category_description.category_description_category_id = c.category_id 
+          INNER JOIN product_category ON product_category.category_id = c.uuid
+          WHERE c.category_type = '${CategoryType.Country}'
+            AND c.status = ${CategoryStatus.Enabled}
+            AND (
+              SELECT COUNT(pc.product_id)
+              FROM product_category pc
+              INNER JOIN product p ON p.uuid = pc.product_id
+              WHERE p.status = true AND p.visibility = true AND pc.category_id = c.uuid
+            ) >= 1
+      `);
 
-      const query = selectDistinct(`category_description.name`, "*").from('category');
-      query
-        .leftJoin('category_description')
-        .on(
-          'category_description.category_description_category_id',
-          '=',
-          'category.category_id'
-        );
+      const supportedCountries = supportedCountryQueryResult.rows || [];
 
-      query.innerJoin("product_category").on(
-        'product_category.category_id',
-        '=',
-        'category.uuid'
-      );
-
-      query.where("category.category_type", "=", CategoryType.Country);
-      query.andWhere("category.status", "=", CategoryStatus.Enabled);
-
-      const supportedCountryRecords = await query.execute(pool);
-
-      const mappedCategories = supportedCountryRecords.length > 0 ? supportedCountryRecords.map(country => {
+      return supportedCountries.map(country => {
         return camelCase({
           ...country,
-          category_id: categories.find(
-            category => category.uuid === country.uuid
-          ).category_id,
           image: country.image ? `${homeUrl}${country.image}` : null,
         })
-      }) : [];
-
-      return mappedCategories;
+      });
     }
   },
   Category: {
