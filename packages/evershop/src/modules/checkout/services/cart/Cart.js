@@ -365,6 +365,7 @@ module.exports = {
     // Get the cart items
     const items = await select()
       .from('cart_item')
+      .orderBy('created_at', 'DESC')
       .where('cart_id', '=', cart.cart_id)
       .execute(pool);
     // Build the cart items

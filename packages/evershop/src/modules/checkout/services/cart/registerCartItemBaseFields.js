@@ -2,6 +2,7 @@ const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { select } = require('@evershop/postgres-query-builder');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const { v4: uuidv4 } = require('uuid');
+const dayjs = require('dayjs');
 const { toPrice } = require('../toPrice');
 const {
   calculateTaxAmount
@@ -9,6 +10,8 @@ const {
 const { getSetting } = require('../../../setting/services/setting');
 const { getTaxPercent } = require('../../../tax/services/getTaxPercent');
 const { getTaxRates } = require('../../../tax/services/getTaxRates');
+const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
+const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 
 module.exports.registerCartItemBaseFields =
   function registerCartItemBaseFields() {
@@ -491,14 +494,14 @@ module.exports.registerCartItemBaseFields =
 
             const categoryId = await this.getData('category_id');
             if (categoryId == null) {
-              return {}
+              return {};
             }
             categoryDescriptionQuery.where('category_description_id', '=', categoryId);
             const rows = await categoryDescriptionQuery.execute(pool);
             if (!rows?.length) {
-              return {}
+              return {};
             }
-            return rows[0]
+            return rows[0];
           }
         ],
         dependencies: ['category_id']
@@ -557,34 +560,103 @@ module.exports.registerCartItemBaseFields =
             }
 
             function convertTimestampToTripString(fromDate, toDate) {
-              // Create Date objects from the timestamps
-              const fromDateObj = new Date(fromDate);
-              const toDateObj = new Date(toDate);
+              // Create dayjs objects from the timestamps
+              const fromDateObj = dayjs(fromDate);
+              const toDateObj = dayjs(toDate);
 
               // Get day, month, and year components for both dates
-              const fromDay = formatDateComponent(fromDateObj.getDate());
+              const fromDay = formatDateComponent(fromDateObj.date());
 
-              const toDay = formatDateComponent(toDateObj.getDate());
-              const toMonth = formatDateComponent(toDateObj.getMonth() + 1);
-              const toYear = toDateObj.getFullYear();
+              const toDay = formatDateComponent(toDateObj.date());
+              const toMonth = formatDateComponent(toDateObj.month() + 1);
+              const toYear = toDateObj.year();
+
 
               // Calculate the number of days between fromDate and toDate
-              const oneDay = 24 * 60 * 60 * 1000; // milliseconds in one day
-              const diffDays = Math.round(Math.abs((toDate - fromDate) / oneDay));
+              const diffDays = toDateObj.diff(fromDateObj, 'day') + 1;
+
+              // Determine whether to use "day" or "days"
+              const dayText = diffDays === 1 ? 'day' : 'days';
 
               // Format the trip string
-              return `Trip: ${fromDay} - ${toDay}/${toMonth}/${toYear} (${diffDays} days)`;
+              return `Trip: ${fromDay}-${toDay}/${toMonth}/${toYear} (${diffDays} ${dayText})`;
             }
 
             const trip = this.getData('trip');
-            if (!trip ||  typeof trip !== 'string' || trip.split(',').length < 2) {
-              return ""
+            if (!trip || typeof trip !== 'string' || trip.split(',').length < 2) {
+              return '';
             }
-            const tripArr = trip.split(',')
+            const tripArr = trip.split(',');
             return convertTimestampToTripString(Number(tripArr[0]), Number(tripArr[1]));
           }
         ],
         dependencies: ['trip']
+      },
+      {
+        key: 'category',
+        resolvers: [
+          async function resolver() {
+            const homeUrl = getConfig('shop.homeUrl', 'http://localhost:3000');
+
+            const categoryDescriptionQuery = select().from('category_description');
+
+            const categoryId = await this.getData('category_id');
+            if (categoryId == null) {
+              return {};
+            }
+            categoryDescriptionQuery.where('category_description_id', '=', categoryId);
+            const rows = await categoryDescriptionQuery.execute(pool);
+            if (!rows?.length) {
+              return {};
+            }
+            const cateObj = { ...rows[0] };
+            return {
+              ...cateObj,
+              image: cateObj.image ? `${homeUrl}${cateObj.image}` : null
+            };
+            // return rows[0];
+          }
+        ],
+        dependencies: ['category_id']
+      },
+      {
+        key: 'titleInfo',
+        resolvers: [
+          async function resolver() {
+            const homeUrl = getConfig('shop.homeUrl', 'http://localhost:3000');
+            const attrObj = this.getData('attribute');
+            const cateObj = this.getData('category');
+
+            if (!cateObj || !cateObj?.name || !cateObj?.image || !attrObj || !attrObj?.['data-amount'] || !attrObj?.['data-type'] || !attrObj?.['day-amount']) {
+              return {
+                dataAmount: '',
+                dataAmountUnit: '',
+                dataType: '',
+                dayAmount: '',
+                imgUrl: '',
+                imgAlt: ''
+              };
+
+            }
+            let dataInfoText;
+            if (attrObj['data-type'] === 'Daily Data') {
+              dataInfoText = `${attrObj['data-amount']} ${attrObj['data-amount-unit']}/day`;
+            } else {
+              const dayAmountText = attrObj['day-amount'] === 1 ? 'day' : 'days';
+              dataInfoText = `${attrObj['data-amount']} ${attrObj['day-amount']}/${attrObj['data-amount-unit']}/${dayAmountText}`;
+            }
+            const title = `${cateObj.name}  ${dataInfoText}`;
+            return {
+              dataAmount: attrObj['data-amount'],
+              dataAmountUnit: attrObj['data-amount-unit'],
+              dataType: attrObj['data-type'],
+              dayAmount: attrObj['day-amount'],
+              imgUrl: `${homeUrl}${cateObj.image}`,
+              imgAlt: cateObj.name
+            };
+          }
+        ],
+        dependencies: ['category', 'attribute']
       }
     ];
   };
