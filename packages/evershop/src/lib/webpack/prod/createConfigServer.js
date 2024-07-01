@@ -23,6 +23,7 @@ module.exports.createConfigServer = function createConfigServer(routes) {
       )
     ];
   });
+
   const config = createBaseConfig(true);
   const { plugins } = config;
   plugins.push(new WebpackBar({ name: 'Server', color: 'orange' }));

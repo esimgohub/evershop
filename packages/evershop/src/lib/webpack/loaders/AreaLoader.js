@@ -44,6 +44,14 @@ module.exports = exports = function AreaLoader(c) {
     }
   });
 
+  const isMagicLoginRoute = routeId === 'magicLogin';
+  if (isMagicLoginRoute) {
+    delete areas['body'];
+  }
+  else {
+    delete areas['blank-body'];
+  }
+
   const content = `Area.defaultProps.components = ${inspect(areas, { depth: 5 })
     .replace(/"---/g, '')
     .replace(/---"/g, '')} `;

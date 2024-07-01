@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/label-has-associated-control */
-/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useModal } from '@components/common/modal/useModal';
@@ -8,19 +6,32 @@ import Button from '@components/common/form/Button';
 
 export function DeepLinkModal({
     title,
-    content,
     webPageUrl,
-    // appUrl,
 }) {
+  const [countDownTimer, setCountDownTimer] = React.useState(5);
   const modal = useModal();
 
   useEffect(() => {
     modal.openModal();
   }, [])
 
-  const handleNavigate = () => {
-    window.open(webPageUrl, '_blank');
-    modal.closeModal();
+  useEffect(() => {
+    let timer = setInterval(() => {
+      setCountDownTimer(countDownTimer - 1);
+    }, 1000);
+
+    if (countDownTimer === 0) {
+      clearInterval(timer);
+      window.location.href = webPageUrl;
+    }
+
+    return () => {
+      clearInterval(timer);
+    }
+  }, [countDownTimer])
+
+  const handleNavigateToWebPage = () => {
+    window.location.href = webPageUrl;
   }
 
   return modal.state.showing && (
@@ -34,10 +45,22 @@ export function DeepLinkModal({
             <div className="modal">
                 <Card title={title}>
                     <div className="modal-content">
-                        <Card.Session title={content}>
-                          <div className="flex justify-between gap-2">
-                            <Button title="To Web Page" className="w-full" variant="secondary" onAction={handleNavigate} />
-                            <Button title="To App" className="w-full" variant="primary" onAction={handleNavigate} />
+                        <Card.Session>
+                          <div style={{ 
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                           }}>
+
+                            <p 
+                              style={{
+                                marginBottom: '16px'
+                              }}
+                            >
+                              You will be redirected to esimgohub.com after {countDownTimer} second{countDownTimer > 1 ? 's' : ''}
+                            </p>
+
+                            <Button title="To page now" style className="w-full" variant="primary" onAction={handleNavigateToWebPage} />
                           </div>
                         </Card.Session>
                     </div>
@@ -51,7 +74,5 @@ export function DeepLinkModal({
 
 DeepLinkModal.propTypes = {
     title: PropTypes.string.isRequired,
-    content: PropTypes.string.isRequired,
     webPageUrl: PropTypes.string.isRequired,
-    // appUrl: PropTypes.string.isRequired
 };

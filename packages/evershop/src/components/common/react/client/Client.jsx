@@ -16,6 +16,7 @@ export function App({ children }) {
       <Provider value={client}>
         <Alert>
           <Head />
+          <Area id="blank-body" className="wrapper" />
           <Area id="body" className="wrapper" />
         </Alert>
       </Provider>
