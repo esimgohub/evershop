@@ -72,7 +72,10 @@ module.exports = async (request, response, delegate, next) => {
     name: customer.currency_name
   };
 
+  let isFirstLogin = false;
+
   if (!customer) {
+    isFirstLogin = true;
     const [defaultLanguage, defaultCurrency] = await Promise.all([
       getDefaultLanguage(),
       getDefaultCurrency()
@@ -101,6 +104,7 @@ module.exports = async (request, response, delegate, next) => {
     firstName: customer.first_name,
     lastName: customer.last_name,
     avatarUrl: customer.avatar_url,
+    isFirstLogin,
     language: createLanguageResponse(language),
     currency: createCurrencyResponse(currency)
   };
