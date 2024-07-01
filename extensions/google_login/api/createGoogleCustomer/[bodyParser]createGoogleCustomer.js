@@ -50,6 +50,8 @@ module.exports = async (request, response, delegate, next) => {
     .leftJoin('currency', 'currency')
     .on('customer.currency_id', '=', 'currency.id');
 
+  customerQuery.where('customer.external_id', '=', googleUserInfo.id);
+
   let [customer] = await customerQuery.execute(pool);
 
   if (customer && customer.status !== AccountStatus.ENABLED) {
@@ -72,7 +74,10 @@ module.exports = async (request, response, delegate, next) => {
     name: customer.currency_name
   };
 
+  let isFirstLogin = false;
+
   if (!customer) {
+    isFirstLogin = true;
     const [defaultLanguage, defaultCurrency] = await Promise.all([
       getDefaultLanguage(),
       getDefaultCurrency()
@@ -101,6 +106,7 @@ module.exports = async (request, response, delegate, next) => {
     firstName: customer.first_name,
     lastName: customer.last_name,
     avatarUrl: customer.avatar_url,
+    isFirstLogin,
     language: createLanguageResponse(language),
     currency: createCurrencyResponse(currency)
   };
