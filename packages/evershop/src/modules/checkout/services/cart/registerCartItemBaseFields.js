@@ -623,7 +623,6 @@ module.exports.registerCartItemBaseFields =
         key: 'titleInfo',
         resolvers: [
           async function resolver() {
-            const homeUrl = getConfig('shop.homeUrl', 'http://localhost:3000');
             const attrObj = this.getData('attribute');
             const cateObj = this.getData('category');
 
@@ -653,7 +652,7 @@ module.exports.registerCartItemBaseFields =
               dataType: attrObj['data-type'],
               dayAmount: attrObj['day-amount'],
               categoryName: cateObj.name,
-              imgUrl: `${homeUrl}${cateObj.image}`,
+              imgUrl: `${cateObj.image}`,
               imgAlt: cateObj.name
             };
           }
