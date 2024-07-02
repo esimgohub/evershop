@@ -10,6 +10,6 @@ module.exports = exports = async (connection) => {
   await execute(
     connection,
     `ALTER TABLE currency
-    ADD COLUMN is_default int DEFAULT 0, ADD COLUMN name TEXT`
+    ADD COLUMN is_default int DEFAULT 0, ADD COLUMN name TEXT;`
   );
 };
