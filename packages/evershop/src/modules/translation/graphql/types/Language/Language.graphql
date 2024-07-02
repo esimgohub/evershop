@@ -1,7 +1,7 @@
 type Language {
   id: ID!
   code: String!
-  name: Int
+  name: String
   icon: String
 }
 
