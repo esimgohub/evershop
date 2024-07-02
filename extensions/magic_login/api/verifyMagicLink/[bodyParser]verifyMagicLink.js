@@ -10,6 +10,18 @@ const {
   AccountStatus,
   LoginSource
 } = require('@evershop/evershop/src/modules/customer/constant');
+const {
+  getDefaultLanguage
+} = require('../../services/language/getDefaultLanguage');
+const {
+  createLanguageResponse
+} = require('../../services/language/createLanguageResponse');
+const {
+  getDefaultCurrency
+} = require('../../services/currency/getDefaultCurrency');
+const {
+  createCurrencyResponse
+} = require('../../services/currency/createCurrencyResponse');
 
 module.exports = async (request, response, delegate, next) => {
   const { token } = request.body;
@@ -17,10 +29,30 @@ module.exports = async (request, response, delegate, next) => {
   try {
     const payload = await verifyToken(token);
 
-    let customer = await select()
-      .from('customer')
-      .where('email', '=', payload.email)
-      .load(pool);
+    let customerQuery = select('customer.customer_id', 'customer_id')
+      .select('customer.status', 'status')
+      .select('customer.first_name', 'first_name')
+      .select('customer.last_name', 'last_name')
+      .select('customer.email', 'email')
+      .select('customer.avatar_url', 'avatar_url')
+      .select('language.code', 'language_code')
+      .select('language.name', 'language_name')
+      .select('language.icon', 'language_icon')
+      .select('currency.code', 'currency_code')
+      .select('currency.name', 'currency_name')
+      .from('customer');
+
+    customerQuery
+      .leftJoin('language', 'language')
+      .on('customer.language_id', '=', 'language.id');
+
+    customerQuery
+      .leftJoin('currency', 'currency')
+      .on('customer.currency_id', '=', 'currency.id');
+
+    customerQuery.where('customer.email', '=', payload.email);
+
+    let customer = await customerQuery.load(pool);
 
     if (customer && customer.status !== AccountStatus.ENABLED) {
       response.status(400);
@@ -32,11 +64,35 @@ module.exports = async (request, response, delegate, next) => {
       });
     }
 
+    let language = customer && {
+      code: customer.language_code,
+      name: customer.language_name,
+      icon: customer.language_icon
+    };
+    let currency = customer && {
+      code: customer.currency_code,
+      name: customer.currency_name
+    };
+
+    let isFirstLogin = false;
+
     if (!customer) {
+      isFirstLogin = true;
+
+      const [defaultLanguage, defaultCurrency] = await Promise.all([
+        getDefaultLanguage(),
+        getDefaultCurrency()
+      ]);
+
+      language = defaultLanguage;
+      currency = defaultCurrency;
+
       customer = await insert('customer')
         .given({
           email: payload.email,
           status: AccountStatus.ENABLED,
+          language_id: language.id,
+          currency_id: currency.id,
           login_source: LoginSource.MAGIC_LINK
         })
         .execute(pool);
@@ -51,19 +107,22 @@ module.exports = async (request, response, delegate, next) => {
     response.$body = {
       data: {
         name: customer.full_name,
-        email: customer.email
+        email: customer.email,
+        isFirstLogin,
+        language: createLanguageResponse(language),
+        currency: createCurrencyResponse(currency)
       }
     };
     next();
   } catch (e) {
-    if (error instanceof jwt.JsonWebTokenError) {
-      console.error('Token verification failed:', error.message);
+    if (e instanceof jwt.JsonWebTokenError) {
+      console.error('Token verification failed:', e.message);
       response.status(400);
       response.$body = {
         message: 'Invalid token'
       };
     } else {
-      console.error('Unexpected error occurred:', error);
+      console.error('Unexpected error occurred:', e.message);
       response.status(INTERNAL_SERVER_ERROR);
       response.$body = {
         message: 'Internal server error'
