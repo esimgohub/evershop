@@ -3,6 +3,7 @@ const { select } = require('@evershop/postgres-query-builder');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const { v4: uuidv4 } = require('uuid');
 const dayjs = require('dayjs');
+const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const { toPrice } = require('../toPrice');
 const {
   calculateTaxAmount
@@ -10,8 +11,6 @@ const {
 const { getSetting } = require('../../../setting/services/setting');
 const { getTaxPercent } = require('../../../tax/services/getTaxPercent');
 const { getTaxRates } = require('../../../tax/services/getTaxRates');
-const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
-const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 
 module.exports.registerCartItemBaseFields =
   function registerCartItemBaseFields() {
