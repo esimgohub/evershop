@@ -12,6 +12,7 @@ const { getCartByUUID } = require('../../services/getCartByUUID');
 const { createOrder } = require('../../services/orderCreator');
 const { setContextValue } = require('../../../graphql/services/contextHelper');
 const { createNewCart } = require('../../services/createNewCart');
+const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 
 // eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
@@ -48,7 +49,7 @@ module.exports = async (request, response, delegate, next) => {
     const customerId = cart.getData('customer_id');
     if (customerId && request.locals.sessionID) {
       // Create a new cart for the customer
-      const newCart = await createNewCart(request.locals.sessionID, {
+      const newCart = await createNewCart(request.locals.sessionID, request.cookies.isoCode || getConfig('shop.currency', 'USD'), {
         customerId
       });
 

@@ -6,7 +6,7 @@ const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getValue } = require('@evershop/evershop/src/lib/util/registry');
 const { ProductType } = require('../utils/enums/product-type');
 const { getTimeDifferenceInDays } = require('@evershop/evershop/src/lib/util/date');
-const { PlanType } = require('../utils/enums/plan-type');
+const { DataType } = require('../utils/enums/data-type');
 
 class ProductCollection {
   constructor(baseQuery) {
@@ -283,7 +283,7 @@ class ProductCollection {
       item.attributeTemp = {
         localEsim: localEsimAttribute.option_text,
         dayAmount: parseFloat(dayAmountAttribute.option_text),
-        totalDataAmount: dataTypeAttribute.option_text === PlanType.DailyData ? parseFloat(dayAmountAttribute.option_text) * parseFloat(dataAmountAttribute.option_text) : parseFloat(dataAmountAttribute.option_text),
+        totalDataAmount: dataTypeAttribute.option_text === DataType.DailyData ? parseFloat(dayAmountAttribute.option_text) * parseFloat(dataAmountAttribute.option_text) : parseFloat(dataAmountAttribute.option_text),
         dataAmountUnit: dataAmountUnitAttribute.option_text
       };
     }

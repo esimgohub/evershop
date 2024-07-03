@@ -1,5 +1,5 @@
 const { select, selectDistinct } = require('@evershop/postgres-query-builder');
-const { PlanType } = require('@evershop/evershop/src/modules/catalog/utils/enums/plan-type');
+const { DataType } = require('@evershop/evershop/src/modules/catalog/utils/enums/data-type');
 const { calculateDataAmountUnit } = require('@evershop/evershop/src/modules/catalog/utils/data-amount');
 const { CategoryType } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-type')
 
@@ -50,7 +50,7 @@ module.exports = {
       // NOTE: The Data Amount Unit must be required always.
       const foundDataAmountUnit = productVariantAttributes.find((a) => a.attribute_code === 'data-amount-unit');
 
-      const totalDataAmount = foundDataTypeAttribute.option_text === PlanType.DailyData ? dayAmountValue * dataAmountValue : dataAmountValue;
+      const totalDataAmount = foundDataTypeAttribute.option_text === DataType.DailyData ? dayAmountValue * dataAmountValue : dataAmountValue;
 
       // Get metadata on categories
       const productCategoryQuery = select().from('product_category');

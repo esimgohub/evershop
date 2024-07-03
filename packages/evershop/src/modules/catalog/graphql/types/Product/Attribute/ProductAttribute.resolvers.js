@@ -1,23 +1,23 @@
 const { select } = require('@evershop/postgres-query-builder');
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
-const { PlanType } = require('../../../../utils/enums/plan-type');
+const { DataType } = require('../../../../utils/enums/data-type');
 const { unescape } = require('lodash');
 
 module.exports = {
   Product: {
     description: async (product, _, { pool, user }) => {
-      return `<label style="color: #848B91">Note: </label><label style="line-height: 20px">${product.description.replace(/<\/?p>/g, "")}</label>`;
+      return `<label style="color: #848B91">Note: </label><label style="line-height: 20px">${product.description ? product.description.replace(/<\/?p>/g, "") : "-"}</label>`;
     },
     attribute: async (product, _, { pool, user }) => {
-      const query = select().from('product_attribute_value_index');
-      query
+      const productAttributeQuery = select().from('product_attribute_value_index');
+      productAttributeQuery
         .leftJoin('attribute')
         .on(
           'attribute.attribute_id',
           '=',
           'product_attribute_value_index.attribute_id'
         );
-      query.where(
+      productAttributeQuery.where(
         'product_attribute_value_index.product_id',
         '=',
         product.productId
@@ -25,19 +25,44 @@ module.exports = {
       // if (!user) {
       //   query.andWhere('attribute.display_on_frontend', '=', true);
       // }
-      const attributes = await query.execute(pool);
+      const productAttributes = await productAttributeQuery.execute(pool);
 
-    
+      // if product is variant
+      const isVariableProduct = product.type === 'variable';
+      if (isVariableProduct) {
+        return productAttributes.reduce((response, attribute) => {
+          response[attribute.attribute_code] = attribute.option_text;
+          
+          return response;
+        }, {});
+      }
+
+      const productVariantAttributeQuery = select().from('product_attribute_value_index');
+        productVariantAttributeQuery
+          .leftJoin('attribute')
+          .on(
+            'attribute.attribute_id',
+            '=',
+            'product_attribute_value_index.attribute_id'
+          );
+        productVariantAttributeQuery.where(
+          'product_attribute_value_index.product_id',
+          '=',
+          product.parentProductId
+        );
+      const productVariantAttributes = await productVariantAttributeQuery.execute(pool);
+
+      const attributes = [...productAttributes, ...productVariantAttributes];
+      
       const responses = attributes.reduce((response, attribute) => {
         response[attribute.attribute_code] = attribute.option_text;
         
         return response;
       }, {});
 
-
-      const foundPlanType = Object.entries(responses).find(([key, value]) => key === 'plan-type');
-      if (!foundPlanType) {
-        console.log("Plan type not found");
+      const foundDataType = Object.entries(responses).find(([key, value]) => key === 'data-type');
+      if (!foundDataType) {
+        console.log("Data type not found");
       }
 
       const foundDayAmount = Object.entries(responses).find(([key, value]) => key === 'day-amount');
@@ -52,7 +77,7 @@ module.exports = {
 
       responses['data-amount'] = parseFloat(foundDataAmount[1]);
       responses['day-amount'] = parseFloat(foundDayAmount[1]);
-      
+
       return responses;
     },
     attributeIndex: async (product, _, { pool, user }) => {
