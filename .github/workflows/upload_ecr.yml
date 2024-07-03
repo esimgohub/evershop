@@ -8,7 +8,7 @@ env:
   ECR_REPOSITORY: ${{ vars.AWS_ECR_REPO }}
 jobs:
   build:
-    name: Build notification service image
+    name: Build and upload image
     runs-on: ubuntu-latest
 
     steps:
