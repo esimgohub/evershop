@@ -5,6 +5,8 @@ import './Layout.scss';
 import './tailwind.scss';
 
 export default function BlankLayout() {
+  console.log('to blank body ne');
+
   return (
     <>
       <LoadingBar />

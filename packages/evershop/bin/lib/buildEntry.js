@@ -62,6 +62,14 @@ module.exports.buildEntry = async function buildEntry(
         }
       });
 
+      const isMagicLoginRoute = route.id === 'magicLogin';
+      if (isMagicLoginRoute) {
+        delete areas['body'];
+      }
+      else {
+        delete areas['blank-body'];
+      }
+
       let contentClient = `
       import React from 'react';
       import ReactDOM from 'react-dom';

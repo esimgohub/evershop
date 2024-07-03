@@ -21,6 +21,7 @@ export default function CurrencySwitcher({ getSummaryCurrencies = [] }) {
   //     ))}
   //   </select>
   // );
+  return <></>;
 }
 
 CurrencySwitcher.propTypes = {

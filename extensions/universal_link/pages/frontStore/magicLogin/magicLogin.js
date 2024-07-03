@@ -14,6 +14,7 @@ module.exports = async (request, response, delegate, next) => {
       response.redirect(`gohub://app.com/?token=${token}`);
     }
     else {
+      console.log("to next");
       next();
     }
   } catch (e) {
