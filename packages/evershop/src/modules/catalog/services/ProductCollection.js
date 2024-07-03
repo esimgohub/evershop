@@ -261,8 +261,8 @@ class ProductCollection {
       // Init attribute temp to sort by day-amount and total amount unit
       item.attributeTemp = {
         localEsim: localEsimAttribute.option_text,
-        dayAmount: parseInt(dayAmountAttribute.option_text),
-        totalDataAmount: planTypeAttribute.option_text === PlanType.DailyData ? parseInt(dayAmountAttribute.option_text) * parseInt(dataAmountAttribute.option_text) : parseInt(dataAmountAttribute.option_text),
+        dayAmount: parseFloat(dayAmountAttribute.option_text),
+        totalDataAmount: planTypeAttribute.option_text === PlanType.DailyData ? parseFloat(dayAmountAttribute.option_text) * parseFloat(dataAmountAttribute.option_text) : parseFloat(dataAmountAttribute.option_text),
         dataAmountUnit: dataAmountUnitAttribute.option_text
       };
     }
