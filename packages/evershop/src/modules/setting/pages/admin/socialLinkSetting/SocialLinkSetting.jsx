@@ -10,17 +10,19 @@ import Button from '@components/common/form/Button';
 function SocialLink(props) {
   const { setting, imageUploadUrl } = props;
 
+  console.log('setting: ', setting);
+
   const facebookRef = useRef();
   const instagramRef = useRef();
   const tiktokRef = useRef();
   const threadRef = useRef();
 
-  const { facebook, instagram, tiktok, thread } = setting;
+  const { social } = setting;
 
-  const [facebookIcon, setFacebookIcon] = useState(facebook?.icon);
-  const [instagramIcon, setInstagramIcon] = useState(instagram?.icon);
-  const [tiktokIcon, setTiktokIcon] = useState(tiktok?.icon);
-  const [threadIcon, setThreadIcon] = useState(thread?.icon);
+  const [facebookIcon, setFacebookIcon] = useState(social[0]?.icon);
+  const [instagramIcon, setInstagramIcon] = useState(social[1]?.icon);
+  const [tiktokIcon, setTiktokIcon] = useState(social[2]?.icon);
+  const [threadIcon, setThreadIcon] = useState(social[3]?.icon);
 
   const [loading, setLoading] = useState(false);
 
@@ -208,7 +210,7 @@ function SocialLink(props) {
   return (
     <>
       <Card
-        title="Facebook"
+        title="Social 1"
         className="mb-2"
         actions={
           facebookIcon
@@ -228,14 +230,14 @@ function SocialLink(props) {
         <Card.Session>
           <div className="grid grid-cols-3 gap-2">
             <div className="col-span-1 items-center flex">
-              <h4>Facebook Url</h4>
+              <h4>Url</h4>
             </div>
             <div className="col-span-2">
               <Field
                 type="text"
                 name="facebookUrl"
                 placeholder="Facebook"
-                value={facebook.url}
+                value={social[0].url}
               />
             </div>
           </div>
@@ -319,18 +321,14 @@ function SocialLink(props) {
 
         <div className="invisible" style={{ width: '1px', height: '1px' }}>
           <input
-            id="facebookIconUpload"
+            id="social1IconUpload"
             type="file"
             onChange={handleFacebookIconChange}
             ref={facebookRef}
           />
         </div>
 
-        <Field
-          type="hidden"
-          name="facebookIconUrl"
-          value={facebookIcon || ''}
-        />
+        <Field type="hidden" name="social1IconUrl" value={facebookIcon || ''} />
       </Card>
 
       <Card
@@ -364,7 +362,7 @@ function SocialLink(props) {
                 type="text"
                 name="instagramUrl"
                 placeholder="Instagram"
-                value={instagram?.url}
+                value={social[2]?.url}
               />
             </div>
           </div>
@@ -417,7 +415,7 @@ function SocialLink(props) {
 
         <div className="invisible" style={{ width: '1px', height: '1px' }}>
           <input
-            id="instagramIconUpload"
+            id="social2IconUpload"
             type="file"
             onChange={handleInstagramIconChange}
             ref={instagramRef}
@@ -426,7 +424,7 @@ function SocialLink(props) {
 
         <Field
           type="hidden"
-          name="instagramIconUrl"
+          name="social2IconUrl"
           value={instagramIcon || ''}
         />
       </Card>
@@ -457,9 +455,9 @@ function SocialLink(props) {
             <div className="col-span-2">
               <Field
                 type="text"
-                name="tiktokUrl"
+                name="social3Url"
                 placeholder="Tiktok"
-                value={tiktok.url}
+                value={social[3].url}
               />
             </div>
           </div>
@@ -471,7 +469,7 @@ function SocialLink(props) {
             <div className="col-span-2">
               {!tiktokIcon ? (
                 <label
-                  htmlFor="tiktokIconUpload"
+                  htmlFor="social3IconUpload"
                   className="flex flex-col justify-center image-uploader"
                 >
                   <div className="uploader-icon flex justify-center">
@@ -512,14 +510,14 @@ function SocialLink(props) {
 
         <div className="invisible" style={{ width: '1px', height: '1px' }}>
           <input
-            id="tiktokIconUpload"
+            id="social3IconUpload"
             type="file"
             onChange={handleTiktokIconChange}
             ref={tiktokRef}
           />
         </div>
 
-        <Field type="hidden" name="tiktokIconUrl" value={tiktokIcon || ''} />
+        <Field type="hidden" name="social3IconUrl" value={tiktokIcon || ''} />
       </Card>
 
       <Card
@@ -542,14 +540,14 @@ function SocialLink(props) {
       >
         <div className="invisible" style={{ width: '1px', height: '1px' }}>
           <input
-            id="threadIconUpload"
+            id="social4IconUpload"
             type="file"
             onChange={handleThreadIconChange}
             ref={threadRef}
           />
         </div>
 
-        <Field type="hidden" name="threadIconUrl" value={threadIcon || ''} />
+        <Field type="hidden" name="social4IconUrl" value={threadIcon || ''} />
 
         <Card.Session>
           <div className="grid grid-cols-3 gap-2">
@@ -559,9 +557,9 @@ function SocialLink(props) {
             <div className="col-span-2">
               <Field
                 type="text"
-                name="threadUrl"
+                name="social4Url"
                 placeholder="Thread"
-                value={thread.url}
+                value={social[3].url}
               />
             </div>
           </div>
@@ -658,20 +656,9 @@ export const query = `
   query Query {
     saveSettingApi: url(routeId: "saveSetting")
     setting {
-      facebook {
+      social {
         url
-        icon
-      }
-      instagram{
-        url
-        icon
-      }
-      tiktok {
-        url
-        icon
-      }
-      thread {
-        url
+        index
         icon
       }
     }
