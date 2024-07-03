@@ -19,13 +19,14 @@ module.exports = async (request, response, delegate, next) => {
     });
     return;
   }
+
   const { first_name, last_name, email, language_code, currency_code } =
     request.body;
 
   try {
     const result = await updateCustomer(
       {
-        id: currentCustomer.uuid,
+        uuid: currentCustomer.uuid,
         first_name,
         last_name,
         email,

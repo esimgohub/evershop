@@ -8,7 +8,8 @@
       "type": "string"
     },
     "email": {
-      "type": "string"
+      "type": "string",
+      "format": "email"
     },
     "language_code": {
       "type": "string"

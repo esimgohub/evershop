@@ -38,6 +38,7 @@ module.exports = async (request, response, delegate, next) => {
         const customerSessionData = await getSession(sessionID);
         if (customerSessionData) {
           const customerQuery = select('customer.customer_id', 'customer_id')
+            .select('customer.uuid', 'uuid')
             .select('customer.status', 'status')
             .select('customer.first_name', 'first_name')
             .select('customer.last_name', 'last_name')
@@ -68,6 +69,7 @@ module.exports = async (request, response, delegate, next) => {
             request.locals.customer = currentCustomer;
             currentCustomer = {
               customer_id: currentCustomer.customer_id,
+              uuid: currentCustomer.uuid,
               email: currentCustomer.email,
               first_name: currentCustomer.first_name,
               last_name: currentCustomer.last_name,
