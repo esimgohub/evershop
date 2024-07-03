@@ -37,14 +37,45 @@ module.exports = async (request, response, delegate, next) => {
         const getSession = util.promisify(storage.get).bind(storage);
         const customerSessionData = await getSession(sessionID);
         if (customerSessionData) {
-          currentCustomer = await select()
-            .from('customer')
-            .where('customer_id', '=', customerSessionData.customerID)
-            .and('status', '=', 1)
-            .load(pool);
+          const customerQuery = select('customer.customer_id', 'customer_id')
+            .select('customer.status', 'status')
+            .select('customer.first_name', 'first_name')
+            .select('customer.last_name', 'last_name')
+            .select('customer.email', 'email')
+            .select('customer.avatar_url', 'avatar_url')
+            .select('language.code', 'language_code')
+            .select('language.name', 'language_name')
+            .select('language.icon', 'language_icon')
+            .select('currency.code', 'currency_code')
+            .select('currency.name', 'currency_name')
+            .from('customer');
+
+          customerQuery
+            .leftJoin('language', 'language')
+            .on('customer.language_id', '=', 'language.id');
+
+          customerQuery
+            .leftJoin('currency', 'currency')
+            .on('customer.currency_id', '=', 'currency.id');
+
+          customerQuery
+            .where('customer.customer_id', '=', customerSessionData.customerID)
+            .andWhere('customer.status', '=', 1);
+
+          currentCustomer = await customerQuery.load(pool);
 
           if (currentCustomer) {
             request.locals.customer = currentCustomer;
+            currentCustomer = {
+              customer_id: currentCustomer.customer_id,
+              email: currentCustomer.email,
+              first_name: currentCustomer.first_name,
+              last_name: currentCustomer.last_name,
+              avatar_url: currentCustomer.avatar_url,
+              status: currentCustomer.status,
+              language_code: currentCustomer.language_code,
+              currency_code: currentCustomer.currency_code
+            };
             setContextValue(request, 'customer', currentCustomer);
           }
         }
