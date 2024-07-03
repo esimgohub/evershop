@@ -32,7 +32,6 @@ module.exports = {
         .from('product')
         .where('product_id', '=', product.productId)
         .load(pool);
-      console.log("foundedProduct: ", foundedProduct)
 
       const originCategories = await select().from('category').execute(pool);
 
@@ -51,7 +50,6 @@ module.exports = {
 
       const isSimpleProduct = foundedProduct.type === ProductType.simple.value;
       if (isSimpleProduct) {
-        console.log("product: ", product.parentProductUuid)
         query.where('product_category.product_id', '=', product.parentProductUuid);
       }
       else {
@@ -61,8 +59,6 @@ module.exports = {
       query.andWhere('category.status', '=', CategoryStatus.Enabled);
 
       const categories = await query.execute(pool);
-
-      console.log("categories: ", categories)
 
       const mappedCategories = categories.length > 0 ? categories.map(country => {
         return camelCase({

@@ -216,7 +216,9 @@ module.exports = () => {
         // return formatCurrency(priceByRatio, isoCode, foundCurrency.language);
         return new Intl.NumberFormat(currencyLanguages[isoCode], {
           style: 'currency',
-          currency: isoCode
+          currency: isoCode,
+          minimumFractionDigits: 0,
+        maximumFractionDigits: 0
       }).format(priceByRatio)
     });
 };
