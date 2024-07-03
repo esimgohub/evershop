@@ -1,6 +1,5 @@
 const { select } = require('@evershop/postgres-query-builder');
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
-const { DataType } = require('../../../../utils/enums/data-type');
 const { unescape } = require('lodash');
 
 module.exports = {

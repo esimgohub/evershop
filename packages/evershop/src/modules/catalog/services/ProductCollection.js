@@ -283,7 +283,7 @@ class ProductCollection {
       item.attributeTemp = {
         localEsim: localEsimAttribute.option_text,
         dayAmount: parseFloat(dayAmountAttribute.option_text),
-        totalDataAmount: planTypeAttribute.option_text === PlanType.DailyData ? parseFloat(dayAmountAttribute.option_text) * parseFloat(dataAmountAttribute.option_text) : parseFloat(dataAmountAttribute.option_text),
+        totalDataAmount: dataTypeAttribute.option_text === DataType.DailyData ? parseFloat(dayAmountAttribute.option_text) * parseFloat(dataAmountAttribute.option_text) : parseFloat(dataAmountAttribute.option_text),
         dataAmountUnit: dataAmountUnitAttribute.option_text
       };
     }
