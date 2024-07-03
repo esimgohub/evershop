@@ -149,19 +149,11 @@ class ProductCollection {
       this.baseQuery.orWhere('product.type', '=', ProductType.simple.value);
       this.baseQuery.andWhere('product.visibility', '=', true);
       this.baseQuery.andWhere('product.status', '=', true);
-      // if (getConfig('catalog.showOutOfStockProduct', false) === false) {
-      //   this.baseQuery
-      //     .andWhere('product_inventory.manage_stock', '=', false)
-      //     .addNode(
-      //       node('OR')
-      //         .addLeaf('AND', 'product_inventory.qty', '>', 0)
-      //         .addLeaf('AND', 'product_inventory.stock_availability', '=', true)
-      //     );
-      // }
     }
     else {
       this.baseQuery.orWhere('product.type', '=', ProductType.variable.value);
     }
+
     const currentFilters = [];
     // Attribute filter
     const filterableAttributes = await select()
@@ -193,13 +185,26 @@ class ProductCollection {
       }
     });
 
+    const page = productFilter.page ? parseInt(productFilter.page) : 1;
+    const offset = page - 1;
+    const perPage = productFilter.perPage ? parseInt(productFilter.perPage) : 10;
+
+    this.baseQuery.limit(offset * perPage, perPage);
+
+    // Clone the main query for getting total right before doing the paging
+    
     if (productFilter.categoryId) {
-      const productCategory = await select()
-        .from('product_category')
+      const foundedCategory = await select()
+        .from('category')
         .where('category_id', '=', productFilter.categoryId)
+        .load(pool);
+
+      const productCategories = await select()
+        .from('product_category')
+        .where('category_id', '=', foundedCategory.uuid)
         .execute(pool);
 
-      this.baseQuery.andWhere("product.uuid", "IN", productCategory.map(p => p.product_id));
+      this.baseQuery.andWhere("product.parent_product_uuid", "IN", productCategories.map(p => p.product_id));
     }
 
     if (productFilter.tripPeriod) {
@@ -223,7 +228,6 @@ class ProductCollection {
       this.baseQuery.andWhere("product_attribute_value_index.option_text", ">=", productFilter.tripPeriod < 10 ? `0${productFilter.tripPeriod}` : productFilter.tripPeriod);
     }
 
-    // Clone the main query for getting total right before doing the paging
     const totalQuery = this.baseQuery.clone();
     totalQuery.select('COUNT(product.product_id)', 'total');
     totalQuery.removeOrderBy();
@@ -234,9 +238,26 @@ class ProductCollection {
   }
 
   async items() {
+    // Pick one per variant group.
+
     const items = await this.baseQuery.execute(pool);
 
     for (const item of items) {
+      const parentProductAttributeQuery = select().from('product_attribute_value_index');
+      parentProductAttributeQuery
+        .leftJoin('attribute')
+        .on(
+          'attribute.attribute_id',
+          '=',
+          'product_attribute_value_index.attribute_id'
+        );
+      parentProductAttributeQuery.where(
+        'product_attribute_value_index.product_id',
+        '=',
+        item.parent_product_id
+      );
+      const matchedParentProductAttributes = await parentProductAttributeQuery.execute(pool);
+
       const productAttributeQuery = select().from('product_attribute_value_index');
       productAttributeQuery
         .leftJoin('attribute')
@@ -250,19 +271,19 @@ class ProductCollection {
         '=',
         item.product_id
       );
-      const matchedAttributes = await productAttributeQuery.execute(pool);
+      const matchedProductAttributes = await productAttributeQuery.execute(pool);
 
-      const planTypeAttribute = matchedAttributes.find(a => a.attribute_code === 'plan-type');
-      const dayAmountAttribute = matchedAttributes.find(a => a.attribute_code === 'day-amount');
-      const dataAmountAttribute = matchedAttributes.find(a => a.attribute_code === 'data-amount');
-      const dataAmountUnitAttribute = matchedAttributes.find(a => a.attribute_code === 'data-amount-unit');
-      const localEsimAttribute = matchedAttributes.find(a => a.attribute_code === 'local-esim');
+      const dataTypeAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'data-type');
+      const dayAmountAttribute = matchedProductAttributes.find(a => a.attribute_code === 'day-amount');
+      const dataAmountAttribute = matchedProductAttributes.find(a => a.attribute_code === 'data-amount');
+      const dataAmountUnitAttribute = matchedProductAttributes.find(a => a.attribute_code === 'data-amount-unit');
+      const localEsimAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'local-esim');
 
       // Init attribute temp to sort by day-amount and total amount unit
       item.attributeTemp = {
         localEsim: localEsimAttribute.option_text,
         dayAmount: parseFloat(dayAmountAttribute.option_text),
-        totalDataAmount: planTypeAttribute.option_text === PlanType.DailyData ? parseFloat(dayAmountAttribute.option_text) * parseFloat(dataAmountAttribute.option_text) : parseFloat(dataAmountAttribute.option_text),
+        totalDataAmount: dataTypeAttribute.option_text === PlanType.DailyData ? parseFloat(dayAmountAttribute.option_text) * parseFloat(dataAmountAttribute.option_text) : parseFloat(dataAmountAttribute.option_text),
         dataAmountUnit: dataAmountUnitAttribute.option_text
       };
     }
@@ -301,6 +322,14 @@ class ProductCollection {
     });
 
     return sortedItems;
+  }
+
+  async adminItems() {
+    this.baseQuery.removeLimit();
+
+    const records = await this.baseQuery.execute(pool);
+
+    return records.map((row) => camelCase(row));
   }
 
   async total() {
