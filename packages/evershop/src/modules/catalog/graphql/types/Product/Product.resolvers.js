@@ -111,7 +111,7 @@ module.exports = {
       const categories = await productCategoryQuery.execute(pool);
 
 
-      const foundPlanType = attributes.find((a) => a.attribute_code === 'plan-type');
+      const foundDataType = attributes.find((a) => a.attribute_code === 'data-type');
       const foundExpiration = attributes.find((a) => a.attribute_code === 'expiration');
       const foundSharing = attributes.find((a) => a.attribute_code === 'sharing');
       const foundNetworkType = attributes.find((a) => a.attribute_code === 'network-type');
@@ -120,8 +120,8 @@ module.exports = {
       const foundDailyResetTime = attributes.find((a) => a.attribute_code === 'daily-reset-time');
 
       const filledDescription = productDetailDescriptionHtmlTemplate
-        .replace('{plan-type}', foundPlanType ? foundPlanType.attribute_name : "Plan Type")
-        .replace('{plan-type-value}', foundPlanType ? foundPlanType.option_text : '')
+        .replace('{data-type}', foundDataType ? foundDataType.attribute_name : "Data Type")
+        .replace('{data-type-value}', foundDataType ? foundDataType.option_text : '')
         .replace('{expiration}', foundExpiration ? foundExpiration.attribute_name : "Expiration")
         .replace('{expiration-value}', foundExpiration ? foundExpiration.option_text : '')
         .replace('{sharing}', foundSharing ? foundSharing.attribute_name : "Sharing")
