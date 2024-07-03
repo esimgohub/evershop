@@ -110,7 +110,7 @@ function SliderSetting(props) {
                   <div className="col-span-2">
                     <Field
                       type="text"
-                      name={`slider${slider?.index}Url`}
+                      name={`slideritem${slider?.index}Url`}
                       validationRules={['notEmpty']}
                       placeholder="Example: https://abc.com"
                       value={slider?.url}
@@ -126,19 +126,18 @@ function SliderSetting(props) {
                   </div>
                   <div className="col-span-2">
                     <Field
-                      name={`slider[${index}]GroupBelong`}
+                      name={`slider[${index}]group`}
                       validationRules={['notEmpty']}
                       value={
                         variant?.attributes.find(
                           (v) => v.attributeCode === a.attributeCode
                         )?.optionId
                       }
-                      options={}
-                      type="select"
+                      type="text"
                     />
                     {/* <Field
                       type="text"
-                      name={`slider${slider?.index}SortOrder`}
+                      name={`slideritem${slider?.index}SortOrder`}
                       validationRules={['notEmpty']}
                       placeholder="Example: 1"
                       value={slider?.sortOrder}
@@ -155,7 +154,7 @@ function SliderSetting(props) {
                   <div className="col-span-2">
                     <Field
                       type="text"
-                      name={`slider${slider?.index}SortOrder`}
+                      name={`slideritem${slider?.index}SortOrder`}
                       validationRules={['notEmpty']}
                       placeholder="Example: 1"
                       value={slider?.sortOrder}
@@ -171,7 +170,7 @@ function SliderSetting(props) {
                   </div>
                   <div className="col-span-2">
                     <Field
-                      name={`slider${slider?.index}Visibility`}
+                      name={`slideritem${slider?.index}Visibility`}
                       value={slider?.visibility}
                       type="toggle"
                       validationRules={['notEmpty']}
@@ -213,7 +212,7 @@ function SliderSetting(props) {
                   <div className="col-span-2">
                     {!slider?.imageUrl ? (
                       <label
-                        htmlFor={`slider${slider?.index}Upload`}
+                        htmlFor={`slideritem${slider?.index}Upload`}
                         className="flex flex-col justify-center image-uploader"
                       >
                         <div className="uploader-icon flex justify-center">
@@ -292,7 +291,7 @@ function SliderSetting(props) {
                 style={{ width: '1px', height: '1px' }}
               >
                 <input
-                  id={`slider${slider?.index}Upload`}
+                  id={`slideritem${slider?.index}Upload`}
                   type="file"
                   onChange={(e) => handleSliderImageChange(e, slider.index)}
                   ref={(el) => (refs.current[index] = el)}
@@ -301,14 +300,14 @@ function SliderSetting(props) {
 
               <Field
                 type="hidden"
-                name={`slider${slider?.index}ImageUrl`}
+                name={`slideritem${slider?.index}ImageUrl`}
                 value={slider?.imageUrl || ''}
                 validationRules={['notEmpty']}
               />
 
               <Field
                 type="hidden"
-                name={`slider${slider?.index}Index`}
+                name={`slideritem${slider?.index}Index`}
                 value={slider?.index}
                 validationRules={['notEmpty']}
               />
@@ -383,11 +382,9 @@ export const query = `
       index
       sortOrder
       visibility
+      group
       url
       imageUrl
-    }
-    sliderGroups {
-      name
     }
     imageUploadUrl: url(routeId: "imageUpload", params: [{key: "0", value: ""}])
   }

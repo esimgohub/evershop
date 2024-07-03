@@ -2,7 +2,7 @@ type Slider {
   index: Int
   url: String
   imageUrl: String
-  group: SliderGroup
+  group: String
 }
 
 extend type Setting {

@@ -3,11 +3,6 @@ type Slider {
   visibility: Int
 }
 
-type SliderGroup {
-  code: String
-  name: String
-}
-
 extend type Query {
   sliders: [Slider]
 }
