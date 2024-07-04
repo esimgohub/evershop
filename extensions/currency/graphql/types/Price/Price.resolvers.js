@@ -10,29 +10,23 @@ const getIsoCodeFromContext = (context) => {
 module.exports = {
   Price: {
     value: (rawPrice, _, context) => {
-      const isoCode = getIsoCodeFromContext(context);
-      const result = getValue(
-        'priceValByExnRatio',
-        {
-          rawPrice,
-          isoCode
-        }
-      );
-      return result
+      const isoCode = context.currencyCode;
+      const result = getValue('priceValByExnRatio', {
+        rawPrice,
+        isoCode
+      });
+      return result;
     },
     currency: (_, __, context) => {
-      const isoCode = getIsoCodeFromContext(context);
+      const isoCode = context.currencyCode;
       return isoCode;
     },
     text: (rawPrice, __, context) => {
-      const isoCode = getIsoCodeFromContext(context);
-      const result = getValue(
-        'priceTextByExnRatio',
-        {
-          rawPrice,
-          isoCode
-        }
-      );
+      const isoCode = context.currencyCode;
+      const result = getValue('priceTextByExnRatio', {
+        rawPrice,
+        isoCode
+      });
       return result;
     }
   }
