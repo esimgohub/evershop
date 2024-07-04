@@ -68,7 +68,7 @@ module.exports = {
       const numberOfSliderFields = 8;
       const totalSlider = sliderSettings.length / numberOfSliderFields;
       
-      const results = [];
+      const sliders = [];
       for (let index = 1; index <= totalSlider; ++index) {
         const matchedSliders = sliderSettings.filter((s) => s.name.toLowerCase().includes(`1sslideritem${index}`));
 
@@ -80,8 +80,8 @@ module.exports = {
         const sliderTitle = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}title`));
         const sliderDescription = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}description`));
 
-        results.push({
-          sortOrder: parseInt(sliderSortOrder.value),
+        sliders.push({
+          index: parseInt(sliderSortOrder.value),
           url: sliderUrl.value,
           group:  sliderGroup.value ?? null,
           visibility: parseInt(sliderVisibility.value) === 1,
@@ -91,16 +91,11 @@ module.exports = {
         })
       }
   
-      const sliders = results.filter((s) => s.visibility === true).sort((a, b) => a.sortOrder - b.sortOrder).map((s, index) => ({
-        ...s,
-        index: index + 1,
-      }));
-  
       return {
         store,
         payment,
         social: socialResponses,
-        sliders
+        sliders: sliders.filter((s) => s.visibility === true)
       }
     }
   },

@@ -122,7 +122,13 @@ function SliderSetting(props) {
                       <h4>Title</h4>
                     </div>
                     <div className="col-span-2">
-                      <CkeditorField
+                      <Field
+                        type="text"
+                        name={`1sslideritem${slider?.index}Title`}
+                        placeholder="Example: https://abc.com"
+                        value={slider?.title}
+                      />
+                      {/* <CkeditorField
                         id={`1sslideritem${slider?.index}Title`}
                         name={`1sslideritem${slider?.index}Title`}
                         value={slider.title ? unescape(slider.title) : ''}
@@ -130,7 +136,7 @@ function SliderSetting(props) {
                         deleteApi={deleteApi}
                         uploadApi={uploadApi}
                         folderCreateApi={folderCreateApi}
-                      />
+                      /> */}
                     </div>
                   </div>
                 </Card.Session>
@@ -141,7 +147,13 @@ function SliderSetting(props) {
                       <h4>Description</h4>
                     </div>
                     <div className="col-span-2">
-                      <CkeditorField
+                      <Field
+                        type="text"
+                        name={`1sslideritem${slider?.index}Description`}
+                        placeholder="Example: https://abc.com"
+                        value={slider?.description}
+                      />
+                      {/* <CkeditorField
                         id={`1sslideritem${slider?.index}Description`}
                         name={`1sslideritem${slider?.index}Description`}
                         value={
@@ -151,7 +163,7 @@ function SliderSetting(props) {
                         deleteApi={deleteApi}
                         uploadApi={uploadApi}
                         folderCreateApi={folderCreateApi}
-                      />
+                      /> */}
                     </div>
                   </div>
                 </Card.Session>
@@ -165,7 +177,6 @@ function SliderSetting(props) {
                       <Field
                         type="text"
                         name={`1sslideritem${slider?.index}Url`}
-                        validationRules={['notEmpty']}
                         placeholder="Example: https://abc.com"
                         value={slider?.url}
                       />

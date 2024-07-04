@@ -18,9 +18,6 @@ module.exports = async (request, response, delegate, next) => {
 
     // Loop through the body and insert the data
     const promises = [];
-
-    console.log("body: ", body);
-
     Object.keys(body).forEach((key) => {
       const value = body[key];
       // Check if the value is a object or array
