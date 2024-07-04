@@ -1,4 +1,5 @@
 const { select } = require('@evershop/postgres-query-builder');
+const { decode } = require('he');
 
 module.exports = {
   Query: {
@@ -40,25 +41,6 @@ module.exports = {
         }
       };
 
-      // const social = {
-      //   facebook: {
-      //     url: setting.find(s => s.name === "facebookUrl") ? setting.find(s => s.name === "facebookUrl").value : null,
-      //     icon: setting.find(s => s.name === "facebookIconUrl") ? setting.find(s => s.name === "facebookIconUrl").value : null
-      //   },
-      //   tiktok: {
-      //     url: setting.find(s => s.name === "tiktokUrl") ? setting.find(s => s.name === "tiktokUrl").value : null,
-      //     icon: setting.find(s => s.name === "tiktokIconUrl") ? setting.find(s => s.name === "tiktokIconUrl").value : null
-      //   },
-      //   instagram: {
-      //     url: setting.find(s => s.name === "instagramUrl") ? setting.find(s => s.name === "instagramUrl").value : null,
-      //     icon: setting.find(s => s.name === "instagramIconUrl") ? setting.find(s => s.name === "instagramIconUrl").value : null
-      //   },
-      //   thread: {
-      //     url: setting.find(s => s.name === "threadUrl") ? setting.find(s => s.name === "threadUrl").value : null,
-      //     icon: setting.find(s => s.name === "threadIconUrl") ? setting.find(s => s.name === "threadIconUrl").value : null
-      //   }
-      // }
-
       const socialConfigs = setting.filter(s => s.name.toLowerCase().startsWith("social"));
       
       const numberOfSocialFields = 3;
@@ -80,42 +62,40 @@ module.exports = {
       
       socialResponses.sort((s1, s2) => s1.index - s2.index);
 
-      console.log("socialResponses", socialResponses);
-
       const sliderSettings = setting
-        .filter((s) => s.name.startsWith('slider'));
+        .filter((s) => s.name.toLowerCase().startsWith('1sslideritem'));
 
-      const numberOfSliderFields = 4;
+      const numberOfSliderFields = 8;
       const totalSlider = sliderSettings.length / numberOfSliderFields;
       
-      const results = [];
+      const sliders = [];
       for (let index = 1; index <= totalSlider; ++index) {
-        const matchedSliders = sliderSettings.filter((s) => s.name.includes(`slider${index}`));
+        const matchedSliders = sliderSettings.filter((s) => s.name.toLowerCase().includes(`1sslideritem${index}`));
 
-        const sliderSortOrder = matchedSliders.find((s) => s.name.toLowerCase().includes('sortorder'));
-        const sliderVisibility = matchedSliders.find((s) => s.name.toLowerCase().includes('visibility'));
-        const sliderImageUrl = matchedSliders.find((s) => s.name.toLowerCase().includes('imageurl'));
-        const sliderUrl = matchedSliders.find((s) => s.name.toLowerCase().includes('url'));
+        const sliderSortOrder = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}sortorder`));
+        const sliderVisibility = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}visibility`));
+        const sliderImageUrl = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}imageurl`));
+        const sliderUrl = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}url`));
+        const sliderGroup = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}group`));
+        const sliderTitle = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}title`));
+        const sliderDescription = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}description`));
 
-
-        results.push({
-          sortOrder: parseInt(sliderSortOrder.value),
+        sliders.push({
+          index: parseInt(sliderSortOrder.value),
           url: sliderUrl.value,
+          group:  sliderGroup.value ?? null,
           visibility: parseInt(sliderVisibility.value) === 1,
           imageUrl: `${homeUrl}${sliderImageUrl.value}`,
+          title: decode(sliderTitle.value) ?? '',
+          description: decode(sliderDescription.value) ?? ''
         })
       }
-  
-      const sliders = results.filter((s) => s.visibility === true).sort((a, b) => a.sortOrder - b.sortOrder).map((s, index) => ({
-        ...s,
-        index: index + 1,
-      }));
   
       return {
         store,
         payment,
         social: socialResponses,
-        sliders
+        sliders: sliders.filter((s) => s.visibility === true)
       }
     }
   },
