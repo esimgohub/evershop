@@ -1,57 +1,85 @@
-/* eslint-disable jsx-a11y/label-has-associated-control */
-/* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { useModal } from '@components/common/modal/useModal';
 import { Card } from '@components/admin/cms/Card';
 import Button from '@components/common/form/Button';
 
-export function DeepLinkModal({
-    title,
-    content,
-    webPageUrl,
-    // appUrl,
-}) {
+export function DeepLinkModal({ title, webPageUrl }) {
+  const [countDownTimer, setCountDownTimer] = React.useState(5);
+
+  console.log('countDownTimer', countDownTimer);
+
   const modal = useModal();
 
-  useEffect(() => {
-    modal.openModal();
-  }, [])
+  React.useEffect(() => {
+    console.log('to use effect');
+    let timer = setInterval(() => {
+      setCountDownTimer(countDownTimer - 1);
+    }, 1000);
 
-  const handleNavigate = () => {
-    window.open(webPageUrl, '_blank');
-    modal.closeModal();
-  }
+    console.log('window: ', window);
 
-  return modal.state.showing && (
+    if (countDownTimer === 0) {
+      clearInterval(timer);
+      window.location.href = webPageUrl;
+    }
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [countDownTimer]);
+
+  const handleNavigateToWebPage = () => {
+    window.location.href = webPageUrl;
+  };
+
+  return (
     <div>
-        <div className={modal.className}>
-          <div
-            className="modal-wrapper flex self-center justify-center items-center"
-            tabIndex={-1}
-            role="dialog"
-          >
-            <div className="modal">
-                <Card title={title}>
-                    <div className="modal-content">
-                        <Card.Session title={content}>
-                          <div className="flex justify-between gap-2">
-                            <Button title="To Web Page" className="w-full" variant="secondary" onAction={handleNavigate} />
-                            <Button title="To App" className="w-full" variant="primary" onAction={handleNavigate} />
-                          </div>
-                        </Card.Session>
-                    </div>
-                </Card>
-            </div>
+      <div className={modal.className}>
+        <div
+          className="modal-wrapper flex self-center justify-center items-center"
+          tabIndex={-1}
+          role="dialog"
+        >
+          <div className="modal">
+            <Card title={title}>
+              <div className="modal-content">
+                <Card.Session>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <p
+                      style={{
+                        marginBottom: '16px'
+                      }}
+                    >
+                      You will be redirected to esimgohub.com after{' '}
+                      {countDownTimer} second{countDownTimer > 1 ? 's' : ''}
+                    </p>
+
+                    <Button
+                      title="To page now"
+                      style
+                      className="w-full"
+                      variant="primary"
+                      onAction={handleNavigateToWebPage}
+                    />
+                  </div>
+                </Card.Session>
+              </div>
+            </Card>
           </div>
         </div>
+      </div>
     </div>
   );
 }
 
 DeepLinkModal.propTypes = {
-    title: PropTypes.string.isRequired,
-    content: PropTypes.string.isRequired,
-    webPageUrl: PropTypes.string.isRequired,
-    // appUrl: PropTypes.string.isRequired
+  title: PropTypes.string.isRequired,
+  webPageUrl: PropTypes.string.isRequired
 };

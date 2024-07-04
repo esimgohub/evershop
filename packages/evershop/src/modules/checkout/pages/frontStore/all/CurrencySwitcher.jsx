@@ -3,26 +3,25 @@ import React from 'react';
 import './CurrencySwitcher.scss';
 
 export default function CurrencySwitcher({ getSummaryCurrencies = [] }) {
-  const onSelectChange = (e) => {
-    document.cookie = `isoCode=${e.target.value}`;
-
-    window.location.reload();
-  };
-
-  const isoCodeKey = document.cookie
-    .split('; ')
-    .find((c) => c.startsWith('isoCode'));
-  const isoCodeValue = isoCodeKey ? isoCodeKey.split('=')[1] : null;
-
-  return (
-    <select onChange={onSelectChange} className="currency-switcher">
-      {getSummaryCurrencies.map((currency) => (
-        <option selected={isoCodeValue === currency.code} value={currency.code}>
-          {currency.code}
-        </option>
-      ))}
-    </select>
-  );
+  // TODO: Must investigate why cannot using document cookie while in production
+  // const onSelectChange = (e) => {
+  //   document.cookie = `isoCode=${e.target.value}`;
+  //   window.location.reload();
+  // };
+  // const isoCodeKey = document.cookie
+  //   .split('; ')
+  //   .find((c) => c.startsWith('isoCode'));
+  // const isoCodeValue = isoCodeKey ? isoCodeKey.split('=')[1] : null;
+  // return (
+  //   <select onChange={onSelectChange} className="currency-switcher">
+  //     {getSummaryCurrencies.map((currency) => (
+  //       <option selected={isoCodeValue === currency.code} value={currency.code}>
+  //         {currency.code}
+  //       </option>
+  //     ))}
+  //   </select>
+  // );
+  return <></>;
 }
 
 CurrencySwitcher.propTypes = {

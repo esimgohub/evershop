@@ -18,6 +18,7 @@ function ServerHtml({ css, js, appContext }) {
       <body id="body">
         <div id="app" className="bg-background">
           <Alert>
+            <Area id="blank-body" className="wrapper" />
             <Area id="body" className="wrapper" />
           </Alert>
         </div>
