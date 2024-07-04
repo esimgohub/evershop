@@ -3,12 +3,18 @@ const smallestUnit = require('zero-decimal-currencies');
 const stripePayment = require('stripe');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
-const { getValue } = require('@evershop/evershop/src/lib/util/registry');
 const {
   OK,
   INVALID_PAYLOAD
 } = require('@evershop/evershop/src/lib/util/httpStatus');
 const { getSetting } = require('../../../setting/services/setting');
+
+const convertFromUSD = (amount, rate, currentIsoCode) => {
+  if (currentIsoCode === "USD") {
+    return amount;
+  }
+  return amount * rate;
+};
 
 // eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
@@ -39,13 +45,16 @@ module.exports = async (request, response, delegate, next) => {
 
     const stripe = stripePayment(stripeSecretKey);
 
-    const formatedGrandTotal = await getValue(
-      'priceValByExnRatio',
-      {
-        rawPrice: order.grand_total,
-        isoCode: order.currency
-      }
-    );
+    const foundCurrency = await select()
+      .from('currency')
+      .where('code', '=', order.currency)
+      .load(pool);
+
+    if (!foundCurrency) {
+      throw new Error(`Not found currency with code: ${order.currency}`)
+    }
+
+    const formatedGrandTotal = convertFromUSD(parseFloat(order.grand_total), foundCurrency.rate, order.currency);
 
     // Create a PaymentIntent with the order amount and currency
     const paymentIntent = await stripe.paymentIntents.create({

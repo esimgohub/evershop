@@ -184,10 +184,15 @@ module.exports.registerCartItemBaseFields =
         key: 'final_price',
         resolvers: [
           async function resolver() {
-            return toPrice(this.getData('product_price')); // TODO This price should include the custom option price
+            const product = await this.getProduct();
+            return toPrice(product.price);
+
+            // return toPrice(productPrice.price); // TODO This price should include the custom option price
+            // const product = await this.getProduct();
+            // return toPrice(product.price);
           }
         ],
-        dependencies: ['product_price']
+        dependencies: ['product_id']
       },
       {
         key: 'final_price_incl_tax',
