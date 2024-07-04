@@ -4,7 +4,7 @@ const {
   getValueSync,
   getValue
 } = require('@evershop/evershop/src/lib/util/registry');
-const { select } = require('@evershop/postgres-query-builder');
+const { select, execute } = require('@evershop/postgres-query-builder');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { v4: uuidv4, validate } = require('uuid');
 const {
@@ -49,6 +49,28 @@ class Item extends DataObject {
 
   getCart() {
     return this.#cart;
+  }
+
+  /**
+   * Update the categoryId of an item.
+   * @param {number} categoryId
+   * @returns {void}
+   * @throws {Error}
+   */
+  async updateCategoryId(categoryId) {
+    await this.setData('category_id', categoryId, true);
+  }
+
+  /**
+   * Update the tripDate of an item.
+   * @param {string} fromDate
+   * @param {string} toDate
+   * @returns {void}
+   * @throws {Error}
+   */
+  async updateTripDate(fromDate, toDate) {
+    const trip = [fromDate, toDate].join();
+    await this.setData('trip', trip, true);
   }
 }
 
@@ -341,10 +363,12 @@ module.exports = {
     }
     const cartObject = new Cart(cart);
     // Get the cart items
-    const items = await select()
-      .from('cart_item')
-      .where('cart_id', '=', cart.cart_id)
-      .execute(pool);
+    const rawQuery = `
+    select * from cart_item
+    where cart_id = '${cart.cart_id}'
+    order by created_at DESC
+    `;
+    const { rows: items } = await execute(pool, rawQuery);
     // Build the cart items
     const cartItems = [];
     await Promise.all(

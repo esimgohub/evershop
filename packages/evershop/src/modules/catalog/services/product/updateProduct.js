@@ -392,11 +392,11 @@ async function updateProduct(uuid, data, context) {
     })(uuid, productData, connection);
 
     // Update product inventory
-    await hookable(updateProductInventory, { ...context, connection, product })(
-      productData,
-      product.product_id,
-      connection
-    );
+    // await hookable(updateProductInventory, { ...context, connection, product })(
+    //   productData,
+    //   product.product_id,
+    //   connection
+    // );
 
     // Update product attributes
     await hookable(updateProductAttributes, {

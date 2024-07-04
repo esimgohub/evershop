@@ -2,6 +2,8 @@ const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { select } = require('@evershop/postgres-query-builder');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const { v4: uuidv4 } = require('uuid');
+const dayjs = require('dayjs');
+const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const { toPrice } = require('../toPrice');
 const {
   calculateTaxAmount
@@ -403,6 +405,258 @@ module.exports.registerCartItemBaseFields =
           }
         ],
         dependencies: ['cart_item_id', 'uuid']
+      },
+      {
+        key: 'attribute',
+        resolvers: [
+          async function resolver() {
+            const product = await this.getProduct();
+            const productAttributeQuery = select().from('product_attribute_value_index');
+            productAttributeQuery
+              .leftJoin('attribute')
+              .on(
+                'attribute.attribute_id',
+                '=',
+                'product_attribute_value_index.attribute_id'
+              );
+            productAttributeQuery.where(
+              'product_attribute_value_index.product_id',
+              '=',
+              product.product_id
+            );
+            // if (!user) {
+            //   query.andWhere('attribute.display_on_frontend', '=', true);
+            // }
+            const productAttributes = await productAttributeQuery.execute(pool);
+
+            // if product is variant
+            const isVariableProduct = product.type === 'variable';
+            if (isVariableProduct) {
+              return productAttributes.reduce((response, attribute) => {
+                response[attribute.attribute_code] = attribute.option_text;
+
+                return response;
+              }, {});
+            }
+
+            const productVariantAttributeQuery = select().from('product_attribute_value_index');
+            productVariantAttributeQuery
+              .leftJoin('attribute')
+              .on(
+                'attribute.attribute_id',
+                '=',
+                'product_attribute_value_index.attribute_id'
+              );
+            productVariantAttributeQuery.where(
+              'product_attribute_value_index.product_id',
+              '=',
+              product.parent_product_id
+            );
+            const productVariantAttributes = await productVariantAttributeQuery.execute(pool);
+
+            const attributes = [...productAttributes, ...productVariantAttributes];
+
+            const responses = attributes.reduce((response, attribute) => {
+              response[attribute.attribute_code] = attribute.option_text;
+
+              return response;
+            }, {});
+
+            const foundDataType = Object.entries(responses).find(([key, value]) => key === 'data-type');
+            if (!foundDataType) {
+              console.log('Data type not found');
+            }
+
+            const foundDayAmount = Object.entries(responses).find(([key, value]) => key === 'day-amount');
+            if (!foundDayAmount) {
+              console.log('Day amount not found');
+            }
+
+            const foundDataAmount = Object.entries(responses).find(([key, value]) => key === 'data-amount');
+            if (!foundDataAmount) {
+              console.log('Data amount not found');
+            }
+
+            responses['data-amount'] = parseInt(foundDataAmount[1], 10);
+            responses['day-amount'] = parseInt(foundDayAmount[1], 10);
+
+            return responses;
+          }
+        ],
+        dependencies: ['product_id']
+      },
+      {
+        key: 'category',
+        resolvers: [
+          async function resolver() {
+            const categoryDescriptionQuery = select().from('category_description');
+
+            const categoryId = await this.getData('category_id');
+            if (categoryId == null) {
+              return {};
+            }
+            categoryDescriptionQuery.where('category_description_id', '=', categoryId);
+            const rows = await categoryDescriptionQuery.execute(pool);
+            if (!rows?.length) {
+              return {};
+            }
+            return rows[0];
+          }
+        ],
+        dependencies: ['category_id']
+      },
+      {
+        key: 'product_old_price',
+        resolvers: [
+          async function resolver() {
+            const product = await this.getProduct();
+            if (this.getData('product_old_price') == null) {
+              return null;
+            }
+            return toPrice(product.old_price);
+          }
+        ],
+        dependencies: ['product_id']
+      },
+      {
+        key: 'old_price',
+        resolvers: [
+          async function resolver() {
+            if (this.getData('product_old_price') == null) {
+              return null;
+            }
+            return toPrice(this.getData('product_old_price')); // TODO This price should include the custom option price
+          }
+        ],
+        dependencies: ['product_old_price']
+      },
+      {
+        key: 'category_id',
+        resolvers: [
+          async function resolver() {
+            const triggeredField = this.getTriggeredField();
+            const requestedValue = this.getRequestedValue();
+            return triggeredField === 'category_id' ? requestedValue : this.getData('category_id');
+          }
+        ]
+      },
+      {
+        key: 'trip',
+        resolvers: [
+          async function resolver() {
+            const triggeredField = this.getTriggeredField();
+            const requestedValue = this.getRequestedValue();
+            return triggeredField === 'trip' ? requestedValue : this.getData('trip');
+          }
+        ]
+      },
+      {
+        key: 'trip_text',
+        resolvers: [
+          async function resolver() {
+            function formatDateComponent(value) {
+              return String(value).padStart(2, '0');
+            }
+
+            function convertTimestampToTripString(fromDate, toDate) {
+              // Create dayjs objects from the timestamps
+              const fromDateObj = dayjs(fromDate);
+              const toDateObj = dayjs(toDate);
+
+              // Get day, month, and year components for both dates
+              const fromDay = formatDateComponent(fromDateObj.date());
+
+              const toDay = formatDateComponent(toDateObj.date());
+              const toMonth = formatDateComponent(toDateObj.month() + 1);
+              const toYear = toDateObj.year();
+
+
+              // Calculate the number of days between fromDate and toDate
+              const diffDays = toDateObj.diff(fromDateObj, 'day') + 1;
+
+              // Determine whether to use "day" or "days"
+              const dayText = diffDays === 1 ? 'day' : 'days';
+
+              // Format the trip string
+              return `Trip: ${fromDay}-${toDay}/${toMonth}/${toYear} (${diffDays} ${dayText})`;
+            }
+
+            const trip = this.getData('trip');
+            if (!trip || typeof trip !== 'string' || trip.split(',').length < 2) {
+              return '';
+            }
+            const tripArr = trip.split(',');
+            return convertTimestampToTripString(Number(tripArr[0]), Number(tripArr[1]));
+          }
+        ],
+        dependencies: ['trip']
+      },
+      {
+        key: 'category',
+        resolvers: [
+          async function resolver() {
+            const homeUrl = getConfig('shop.homeUrl', 'http://localhost:3000');
+
+            const categoryDescriptionQuery = select().from('category_description');
+
+            const categoryId = await this.getData('category_id');
+            if (categoryId == null) {
+              return {};
+            }
+            categoryDescriptionQuery.where('category_description_id', '=', categoryId);
+            const rows = await categoryDescriptionQuery.execute(pool);
+            if (!rows?.length) {
+              return {};
+            }
+            const cateObj = { ...rows[0] };
+            return {
+              ...cateObj,
+              image: cateObj.image ? `${homeUrl}${cateObj.image}` : null
+            };
+            // return rows[0];
+          }
+        ],
+        dependencies: ['category_id']
+      },
+      {
+        key: 'titleInfo',
+        resolvers: [
+          async function resolver() {
+            const attrObj = this.getData('attribute');
+            const cateObj = this.getData('category');
+
+            if (!cateObj || !cateObj?.name || !cateObj?.image || !attrObj || !attrObj?.['data-amount'] || !attrObj?.['data-type'] || !attrObj?.['day-amount']) {
+              return {
+                dataAmount: '',
+                dataAmountUnit: '',
+                dataType: '',
+                dayAmount: '',
+                categoryName: '',
+                imgUrl: '',
+                imgAlt: ''
+              };
+
+            }
+            let dataInfoText;
+            if (attrObj['data-type'] === 'Daily Data') {
+              dataInfoText = `${attrObj['data-amount']} ${attrObj['data-amount-unit']}/day`;
+            } else {
+              const dayAmountText = attrObj['day-amount'] === 1 ? 'day' : 'days';
+              dataInfoText = `${attrObj['data-amount']} ${attrObj['day-amount']}/${attrObj['data-amount-unit']}/${dayAmountText}`;
+            }
+            const title = `${cateObj.name}  ${dataInfoText}`;
+            return {
+              dataAmount: attrObj['data-amount'],
+              dataAmountUnit: attrObj['data-amount-unit'],
+              dataType: attrObj['data-type'],
+              dayAmount: attrObj['day-amount'],
+              categoryName: cateObj.name,
+              imgUrl: `${cateObj.image}`,
+              imgAlt: cateObj.name
+            };
+          }
+        ],
+        dependencies: ['category', 'attribute']
       }
     ];
   };

@@ -7,6 +7,8 @@ const { CONSTANTS } = require('../../helpers');
 const { GraphqlPlugin } = require('../plugins/GraphqlPlugin');
 
 module.exports.createConfigClient = function createConfigClient(route) {
+  console.log("route: ", route);
+
   const config = createBaseConfig(false);
   config.name = route.id;
 
