@@ -6,7 +6,7 @@ COPY package*.json .
 COPY extensions ./extensions
 # COPY public ./public
 # COPY media ./media
-COPY config ./config
+COPY config? ./config
 COPY translations ./translations
 COPY packages ./packages
 
