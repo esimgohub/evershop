@@ -6,6 +6,7 @@ type CmsPage {
   uuid: String!
   layout: String!
   status: Int!
+  type: String!
   urlKey: String!
   name: String!
   content: String!
