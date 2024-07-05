@@ -46,7 +46,8 @@ async function updateCategoryData(uuid, data, connection) {
     throw new Error('Requested category not found');
   }
   try {
-    console.log("new category data: ", data);
+    data.is_popular = data.is_popular === '1';
+    data.sort_order = parseInt(data.sort_order);
 
     const newCategory = await update('category')
       .given(data)
