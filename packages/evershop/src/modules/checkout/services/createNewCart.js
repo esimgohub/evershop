@@ -6,7 +6,7 @@ module.exports = exports;
  * This function return a Cart object by the session ID and the customer object
  * Use CartFactory.getCart() instead.
  * @param {string} sid : The session ID
- *  * @param {Object} currency : The currency (ISOCODE)
+ * @param {string} currency : The currency (ISOCODE)
  * @param {Object} customer : The customer object
  * @returns {Promise<Cart>}
  */

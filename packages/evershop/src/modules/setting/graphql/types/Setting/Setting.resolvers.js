@@ -40,25 +40,47 @@ module.exports = {
         }
       };
 
-      const social = {
-        facebook: {
-          url: setting.find(s => s.name === "facebookUrl") ? setting.find(s => s.name === "facebookUrl").value : null,
-          icon: setting.find(s => s.name === "facebookIconUrl") ? setting.find(s => s.name === "facebookIconUrl").value : null
-        },
-        tiktok: {
-          url: setting.find(s => s.name === "tiktokUrl") ? setting.find(s => s.name === "tiktokUrl").value : null,
-          icon: setting.find(s => s.name === "tiktokIconUrl") ? setting.find(s => s.name === "tiktokIconUrl").value : null
-        },
-        instagram: {
-          url: setting.find(s => s.name === "instagramUrl") ? setting.find(s => s.name === "instagramUrl").value : null,
-          icon: setting.find(s => s.name === "instagramIconUrl") ? setting.find(s => s.name === "instagramIconUrl").value : null
-        },
-        thread: {
-          url: setting.find(s => s.name === "threadUrl") ? setting.find(s => s.name === "threadUrl").value : null,
-          icon: setting.find(s => s.name === "threadIconUrl") ? setting.find(s => s.name === "threadIconUrl").value : null
-        }
-      }
+      // const social = {
+      //   facebook: {
+      //     url: setting.find(s => s.name === "facebookUrl") ? setting.find(s => s.name === "facebookUrl").value : null,
+      //     icon: setting.find(s => s.name === "facebookIconUrl") ? setting.find(s => s.name === "facebookIconUrl").value : null
+      //   },
+      //   tiktok: {
+      //     url: setting.find(s => s.name === "tiktokUrl") ? setting.find(s => s.name === "tiktokUrl").value : null,
+      //     icon: setting.find(s => s.name === "tiktokIconUrl") ? setting.find(s => s.name === "tiktokIconUrl").value : null
+      //   },
+      //   instagram: {
+      //     url: setting.find(s => s.name === "instagramUrl") ? setting.find(s => s.name === "instagramUrl").value : null,
+      //     icon: setting.find(s => s.name === "instagramIconUrl") ? setting.find(s => s.name === "instagramIconUrl").value : null
+      //   },
+      //   thread: {
+      //     url: setting.find(s => s.name === "threadUrl") ? setting.find(s => s.name === "threadUrl").value : null,
+      //     icon: setting.find(s => s.name === "threadIconUrl") ? setting.find(s => s.name === "threadIconUrl").value : null
+      //   }
+      // }
 
+      const socialConfigs = setting.filter(s => s.name.toLowerCase().startsWith("social"));
+      
+      const numberOfSocialFields = 3;
+      const totalSocial = socialConfigs.length / numberOfSocialFields;
+
+      const socialResponses = [];
+
+      for (let index = 1; index <= totalSocial; ++index) {
+        const socialIcon = setting.find(s => s.name === `social${index}IconUrl`);
+        const socialUrl = setting.find(s => s.name === `social${index}Url`);
+        const socialIndex = setting.find(s => s.name === `social${index}Index`);
+
+        socialResponses.push({
+          url: socialUrl.value,
+          icon: `${homeUrl}${socialIcon.value}`,
+          index: socialIndex.value
+        });
+      }
+      
+      socialResponses.sort((s1, s2) => s1.index - s2.index);
+
+      console.log("socialResponses", socialResponses);
 
       const sliderSettings = setting
         .filter((s) => s.name.startsWith('slider'));
@@ -92,7 +114,7 @@ module.exports = {
       return {
         store,
         payment,
-        social,
+        social: socialResponses,
         sliders
       }
     }

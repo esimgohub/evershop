@@ -778,6 +778,7 @@ class UpdateQuery extends Query {
       FROM information_schema.columns 
       WHERE table_name = '${this._table}'`
     );
+
     let set = [];
     rows.forEach((field) => {
       if (['BY DEFAULT', 'ALWAYS'].includes(field['identity_generation'])) {
@@ -806,6 +807,7 @@ class UpdateQuery extends Query {
     ]
       .filter((e) => e !== '')
       .join(' ');
+
     return sql;
   }
 

@@ -28,6 +28,11 @@ module.exports = {
       }
     },
     categories: async (product, _, { homeUrl, pool }) => {
+      const foundedProduct = await select()
+        .from('product')
+        .where('product_id', '=', product.productId)
+        .load(pool);
+
       const originCategories = await select().from('category').execute(pool);
 
       const query = select().from('category');
@@ -43,20 +48,25 @@ module.exports = {
       query.innerJoin('product_category')
         .on('product_category.category_id', '=', 'category.uuid');
 
-
-      query.where('product_category.product_id', '=', product.uuid);
+      const isSimpleProduct = foundedProduct.type === ProductType.simple.value;
+      if (isSimpleProduct) {
+        query.where('product_category.product_id', '=', product.parentProductUuid);
+      }
+      else {
+        query.where('product_category.product_id', '=', product.uuid);
+      }
         
       query.andWhere('category.status', '=', CategoryStatus.Enabled);
 
       const categories = await query.execute(pool);
-
 
       const mappedCategories = categories.length > 0 ? categories.map(country => {
         return camelCase({
           ...country,
           category_id: originCategories.find(
             category => category.uuid === country.uuid
-          ).category_id
+          ).category_id,
+          image: country.image ? `${homeUrl}${country.image}` : null,
         })
       }) : [];
 
@@ -97,23 +107,23 @@ module.exports = {
       const categories = await productCategoryQuery.execute(pool);
 
 
-      const foundPlanType = attributes.find((a) => a.attribute_code === 'plan-type');
+      const foundDataType = attributes.find((a) => a.attribute_code === 'data-type');
       const foundExpiration = attributes.find((a) => a.attribute_code === 'expiration');
       const foundSharing = attributes.find((a) => a.attribute_code === 'sharing');
       const foundNetworkType = attributes.find((a) => a.attribute_code === 'network-type');
       const foundNetworkOperator = attributes.find((a) => a.attribute_code === 'network-operator');
-      const foundSpeedThrottle = attributes.find((a) => a.attribute_code === 'speed-throttle');
+      const foundSpeedThrottle = attributes.find((a) => a.attribute_code === 'throttle-speed');
       const foundDailyResetTime = attributes.find((a) => a.attribute_code === 'daily-reset-time');
 
       const filledDescription = productDetailDescriptionHtmlTemplate
-        .replace('{plan-type}', foundPlanType ? foundPlanType.attribute_name : "Plan Type")
-        .replace('{plan-type-value}', foundPlanType ? foundPlanType.option_text : '')
+        .replace('{data-type}', foundDataType ? foundDataType.attribute_name : "Data Type")
+        .replace('{data-type-value}', foundDataType ? foundDataType.option_text : '')
         .replace('{expiration}', foundExpiration ? foundExpiration.attribute_name : "Expiration")
         .replace('{expiration-value}', foundExpiration ? foundExpiration.option_text : '')
         .replace('{sharing}', foundSharing ? foundSharing.attribute_name : "Sharing")
         .replace('{sharing-value}', foundSharing ? foundSharing.option_text : '')
         .replace('{coverage}', "Coverage")
-        .replace('{coverage-value}', categories.map(c => `<div style="display: inline-block; margin-right: 8px; line-height: 2"><img width="28" height="20" style="border-radius: 4px; vertical-align: middle" src="${homeUrl}${c.image}" /> <label">${c.name}</label></div>`).join('  '))
+        .replace('{coverage-value}', categories.map(c => `<div style="display: inline-block; margin-right: 8px; line-height: 2"><img width="28" height="20" style="border-radius: 4px; vertical-align: middle" src="${c.image ? `${homeUrl}${c.image}` : ''}" /> <label>${c.name}</label></div>`).join('  '))
         .replace('{network-type}', foundNetworkType ? foundNetworkType.attribute_name : "Network Type")
         .replace('{network-type-value}', foundNetworkType ? foundNetworkType.option_text : '')
         .replace('{network-operator}', foundNetworkOperator ? foundNetworkOperator.attribute_name : "Network Operator")
