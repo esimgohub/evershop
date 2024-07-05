@@ -642,14 +642,6 @@ module.exports.registerCartItemBaseFields =
               };
 
             }
-            let dataInfoText;
-            if (attrObj['data-type'] === 'Daily Data') {
-              dataInfoText = `${attrObj['data-amount']} ${attrObj['data-amount-unit']}/day`;
-            } else {
-              const dayAmountText = attrObj['day-amount'] === 1 ? 'day' : 'days';
-              dataInfoText = `${attrObj['data-amount']} ${attrObj['day-amount']}/${attrObj['data-amount-unit']}/${dayAmountText}`;
-            }
-            const title = `${cateObj.name}  ${dataInfoText}`;
             return {
               dataAmount: attrObj['data-amount'],
               dataAmountUnit: attrObj['data-amount-unit'],
@@ -662,6 +654,14 @@ module.exports.registerCartItemBaseFields =
           }
         ],
         dependencies: ['category', 'attribute']
+      },
+      {
+        key: 'updated_at',
+        resolvers: [
+          function resolver(value) {
+            return value;
+          }
+        ]
       }
     ];
   };
