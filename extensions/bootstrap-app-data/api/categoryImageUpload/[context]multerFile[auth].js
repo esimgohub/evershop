@@ -16,7 +16,6 @@ module.exports = (request, response, delegate, next) => {
       }
     });
   } else {
-    console.log("to [mulfileFiler]")
     upload.array('images')(request, response, next);
   }
 };
