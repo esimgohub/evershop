@@ -60,8 +60,6 @@ async function updateCategoryData(uuid, data, connection) {
     }
   }
   try {
-    console.log("beforrrr: ", data);
-
     const description = await update('category_description')
       .given(data)
       .where('category_description_category_id', '=', category.category_id)

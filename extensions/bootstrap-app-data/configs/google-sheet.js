@@ -63,6 +63,8 @@ const sheetColumnIndex = {
         includeInNav: 5,
         type: 6,
         seoUrlKey: 7,
+        isPopular: 8,
+        sortOrder: 9,
     },
     currency: {
         code: 0,

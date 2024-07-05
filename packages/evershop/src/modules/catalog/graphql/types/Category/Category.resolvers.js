@@ -41,19 +41,13 @@ module.exports = {
     popularCountries: async (_, { filter = {}}, { pool, homeUrl }) => {
       let limit = filter.limit || 3;
 
-      const directions = ['ASC', 'DESC'];
-      const randomOrFields = ['category_description.name', 'category_description.url_key', 'c.category_id', 'c.status'];
-
-      // random in fields
-      const field = randomOrFields[Math.floor(Math.random() * randomOrFields.length)];
-      const direction = directions[Math.floor(Math.random() * directions.length)];
-
       const popularCountryQueryResult = await execute(pool, `
         SELECT DISTINCT category_description."name", category_description.image, category_description.url_key,  c.* 
         FROM category c
         LEFT JOIN category_description ON category_description.category_description_category_id = c.category_id 
         INNER JOIN product_category ON product_category.category_id = c.uuid
         WHERE c.category_type = '${CategoryType.Country}'
+          AND c.is_popular = true
           AND c.status = ${CategoryStatus.Enabled}
           AND (
             SELECT COUNT(pc.product_id)
@@ -61,7 +55,7 @@ module.exports = {
             INNER JOIN product p ON p.uuid = pc.product_id
             WHERE p.status = true AND p.visibility = true AND pc.category_id = c.uuid
           ) >= 1
-        ORDER BY ${field} ${direction}
+        ORDER BY c.sort_order
         LIMIT ${limit}
     `);
 
@@ -88,6 +82,7 @@ module.exports = {
               INNER JOIN product p ON p.uuid = pc.product_id
               WHERE p.status = true AND p.visibility = true AND pc.category_id = c.uuid
             ) >= 1
+          ORDER BY c.is_popular DESC, c.sort_order ASC
       `);
 
       const supportedCountries = supportedCountryQueryResult.rows || [];

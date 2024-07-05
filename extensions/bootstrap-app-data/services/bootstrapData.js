@@ -232,6 +232,8 @@ const bootstrapData = async (data) => {
         category_code: row[evershopSheetColumnIndex.category.code],
         category_type: row[evershopSheetColumnIndex.category.type],
         include_in_nav: row[evershopSheetColumnIndex.category.includeInNav].toLowerCase() === 'yes' ? true : false,
+        is_popular: row[evershopSheetColumnIndex.category.isPopular].toLowerCase() === 'yes' ? true : false,
+        sort_order: row[evershopSheetColumnIndex.category.sortOrder],
         position: null,
       }
     });

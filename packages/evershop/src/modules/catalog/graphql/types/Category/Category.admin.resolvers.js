@@ -12,6 +12,8 @@ module.exports = {
     deleteApi: (category) => buildUrl('deleteCategory', { id: category.uuid }),
     addProductUrl: (category) =>
       buildUrl('addProductToCategory', { category_id: category.uuid }),
+    // isPopular: (category) => category.isPopular,
+    // sortOrder: (category) => category.sortOrder,
     queryProducts: async (category) => {
       const query = select().from("product_category");
 
