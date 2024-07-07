@@ -5,9 +5,6 @@
       "type": "string",
       "format": "email"
     },
-    "password": {
-      "type": "string"
-    },
     "full_name": {
       "type": "string"
     }

@@ -8,9 +8,6 @@ const {
   INTERNAL_SERVER_ERROR,
   INVALID_PAYLOAD
 } = require('@evershop/evershop/src/lib/util/httpStatus');
-const {
-  hashPassword
-} = require('@evershop/evershop/src/lib/util/passwordHelper');
 
 // eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
@@ -30,12 +27,6 @@ module.exports = async (request, response, delegate, next) => {
         }
       });
       return;
-    }
-
-    // Check if password is set
-    if (request.body.password) {
-      // Hash the password
-      request.body.password = hashPassword(request.body.password);
     }
 
     await update('customer')
