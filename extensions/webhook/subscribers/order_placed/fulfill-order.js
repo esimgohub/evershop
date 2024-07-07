@@ -3,6 +3,7 @@ const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const { select, update } = require('@evershop/postgres-query-builder');
 const { error, info } = require('@evershop/evershop/src/lib/log/logger');
 const axios = require('axios');
+const { orderSource } = require('extensions/webhook/constants/order-source');
 
 module.exports = async function sendFulfillOrder(data) {
   try {
@@ -44,7 +45,7 @@ module.exports = async function sendFulfillOrder(data) {
 
     const orderPayload = {
       referenceOrderCode: order.order_number,
-      source: '14',
+      source: orderSource.b2b,
       shippingFirstName: order.customer_first_name,
       shippingLastName: order.customer_last_name,
       shippingPhone: '0932198705',
