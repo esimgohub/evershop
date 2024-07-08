@@ -16,10 +16,6 @@ const syncEventInterval = 2000;
 const maxEvents = 10;
 let events = [];
 // Get the modules from the arguments
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 const modules = [...getCoreModules(), ...getEnabledExtensions()];
 const subscribers = loadSubscribers(modules);
 
