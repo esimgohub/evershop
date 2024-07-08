@@ -1,7 +1,7 @@
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 
-const { select, node } = require('@evershop/postgres-query-builder');
+const { select, node, execute } = require('@evershop/postgres-query-builder');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getValue } = require('@evershop/evershop/src/lib/util/registry');
 const { ProductType } = require('../utils/enums/product-type');
@@ -12,6 +12,7 @@ class ProductCollection {
   constructor(baseQuery) {
     this.baseQuery = baseQuery;
     this.baseQuery.orderBy('product.product_id', 'DESC');
+    this.productFilter = {};
   }
 
   /**
@@ -149,6 +150,23 @@ class ProductCollection {
       this.baseQuery.orWhere('product.type', '=', ProductType.simple.value);
       this.baseQuery.andWhere('product.visibility', '=', true);
       this.baseQuery.andWhere('product.status', '=', true);
+
+
+      this.baseQuery
+        .innerJoin("product_attribute_value_index")
+        .on(
+          "product_attribute_value_index.product_id",
+          "=",
+          "product.parent_product_id"
+        )
+
+      this.baseQuery
+        .innerJoin("attribute")
+        .on(
+          "attribute.attribute_id",
+          "=",
+          "product_attribute_value_index.attribute_id"
+        );
     }
     else {
       this.baseQuery.orWhere('product.type', '=', ProductType.variable.value);
@@ -208,22 +226,6 @@ class ProductCollection {
     }
 
     if (productFilter.tripPeriod) {
-      this.baseQuery
-        .innerJoin("product_attribute_value_index")
-        .on(
-          "product_attribute_value_index.product_id",
-          "=",
-          "product.product_id"
-        )
-
-      this.baseQuery
-        .innerJoin("attribute")
-        .on(
-          "attribute.attribute_id",
-          "=",
-          "product_attribute_value_index.attribute_id"
-        );
-
       this.baseQuery.andWhere("attribute.attribute_code", "=", "day-amount")
       this.baseQuery.andWhere("product_attribute_value_index.option_text", ">=", productFilter.tripPeriod < 10 ? `0${productFilter.tripPeriod}` : productFilter.tripPeriod);
     }
@@ -238,11 +240,44 @@ class ProductCollection {
   }
 
   async items() {
-    // Pick one per variant group.
+    console.log("sqlll: ", this.baseQuery.sql());
 
-    const items = await this.baseQuery.execute(pool);
+    const where = `("product"."type" = 'simple' AND "product"."visibility" = TRUE AND "product"."status" = TRUE)`
 
-    for (const item of items) {
+    // this.baseQuery.orderByCustomQuery(`CASE WHEN attribute_code = 'local-esim' AND product_attribute_value_index.option_text = 'Yes' THEN 1 WHEN attribute_code = 'local-esim' AND product_attribute_value_index.option_text = 'No' THEN 2 END`);
+
+    const rawQuery = await this.execute(pool, `
+      SELECT
+        product.*,
+        product_attribute_value_index.option_text,
+        attribute.*
+      FROM
+        "product"
+        LEFT JOIN "product_description" AS "product_description" ON ("product_description"."product_description_product_id" = product.product_id)
+        LEFT JOIN "product_image" AS "product_image" ON ("product_image"."product_image_product_id" = product.product_id
+            AND "product_image"."is_main" = TRUE)
+          INNER JOIN "product_attribute_value_index" AS "product_attribute_value_index" ON ("product_attribute_value_index"."product_id" = product.parent_product_id)
+          INNER JOIN "attribute" AS "attribute" ON ("attribute"."attribute_id" = product_attribute_value_index.attribute_id)
+        WHERE ("product"."type" = 'simple'
+          AND("product"."visibility" = TRUE)
+          AND("product"."status" = TRUE))
+      ORDER BY
+        CASE WHEN attribute_code = 'local-esim'
+          AND product_attribute_value_index.option_text = 'Yes' THEN
+          1
+        WHEN attribute_code = 'local-esim'
+          AND product_attribute_value_index.option_text = 'No' THEN
+          2
+        END,
+        "product"."product_id" DESC
+      LIMIT 10 OFFSET 0
+    `)
+
+    // const items = await this.baseQuery.execute(pool);
+
+    // console.log("items [0]: ", items[0]);
+
+    for (const item of rawQuery.rows) {
       const parentProductAttributeQuery = select().from('product_attribute_value_index');
       parentProductAttributeQuery
         .leftJoin('attribute')
