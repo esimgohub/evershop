@@ -92,6 +92,7 @@ module.exports = async (request, response, delegate, next) => {
         email: googleUserInfo.email,
         first_name: googleUserInfo.given_name,
         last_name: googleUserInfo.family_name,
+        full_name: googleUserInfo.given_name + googleUserInfo.family_name,
         avatar_url: googleUserInfo.picture,
         status: AccountStatus.ENABLED,
         login_source: LoginSource.GOOGLE,
