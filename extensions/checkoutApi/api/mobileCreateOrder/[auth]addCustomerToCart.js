@@ -18,8 +18,8 @@ module.exports = async (request, response, delegate, next) => {
           .given({
             customer_group_id: customer.group_id,
             customer_id: customer.customer_id,
-            customer_full_name: customer.full_name,
-            customer_email: customer.email
+            customer_full_name: customer?.full_name ? customer.full_name : `${customer?.first_name} ${customer?.last_name}`,
+            customer_email: customer?.email || ''
           })
           .where('cart_id', '=', cart.cart_id)
           .execute(pool);
