@@ -5,7 +5,7 @@ import { useDevice } from '../../../hooks/useDevice';
 import Spinner from '@components/common/Spinner';
 const MobileDetect = require('mobile-detect');
 
-function MagicLogin() {
+function FailedOrder() {
   // const [isAccessOnMobile, setAccessOnMobileStatus] = useState(null);
   // const { isMobile: isMobileScreen } = useDevice();
 
@@ -21,17 +21,16 @@ function MagicLogin() {
   //   !isAccessOnMobile ||
   //   (isAccessOnMobile && isAccessOnMobile === true)
   // ) {
-    // return (
-    //   <div className="fixed top-0 left-0 bottom-0 right-0 flex justify-center">
-    //     <Spinner width={30} height={30} className="absolute-center" />
-    //   </div>
-    // );
+  //   return (
+  //     <div className="fixed top-0 left-0 bottom-0 right-0 flex justify-center">
+  //       <Spinner width={30} height={30} className="absolute-center" />
+  //     </div>
+  //   );
   // }
 
   // return (
   //   <DeepLinkModal title="Nofication" webPageUrl="https://esimgohub.com" />
   // );
-
   return (
     <div className="fixed top-0 left-0 bottom-0 right-0 flex justify-center">
       <Spinner width={30} height={30} className="absolute-center" />
@@ -44,4 +43,4 @@ export const layout = {
   sortOrder: 25
 };
 
-export default MagicLogin;
+export default FailedOrder;
