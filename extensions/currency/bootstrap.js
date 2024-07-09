@@ -218,7 +218,7 @@ module.exports = () => {
           style: 'currency',
           currency: isoCode,
           minimumFractionDigits: 0,
-        maximumFractionDigits: 0
+          maximumFractionDigits: 0
       }).format(priceByRatio)
     });
 };

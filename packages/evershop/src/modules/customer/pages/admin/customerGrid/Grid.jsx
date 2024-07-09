@@ -332,7 +332,7 @@ export default function CustomerGrid({
                       default: () => (
                         <CustomerNameRow
                           id="name"
-                          name={c.fullName}
+                          name={`${c.firstName} ${c.lastName}`}
                           url={c.editUrl}
                         />
                       )
@@ -386,7 +386,8 @@ CustomerGrid.propTypes = {
       PropTypes.shape({
         customerId: PropTypes.number.isRequired,
         uuid: PropTypes.string.isRequired,
-        fullName: PropTypes.string.isRequired,
+        firstName: PropTypes.string.isRequired,
+        lastName: PropTypes.string.isRequired,
         email: PropTypes.string.isRequired,
         status: PropTypes.number.isRequired,
         createdAt: PropTypes.shape({
@@ -419,7 +420,8 @@ export const query = `
       items {
         customerId
         uuid
-        fullName
+        firstName
+        lastName
         email
         status
         createdAt {

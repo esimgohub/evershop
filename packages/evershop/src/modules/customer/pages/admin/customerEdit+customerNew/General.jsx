@@ -3,18 +3,21 @@ import React from 'react';
 import Area from '@components/common/Area';
 import { Card } from '@components/admin/cms/Card';
 
-function FullName({ fullName }) {
+function FullName({ firstName, lastName }) {
   return (
     <Card.Session title="Full Name">
       <div>
-        <span>{fullName}</span>
+        <span>
+          {firstName} {lastName}
+        </span>
       </div>
     </Card.Session>
   );
 }
 
 FullName.propTypes = {
-  fullName: PropTypes.string.isRequired
+  firstName: PropTypes.string.isRequired,
+  lastName: PropTypes.string.isRequired
 };
 
 function Group({ group }) {
@@ -70,7 +73,11 @@ export default function General({ customer }) {
           {
             // eslint-disable-next-line react/no-unstable-nested-components
             component: {
-              default: () => <FullName fullName={customer.fullName} />
+              default: () => (
+                <FullName
+                  fullName={`${customer.firstName} ${customer.lastName}`}
+                />
+              )
             },
             sortOrder: 10
           },
@@ -98,7 +105,8 @@ export default function General({ customer }) {
 General.propTypes = {
   customer: PropTypes.shape({
     email: PropTypes.string,
-    fullName: PropTypes.string,
+    firstName: PropTypes.string,
+    lastName: PropTypes.string,
     group: PropTypes.shape({
       groupName: PropTypes.string
     }),
@@ -115,7 +123,8 @@ export const query = `
   query Query {
     customer(id: getContextValue("customerUuid", null)) {
       customerId
-      fullName
+      firstName
+      lastName
       email
       status
       group {

@@ -7,7 +7,9 @@ export default function CustomerEditPageHeading({ backUrl, customer }) {
     <PageHeading
       backUrl={backUrl}
       heading={
-        customer ? `Editing ${customer.fullName}` : 'Create A New Customer'
+        customer
+          ? `Editing ${customer.firstName} ${customer.lastName}`
+          : 'Create A New Customer'
       }
     />
   );
@@ -16,7 +18,8 @@ export default function CustomerEditPageHeading({ backUrl, customer }) {
 CustomerEditPageHeading.propTypes = {
   backUrl: PropTypes.string.isRequired,
   customer: PropTypes.shape({
-    fullName: PropTypes.string.isRequired
+    firstName: PropTypes.string.isRequired,
+    lastName: PropTypes.string.isRequired
   })
 };
 
@@ -32,7 +35,8 @@ export const layout = {
 export const query = `
   query Query {
     customer(id: getContextValue("customerUuid", null)) {
-      fullName
+      firstName
+      lastName
     }
     backUrl: url(routeId: "customerGrid")
   }

@@ -47,7 +47,9 @@ module.exports = async (request, response, delegate, next) => {
       customer = await insert('customer')
         .given({
           email: userInfo.email,
-          full_name: userInfo.name,
+          first_name: userInfo.given_name,
+          last_name: userInfo.family_name,
+          avatar_url: userInfo.picture,
           status: AccountStatus.ENABLED,
           login_source: LoginSource.GOOGLE,
           external_id: userInfo.id

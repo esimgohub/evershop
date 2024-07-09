@@ -1,7 +1,7 @@
 const axios = require('axios');
 const { error, info } = require('@evershop/evershop/src/lib/log/logger');
 
-module.exports.getFacebookUserInfo = async (accessToken) => {
+module.exports.getFacebookUserInfoByAccessToken = async (accessToken) => {
   const facebookUserInfoUrl = 'https://graph.facebook.com/v20.0/me';
   const facebookUserInfoQueryOptions = {
     access_token: encodeURIComponent(accessToken),

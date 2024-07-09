@@ -12,7 +12,9 @@ export default function AccountDetails({ account }) {
             <div>
               <User width={20} height={20} />
             </div>
-            <div>{account.fullName}</div>
+            <div>
+              {account.firstName} {account.lastName}
+            </div>
           </div>
           <div className="account-details-email flex gap-1">
             <div>
@@ -29,7 +31,8 @@ export default function AccountDetails({ account }) {
 AccountDetails.propTypes = {
   account: PropTypes.shape({
     email: PropTypes.string.isRequired,
-    fullName: PropTypes.string.isRequired
+    firstName: PropTypes.string,
+    lastName: PropTypes.string
   }).isRequired
 };
 
@@ -42,7 +45,8 @@ export const query = `
   query Query {
     account: currentCustomer {
       uuid
-      fullName
+      firstName
+      lastName
       email
     }
   }

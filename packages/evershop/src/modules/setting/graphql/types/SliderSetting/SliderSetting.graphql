@@ -1,7 +1,10 @@
 type Slider {
+  title: String
+  description: String
   index: Int
   url: String
   imageUrl: String
+  group: String
 }
 
 extend type Setting {

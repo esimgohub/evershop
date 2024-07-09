@@ -30,7 +30,9 @@ export function Results({ keyword, results = {} }) {
             {customers.items.map((customer, index) => (
               // eslint-disable-next-line react/no-array-index-key
               <a href={customer.url} key={index}>
-                <div className="font-bold">{customer.fullName}</div>
+                <div className="font-bold">
+                  {customer.firstName} {customer.lastName}
+                </div>
                 <div>{customer.email}</div>
               </a>
             ))}
