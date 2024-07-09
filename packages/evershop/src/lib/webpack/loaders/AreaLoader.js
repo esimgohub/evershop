@@ -44,9 +44,9 @@ module.exports = exports = function AreaLoader(c) {
     }
   });
 
-  const isMagicLoginRoute = routeId === 'magicLogin';
-  console.log("isMagicLoginRoute", isMagicLoginRoute);;
-  if (isMagicLoginRoute) {
+  const isDeepLinkRoute = routeId === 'magicLogin' || routeId === 'failedPayment';
+  console.log("isDeepLinkRoute", isDeepLinkRoute);;
+  if (isDeepLinkRoute) {
     delete areas['body'];
   }
   else {
