@@ -5,7 +5,9 @@ import { useDevice } from '../../../hooks/useDevice';
 import Spinner from '@components/common/Spinner';
 const MobileDetect = require('mobile-detect');
 
-function FailedOrder() {
+function FailedPayment() {
+  console.log("to failed payment page");
+
   // const [isAccessOnMobile, setAccessOnMobileStatus] = useState(null);
   // const { isMobile: isMobileScreen } = useDevice();
 
@@ -40,7 +42,7 @@ function FailedOrder() {
 
 export const layout = {
   areaId: 'blank-layout-content',
-  sortOrder: 25
+  sortOrder: 26
 };
 
-export default FailedOrder;
+export default FailedPayment;
