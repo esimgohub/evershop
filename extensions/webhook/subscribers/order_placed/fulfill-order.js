@@ -3,7 +3,7 @@ const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const { select, update } = require('@evershop/postgres-query-builder');
 const { error, info } = require('@evershop/evershop/src/lib/log/logger');
 const axios = require('axios');
-const { orderSource } = require('extensions/webhook/constants/order-source');
+const { orderSource } = require('../../constants/order-source');
 
 module.exports = async function sendFulfillOrder(data) {
   try {
