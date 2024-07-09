@@ -212,13 +212,13 @@ module.exports = () => {
         }
 
         const priceByRatio = convertFromUSD(parseFloat(rawPrice), foundCurrency.rate, isoCode);
-        
+
         // return formatCurrency(priceByRatio, isoCode, foundCurrency.language);
         return new Intl.NumberFormat(currencyLanguages[isoCode], {
           style: 'currency',
           currency: isoCode,
           minimumFractionDigits: 0,
-        maximumFractionDigits: 0
+          maximumFractionDigits: 2
       }).format(priceByRatio)
     });
 };
