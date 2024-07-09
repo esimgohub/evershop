@@ -1,7 +1,7 @@
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 
-const { select, node } = require('@evershop/postgres-query-builder');
+const { select, node, execute } = require('@evershop/postgres-query-builder');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getValue } = require('@evershop/evershop/src/lib/util/registry');
 const { ProductType } = require('../utils/enums/product-type');
@@ -12,6 +12,9 @@ class ProductCollection {
   constructor(baseQuery) {
     this.baseQuery = baseQuery;
     this.baseQuery.orderBy('product.product_id', 'DESC');
+    this.productFilter = {};
+    this.offset = 1;
+    this.perPage = 10;
   }
 
   /**
@@ -133,22 +136,30 @@ class ProductCollection {
   // }
 
   async init(filters = [], productFilter = {}, isAdmin = false) {
-    // this.baseQuery.orWhere('product.type', '=', ProductType.simple.value);
-    // this.baseQuery.orWhere('product.status', '=', 1);
-
-    // Implement: extend baseQuery to product type = simple or (product type = variable and product_parent_id = null or parent_product_uuid = null)
-    // this.baseQuery
-    //   .orWhere('product.type', '=', ProductType.simple.value)
-    //   .addNode(
-    //     node('AND')
-    //       .addLeaf('AND', 'parent_product_id', 'IS NULL', null)
-    //   );
+    this.productFilter = productFilter;
 
     // If the user is not admin, we need to filter out the out of stock products and the disabled products
     if (!isAdmin) {
       this.baseQuery.orWhere('product.type', '=', ProductType.simple.value);
       this.baseQuery.andWhere('product.visibility', '=', true);
       this.baseQuery.andWhere('product.status', '=', true);
+
+
+      this.baseQuery
+        .innerJoin("product_attribute_value_index")
+        .on(
+          "product_attribute_value_index.product_id",
+          "=",
+          "product.parent_product_id"
+        )
+
+      this.baseQuery
+        .innerJoin("attribute")
+        .on(
+          "attribute.attribute_id",
+          "=",
+          "product_attribute_value_index.attribute_id"
+        );
     }
     else {
       this.baseQuery.orWhere('product.type', '=', ProductType.variable.value);
@@ -186,47 +197,9 @@ class ProductCollection {
     });
 
     const page = productFilter.page ? parseInt(productFilter.page) : 1;
-    const offset = page - 1;
-    const perPage = productFilter.perPage ? parseInt(productFilter.perPage) : 10;
-
-    this.baseQuery.limit(offset * perPage, perPage);
-
-    // Clone the main query for getting total right before doing the paging
-    
-    if (productFilter.categoryId) {
-      const foundedCategory = await select()
-        .from('category')
-        .where('category_id', '=', productFilter.categoryId)
-        .load(pool);
-
-      const productCategories = await select()
-        .from('product_category')
-        .where('category_id', '=', foundedCategory.uuid)
-        .execute(pool);
-
-      this.baseQuery.andWhere("product.parent_product_uuid", "IN", productCategories.map(p => p.product_id));
-    }
-
-    if (productFilter.tripPeriod) {
-      this.baseQuery
-        .innerJoin("product_attribute_value_index")
-        .on(
-          "product_attribute_value_index.product_id",
-          "=",
-          "product.product_id"
-        )
-
-      this.baseQuery
-        .innerJoin("attribute")
-        .on(
-          "attribute.attribute_id",
-          "=",
-          "product_attribute_value_index.attribute_id"
-        );
-
-      this.baseQuery.andWhere("attribute.attribute_code", "=", "day-amount")
-      this.baseQuery.andWhere("product_attribute_value_index.option_text", ">=", productFilter.tripPeriod < 10 ? `0${productFilter.tripPeriod}` : productFilter.tripPeriod);
-    }
+    this.offset = page - 1;
+    this.perPage = productFilter.perPage ? parseInt(productFilter.perPage) : 10;
+    this.baseQuery.limit(this.offset * this.perPage, this.perPage);
 
     const totalQuery = this.baseQuery.clone();
     totalQuery.select('COUNT(product.product_id)', 'total');
@@ -238,11 +211,110 @@ class ProductCollection {
   }
 
   async items() {
-    // Pick one per variant group.
+    let where = `"product"."type" = 'simple' AND "product"."visibility" = TRUE AND "product"."status" = TRUE`;
 
-    const items = await this.baseQuery.execute(pool);
+    // Clone the main query for getting total right before doing the paging
+    
+    // if (productFilter.categoryId) {
+    //   const foundedCategory = await select()
+    //     .from('category')
+    //     .where('category_id', '=', productFilter.categoryId)
+    //     .load(pool);
 
-    for (const item of items) {
+    //   const productCategories = await select()
+    //     .from('product_category')
+    //     .where('category_id', '=', foundedCategory.uuid)
+    //     .execute(pool);
+
+    //   this.baseQuery.andWhere("product.parent_product_uuid", "IN", productCategories.map(p => p.product_id));
+    // }
+
+    // if (productFilter.tripPeriod) {
+    //   this.baseQuery.andWhere("attribute.attribute_code", "=", "day-amount")
+    //   this.baseQuery.andWhere("product_attribute_value_index.option_text", ">=", productFilter.tripPeriod < 10 ? `0${productFilter.tripPeriod}` : productFilter.tripPeriod);
+    // }
+
+    if (this.productFilter.categoryId) {
+      const foundedCategory = await select()
+        .from('category')
+        .where('category_id', '=', this.productFilter.categoryId)
+        .load(pool);
+
+      if (!foundedCategory) {
+        throw new Error(`Category ${this.productFilter.categoryId} not found`);
+      }
+
+      const productCategories = await select()
+        .from('product_category')
+        .where('category_id', '=', foundedCategory.uuid)
+        .execute(pool);
+
+      where += ` AND product.parent_product_uuid IN (${productCategories.map(p => `'${p.product_id}'`).join(',')})`;
+    }
+
+    if (this.productFilter.tripPeriod) {
+      where += ` AND a2.attribute_code = 'day-amount' AND pa2.option_text >= ${this.productFilter.tripPeriod < 10 ? `'0${this.productFilter.tripPeriod}'` : `'${this.productFilter.tripPeriod}'`}`;
+    }
+
+    // this.baseQuery.orderByCustomQuery(`CASE WHEN attribute_code = 'local-esim' AND product_attribute_value_index.option_text = 'Yes' THEN 1 WHEN attribute_code = 'local-esim' AND product_attribute_value_index.option_text = 'No' THEN 2 END`);
+
+    // const rawQuery = await execute(pool, `
+    //   SELECT
+    //     product.*,
+    //     product_description.*,
+    //     product_attribute_value_index.option_text,
+    //     attribute.*
+    //   FROM
+    //     "product"
+    //     LEFT JOIN "product_description" AS "product_description" ON ("product_description"."product_description_product_id" = product.product_id)
+    //     LEFT JOIN "product_image" AS "product_image" ON ("product_image"."product_image_product_id" = product.product_id
+    //         AND "product_image"."is_main" = TRUE)
+    //       INNER JOIN "product_attribute_value_index" AS "product_attribute_value_index" ON ("product_attribute_value_index"."product_id" = product.parent_product_id)
+    //       LEFT JOIN "attribute" AS "attribute" ON ("attribute"."attribute_id" = product_attribute_value_index.attribute_id)
+    //     WHERE (${where})
+    //   ORDER BY
+    //     CASE WHEN attribute_code = 'local-esim'
+    //       AND product_attribute_value_index.option_text = 'Yes' THEN
+    //       1
+    //     WHEN attribute_code = 'local-esim'
+    //       AND product_attribute_value_index.option_text = 'No' THEN
+    //       2
+    //     END,
+    //     "product"."product_id" DESC
+    //   LIMIT ${perPage} OFFSET ${offset * perPage}
+    // `);
+    
+    const rawQuery = await execute(pool, `
+      SELECT
+          product.*,
+          product_description.*,
+          pa1.option_text AS pa1Text,
+          pa2.option_text AS pa2Text,
+          a1.*,
+          a2.*
+      FROM
+          "product"
+          LEFT JOIN "product_description" AS "product_description" ON ("product_description"."product_description_product_id" = product.product_id)
+          LEFT JOIN "product_image" AS "product_image" ON ("product_image"."product_image_product_id" = product.product_id AND "product_image"."is_main" = TRUE)
+          LEFT JOIN "product_attribute_value_index" AS "pa1" ON ("pa1"."product_id" = product.parent_product_id)
+          LEFT JOIN "product_attribute_value_index" AS "pa2" ON ("pa2"."product_id" = product.product_id)
+          LEFT JOIN "attribute" AS "a1" ON ("a1"."attribute_id" = pa1.attribute_id)
+          LEFT JOIN "attribute" AS "a2" ON ("a2"."attribute_id" = pa2.attribute_id)
+      WHERE (${where})
+      ORDER BY
+          CASE
+              WHEN a1.attribute_code = 'local-esim' AND pa1.option_text = 'Yes' THEN 1
+              WHEN a1.attribute_code = 'local-esim' AND pa1.option_text = 'No' THEN 2
+          END,
+          "product"."product_id" DESC
+          LIMIT ${this.perPage} OFFSET ${this.offset * this.perPage}
+    `);
+
+    // const items = await this.baseQuery.execute(pool);
+
+    // console.log("items [0]: ", items[0]);
+
+    for (const item of rawQuery.rows) {
       const parentProductAttributeQuery = select().from('product_attribute_value_index');
       parentProductAttributeQuery
         .leftJoin('attribute')
@@ -288,7 +360,7 @@ class ProductCollection {
       };
     }
 
-    const sortedItems = items.sort((a, b) => {
+    const sortedItems = rawQuery.rows.sort((a, b) => {
       // Check if 'local esim' attribute exists and prioritize it
       if (a.attributeTemp.localEsim.toLowerCase() === "yes" && b.attributeTemp.localEsim.toLowerCase() === "no") {
         return -1; // 'a' has local esim, should come before 'b'
@@ -321,6 +393,7 @@ class ProductCollection {
       delete item.attributeTemp
     });
 
+
     return sortedItems;
   }
 
@@ -334,8 +407,48 @@ class ProductCollection {
 
   async total() {
     // Call items to get the total
-    const total = await this.totalQuery.execute(pool);
-    return total[0].total;
+    // OLD VERSION
+    // const total = await this.totalQuery.execute(pool);
+    // return total[0].total;
+
+    let where = `"product"."type" = 'simple' AND "product"."visibility" = TRUE AND "product"."status" = TRUE`;
+    
+    if (this.productFilter.categoryId) {
+      const foundedCategory = await select()
+        .from('category')
+        .where('category_id', '=', this.productFilter.categoryId)
+        .load(pool);
+
+      if (!foundedCategory) {
+        throw new Error(`Category ${this.productFilter.categoryId} not found`);
+      }
+
+      const productCategories = await select()
+        .from('product_category')
+        .where('category_id', '=', foundedCategory.uuid)
+        .execute(pool);
+
+      where += ` AND product.parent_product_uuid IN (${productCategories.map(p => `'${p.product_id}'`).join(',')})`;
+    }
+
+    if (this.productFilter.tripPeriod) {
+      where += ` AND a2.attribute_code = 'day-amount' AND pa2.option_text >= ${this.productFilter.tripPeriod < 10 ? `'0${this.productFilter.tripPeriod}'` : `'${this.productFilter.tripPeriod}'`}`;
+    }
+    
+    const rawQuery = await execute(pool, `
+      SELECT DISTINCT product.product_id
+      FROM
+          "product"
+          LEFT JOIN "product_description" AS "product_description" ON ("product_description"."product_description_product_id" = product.product_id)
+          LEFT JOIN "product_image" AS "product_image" ON ("product_image"."product_image_product_id" = product.product_id AND "product_image"."is_main" = TRUE)
+          LEFT JOIN "product_attribute_value_index" AS "pa1" ON ("pa1"."product_id" = product.parent_product_id)
+          LEFT JOIN "product_attribute_value_index" AS "pa2" ON ("pa2"."product_id" = product.product_id)
+          LEFT JOIN "attribute" AS "a1" ON ("a1"."attribute_id" = pa1.attribute_id)
+          LEFT JOIN "attribute" AS "a2" ON ("a2"."attribute_id" = pa2.attribute_id)
+      WHERE (${where})
+    `);
+
+    return rawQuery.rowCount;
   }
 
   currentFilters() {

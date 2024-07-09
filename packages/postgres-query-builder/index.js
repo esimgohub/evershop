@@ -461,6 +461,12 @@ class OrderBy {
     this._direction = 'DESC';
   }
 
+  addCustomOrderBy(sqlQuery) {
+    this._field = sqlQuery;
+    this._direction = '';
+    return this;
+  }
+
   add(field, direction) {
     this._field = fieldResolve(field);
     this._direction = direction == null ? 'DESC' : direction;
@@ -604,6 +610,11 @@ class SelectQuery extends Query {
 
   orderBy(field, direction = 'ASC') {
     this._orderBy.add(field, direction);
+    return this;
+  }
+
+  orderByCustomQuery(sqlQuery) {
+    this._orderBy.addCustomOrderBy(sqlQuery);
     return this;
   }
 
@@ -1053,6 +1064,7 @@ module.exports = {
 function select() {
   let select = new SelectQuery();
   let args = [...arguments];
+
   if (args[0] === '*') {
     select.select('*');
     return select;
