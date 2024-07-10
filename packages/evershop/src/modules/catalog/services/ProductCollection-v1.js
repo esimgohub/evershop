@@ -210,7 +210,7 @@ class ProductCollection {
   }
 
   async items() {
-    let where = `"product"."type" = 'simple' AND "product"."visibility" = TRUE AND "product"."status" = TRUE AND a1.attribute_code = 'local-esim'`;
+    let where = `"product"."type" = 'simple' AND "product"."visibility" = TRUE AND "product"."status" = TRUE`;
 
     // Clone the main query for getting total right before doing the paging
     
@@ -282,13 +282,39 @@ class ProductCollection {
     //     "product"."product_id" DESC
     //   LIMIT ${perPage} OFFSET ${offset * perPage}
     // `);
-    
-    const productByLocalEsim = await execute(pool, `
+
+    console.log("sqlll: ", `
       SELECT
           product.*,
           product_description.*,
-          pa1.option_text,
-          pa2.option_text,
+          pa1.option_text AS pa1Text,
+          pa2.option_text AS pa2Text,
+          a1.*,
+          a2.*
+      FROM
+          "product"
+          LEFT JOIN "product_description" AS "product_description" ON ("product_description"."product_description_product_id" = product.product_id)
+          LEFT JOIN "product_image" AS "product_image" ON ("product_image"."product_image_product_id" = product.product_id AND "product_image"."is_main" = TRUE)
+          LEFT JOIN "product_attribute_value_index" AS "pa1" ON ("pa1"."product_id" = product.parent_product_id)
+          LEFT JOIN "product_attribute_value_index" AS "pa2" ON ("pa2"."product_id" = product.product_id)
+          LEFT JOIN "attribute" AS "a1" ON ("a1"."attribute_id" = pa1.attribute_id)
+          LEFT JOIN "attribute" AS "a2" ON ("a2"."attribute_id" = pa2.attribute_id)
+      WHERE (${where})
+      ORDER BY
+          CASE
+              WHEN a1.attribute_code = 'local-esim' AND pa1.option_text = 'Yes' THEN 1
+              WHEN a1.attribute_code = 'local-esim' AND pa1.option_text = 'No' THEN 2
+          END,
+          "product"."product_id" DESC
+          LIMIT ${this.perPage} OFFSET ${this.offset * this.perPage}
+    `)
+    
+    const rawQuery = await execute(pool, `
+      SELECT
+          product.*,
+          product_description.*,
+          pa1.option_text AS pa1Text,
+          pa2.option_text AS pa2Text,
           a1.*,
           a2.*
       FROM
@@ -313,7 +339,7 @@ class ProductCollection {
 
     // console.log("items [0]: ", items[0]);
 
-    for (const item of productByLocalEsim.rows) {
+    for (const item of rawQuery.rows) {
       const parentProductAttributeQuery = select().from('product_attribute_value_index');
       parentProductAttributeQuery
         .leftJoin('attribute')
@@ -359,7 +385,7 @@ class ProductCollection {
       };
     }
 
-    const sortedItems = productByLocalEsim.rows.sort((a, b) => {
+    const sortedItems = rawQuery.rows.sort((a, b) => {
       // Check if 'local esim' attribute exists and prioritize it
       if (a.attributeTemp.localEsim.toLowerCase() === "yes" && b.attributeTemp.localEsim.toLowerCase() === "no") {
         return -1; // 'a' has local esim, should come before 'b'
