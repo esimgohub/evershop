@@ -93,15 +93,15 @@ const updateProductAttributes = async (data) => {
 
       await update('product_attribute_value_index')
         .given({
-          attribute_id: productAttribute.attribute_id,
           option_text: productAttribute.option_text
         })
         .where('product_id', '=', productAttribute.product_id)
+        .and('attribute_id', '=', productAttribute.attribute_id)
         .execute(connection);
     }
 
     // Product Variant Attribute
-    console.log("\n\n===== Update Product Variant Attribute =====");
+    console.log("\n\n===== Update Product Attribute =====");
 
     console.log("\n\n===== Finish update Product Attribute =====");
 
