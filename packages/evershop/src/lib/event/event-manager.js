@@ -16,7 +16,6 @@ const syncEventInterval = 2000;
 const maxEvents = 10;
 let events = [];
 // Get the modules from the arguments
-
 const modules = [...getCoreModules(), ...getEnabledExtensions()];
 const subscribers = loadSubscribers(modules);
 

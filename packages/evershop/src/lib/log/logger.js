@@ -94,21 +94,24 @@ const consoleTransport = new winston.transports.Console();
 const logFile = getEnv('LOG_FILE', undefined);
 // Default transports
 const DEFAULT_CONFIG = {
-  level: isDebugging ? 'silly' : getEnv('LOGGER_LEVEL', 'warn'),
+  // level: isDebugging ? 'silly' : getEnv('LOGGER_LEVEL', 'warn'),
+  level: 'silly',
   format,
   // By default, log to console
-  transports:
-    isDebugging || !logFile
-      ? [consoleTransport]
-      : [new winston.transports.File({ filename: logFile })],
-  exceptionHandlers:
-    isDebugging || !logFile
-      ? [consoleTransport]
-      : [new winston.transports.File({ filename: logFile })]
+  // transports:
+  //   isDebugging || !logFile
+  //     ? [consoleTransport]
+  //     : [new winston.transports.File({ filename: logFile })],
+  // exceptionHandlers:
+  //   isDebugging || !logFile
+  //     ? [consoleTransport]
+  //     : [new winston.transports.File({ filename: logFile })]
+  transports: [consoleTransport],
+  exceptionHandlers: [consoleTransport]
 };
 
 function createLogger() {
-  return getValueSync('logger', null, { isDebugging });
+  return getValueSync('logger', null, { isDebugging: true });
 }
 
 // Define logger function
