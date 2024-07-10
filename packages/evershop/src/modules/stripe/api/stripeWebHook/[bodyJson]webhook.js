@@ -23,24 +23,15 @@ module.exports = async (request, response, delegate, next) => {
   let event;
   const connection = await getConnection();
   try {
-    const stripeConfig = getConfig('system.stripe', {});
-    let stripeSecretKey;
-    if (stripeConfig.secretKey) {
-      stripeSecretKey = stripeConfig.secretKey;
-    } else {
-      stripeSecretKey = await getSetting('stripeSecretKey', '');
-    }
+    const stripeSecretKey = await getSetting('stripeSecretKey', '');
+
     const stripe = require('stripe')(stripeSecretKey);
 
     // Webhook enpoint secret
-    let endpointSecret;
-    if (stripeConfig.endpointSecret) {
-      endpointSecret = stripeConfig.endpointSecret;
-    } else {
-      endpointSecret = await getSetting('stripeEndpointSecret', '');
-    }
+    const endpointSecret = await getSetting('stripeEndpointSecret', '');
 
     event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
+
     await startTransaction(connection);
     // Handle the event
     switch (event.type) {
@@ -63,10 +54,7 @@ module.exports = async (request, response, delegate, next) => {
             payment_transaction_order_id: order.order_id,
             transaction_id: paymentIntent.id,
             transaction_type: 'online',
-            payment_action:
-              paymentIntent.capture_method === 'automatic'
-                ? 'Capture'
-                : 'Authorize'
+            payment_action: 'Capture'
           })
           .execute(connection);
 
