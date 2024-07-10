@@ -306,7 +306,7 @@ class ProductCollection {
               WHEN a1.attribute_code = 'local-esim' AND pa1.option_text = 'No' THEN 2
           END,
           "product"."product_id" DESC
-          LIMIT ${this.perPage} OFFSET ${this.offset * this.perPage}
+      LIMIT ${this.perPage} OFFSET ${this.offset * this.perPage}
     `);
 
     // const items = await this.baseQuery.execute(pool);
@@ -402,6 +402,50 @@ class ProductCollection {
     const records = await this.baseQuery.execute(pool);
 
     return records.map((row) => camelCase(row));
+  }
+
+  async isCanLoadMore() {
+    let where = `"product"."type" = 'simple' AND "product"."visibility" = TRUE AND "product"."status" = TRUE`;
+    
+    if (this.productFilter.categoryId) {
+      const foundedCategory = await select()
+        .from('category')
+        .where('category_id', '=', this.productFilter.categoryId)
+        .load(pool);
+
+      if (!foundedCategory) {
+        throw new Error(`Category ${this.productFilter.categoryId} not found`);
+      }
+
+      const productCategories = await select()
+        .from('product_category')
+        .where('category_id', '=', foundedCategory.uuid)
+        .execute(pool);
+
+      where += ` AND product.parent_product_uuid IN (${productCategories.map(p => `'${p.product_id}'`).join(',')})`;
+    }
+
+    if (this.productFilter.tripPeriod) {
+      where += ` AND a2.attribute_code = 'day-amount' AND pa2.option_text >= ${this.productFilter.tripPeriod < 10 ? `'0${this.productFilter.tripPeriod}'` : `'${this.productFilter.tripPeriod}'`}`;
+    }
+    
+    const nextOffset = this.offset + 1;
+    
+    const rawQuery = await execute(pool, `
+      SELECT DISTINCT product.product_id
+      FROM
+          "product"
+          LEFT JOIN "product_description" AS "product_description" ON ("product_description"."product_description_product_id" = product.product_id)
+          LEFT JOIN "product_image" AS "product_image" ON ("product_image"."product_image_product_id" = product.product_id AND "product_image"."is_main" = TRUE)
+          LEFT JOIN "product_attribute_value_index" AS "pa1" ON ("pa1"."product_id" = product.parent_product_id)
+          LEFT JOIN "product_attribute_value_index" AS "pa2" ON ("pa2"."product_id" = product.product_id)
+          LEFT JOIN "attribute" AS "a1" ON ("a1"."attribute_id" = pa1.attribute_id)
+          LEFT JOIN "attribute" AS "a2" ON ("a2"."attribute_id" = pa2.attribute_id)
+      WHERE (${where})
+      LIMIT ${this.perPage} OFFSET ${nextOffset * this.perPage}
+    `);
+
+    return rawQuery.rows.length > 0;
   }
 
   async total() {
