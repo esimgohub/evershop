@@ -1,11 +1,9 @@
 type Social {
   url: String
   icon: String
+  index: Int
 }
 
 extend type Setting {
-  facebook: Social
-  instagram: Social
-  thread: Social
-  tiktok: Social
+  social: [Social]
 }

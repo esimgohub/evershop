@@ -11,7 +11,7 @@ const ProductsQuery = `
   query Query ($code: String!, $filters: [FilterInput!]) {
     collection (code: $code) {
       products (filters: $filters) {
-        items {
+        adminItems {
           productId
           uuid
           name

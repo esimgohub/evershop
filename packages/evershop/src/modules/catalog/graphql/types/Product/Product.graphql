@@ -32,8 +32,10 @@ type Product {
 }
 
 input ProductFilterInput {
-  categoryId: String
+  categoryId: Int
   tripPeriod: String
+  page: Int
+  perPage: Int
 }
 
 """
@@ -41,6 +43,7 @@ Returns a collection of products.
 """
 type ProductCollection {
   items: [Product]
+  adminItems: [Product]
   currentPage: Int!
   total: Int!
   currentFilters: [Filter]

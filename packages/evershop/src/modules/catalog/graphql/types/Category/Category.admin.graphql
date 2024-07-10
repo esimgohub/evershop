@@ -5,6 +5,8 @@ extend type Category {
   addProductUrl: String
   categoryType: String
   queryProducts: [Product]
+  isPopular: Boolean
+  sortOrder: Int
 }
 
 extend type Product {

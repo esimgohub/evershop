@@ -1,0 +1,5 @@
+{
+  "methods": ["POST"],
+  "path": "/migrate-popular-and-sort-order-on-category",
+  "access": "private"
+}

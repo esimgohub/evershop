@@ -45,12 +45,15 @@ async function updateCategoryData(uuid, data, connection) {
   if (!category) {
     throw new Error('Requested category not found');
   }
-
   try {
+    data.is_popular = data.is_popular === '1';
+    data.sort_order = parseInt(data.sort_order);
+
     const newCategory = await update('category')
       .given(data)
       .where('uuid', '=', uuid)
       .execute(connection);
+    
     Object.assign(category, newCategory);
   } catch (e) {
     if (!e.message.includes('No data was provided')) {

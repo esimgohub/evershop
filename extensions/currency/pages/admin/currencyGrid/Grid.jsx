@@ -2,16 +2,12 @@
 /* eslint-disable react/no-unstable-nested-components */
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
-import axios from 'axios';
 import Area from '@components/common/Area';
 import Pagination from '@components/common/grid/Pagination';
 import { useAlertContext } from '@components/common/modal/Alert';
 import { Checkbox } from '@components/common/form/fields/Checkbox';
 import { Card } from '@components/admin/cms/Card';
 import CurrencyNameRow from '@components/admin/catalog/currencyGrid/rows/CurrencyName';
-import GroupRow from '@components/admin/catalog/currencyGrid/rows/GroupRow';
-import BasicRow from '@components/common/grid/rows/BasicRow';
-import YesNoRow from '@components/common/grid/rows/YesNoRow';
 import SortableHeader from '@components/common/grid/headers/Sortable';
 import TextRow from '@components/common/grid/rows/TextRow';
 import { Form } from '@components/common/form/Form';

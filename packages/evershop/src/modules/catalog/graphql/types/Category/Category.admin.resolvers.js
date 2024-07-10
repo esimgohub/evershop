@@ -12,6 +12,8 @@ module.exports = {
     deleteApi: (category) => buildUrl('deleteCategory', { id: category.uuid }),
     addProductUrl: (category) =>
       buildUrl('addProductToCategory', { category_id: category.uuid }),
+    // isPopular: (category) => category.isPopular,
+    // sortOrder: (category) => category.sortOrder,
     queryProducts: async (category) => {
       const query = select().from("product_category");
 
@@ -26,13 +28,13 @@ module.exports = {
           '=',
           'product.product_id'
         );
-      query
-        .innerJoin('product_inventory')
-        .on(
-          'product_inventory.product_inventory_product_id',
-          '=',
-          'product.product_id'
-        );
+      // query
+      //   .innerJoin('product_inventory')
+      //   .on(
+      //     'product_inventory.product_inventory_product_id',
+      //     '=',
+      //     'product.product_id'
+      //   );
 
       query
         .leftJoin('product_image')

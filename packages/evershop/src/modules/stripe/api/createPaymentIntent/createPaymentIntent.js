@@ -3,6 +3,7 @@ const smallestUnit = require('zero-decimal-currencies');
 const stripePayment = require('stripe');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
+const { getValue } = require('@evershop/evershop/src/lib/util/registry');
 const {
   OK,
   INVALID_PAYLOAD
@@ -37,9 +38,18 @@ module.exports = async (request, response, delegate, next) => {
     }
 
     const stripe = stripePayment(stripeSecretKey);
+
+    const formatedGrandTotal = await getValue(
+      'priceValByExnRatio',
+      {
+        rawPrice: order.grand_total,
+        isoCode: order.currency
+      }
+    );
+
     // Create a PaymentIntent with the order amount and currency
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: smallestUnit.default(order.grand_total, order.currency),
+      amount: smallestUnit.default(formatedGrandTotal, order.currency),
       currency: order.currency,
       metadata: {
         // eslint-disable-next-line camelcase
