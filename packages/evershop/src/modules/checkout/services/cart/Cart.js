@@ -50,6 +50,28 @@ class Item extends DataObject {
   getCart() {
     return this.#cart;
   }
+
+  /**
+   * Update the categoryId of an item.
+   * @param {number} categoryId
+   * @returns {void}
+   * @throws {Error}
+   */
+  async updateCategoryId(categoryId) {
+    await this.setData('category_id', categoryId, true);
+  }
+
+  /**
+   * Update the tripDate of an item.
+   * @param {string} fromDate
+   * @param {string} toDate
+   * @returns {void}
+   * @throws {Error}
+   */
+  async updateTripDate(fromDate, toDate) {
+    const trip = [fromDate, toDate].join()
+    await this.setData('trip', trip, true);
+  }
 }
 
 class Cart extends DataObject {

@@ -45,12 +45,14 @@ async function updateCategoryData(uuid, data, connection) {
   if (!category) {
     throw new Error('Requested category not found');
   }
-
   try {
+    console.log("new category data: ", data);
+
     const newCategory = await update('category')
       .given(data)
       .where('uuid', '=', uuid)
       .execute(connection);
+    
     Object.assign(category, newCategory);
   } catch (e) {
     if (!e.message.includes('No data was provided')) {
@@ -58,6 +60,8 @@ async function updateCategoryData(uuid, data, connection) {
     }
   }
   try {
+    console.log("beforrrr: ", data);
+
     const description = await update('category_description')
       .given(data)
       .where('category_description_category_id', '=', category.category_id)

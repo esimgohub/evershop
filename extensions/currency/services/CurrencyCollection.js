@@ -48,7 +48,9 @@ class CurrencyCollection {
   async total() {
     // Call items to get the total
     const total = await this.totalQuery.execute(pool);
-    return total[0].total;
+
+    // Note: - 1 mean exclude USD currency
+    return total[0].total - 1;
   }
 
   currentFilters() {

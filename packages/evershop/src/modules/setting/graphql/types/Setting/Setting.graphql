@@ -54,6 +54,7 @@ type Config {
   payment: PaymentConfig
   social: SocialConfig
   sliders: [Slider]
+  staticPages: [CmsPage]
 }
 
 extend type Query {

@@ -21,13 +21,13 @@ module.exports = {
           '=',
           'product_description.product_description_product_id'
         );
-      query
-        .innerJoin('product_inventory')
-        .on(
-          'product.product_id',
-          '=',
-          'product_inventory.product_inventory_product_id'
-        );
+      // query
+      //   .innerJoin('product_inventory')
+      //   .on(
+      //     'product.product_id',
+      //     '=',
+      //     'product_inventory.product_inventory_product_id'
+      //   );
       query
         .leftJoin('cart_item')
         .on('cart_item.product_id', '=', 'product.product_id');

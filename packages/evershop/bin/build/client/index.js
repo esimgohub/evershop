@@ -8,6 +8,8 @@ module.exports.buildClient = async function buildClient(routes) {
   const config = createConfigClient(routes);
   const compiler = webpack(config);
 
+  console.log("routesss: ", routes);
+
   return new Promise((resolve, reject) => {
     compiler.run((err, stats) => {
       if (err || stats.hasErrors()) {

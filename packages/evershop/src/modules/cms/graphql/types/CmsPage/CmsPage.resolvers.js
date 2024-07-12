@@ -19,18 +19,28 @@ module.exports = {
       await root.init(filters, !!user);
       return root;
     },
-    staticPage: async (_, { urlKey }, { pool }) => {
+    staticPageBySlug: async (_, { urlKey }, { pool }) => {
       const query = getCmsPagesBaseQuery();
       query.andWhere('url_key', '=', urlKey);
     
       const page = await query.load(pool);
-      console.log("page", page);
 
       return page ? camelCase(page)  : null;
-    }
+    },
+    staticPages: async (_, {}, { homeUrl, pool }) => {
+      const query = getCmsPagesBaseQuery();
+    
+      const pages = await query.execute(pool);
 
+      return pages.map(page => {
+        return {
+          ...camelCase(page),
+        };
+      });
+    }
   },
   CmsPage: {
+    accessUrl: ({ urlKey }, {}, { homeUrl }) => `${homeUrl}${buildUrl('cmsPageView', { url_key: urlKey })}`,
     url: ({ urlKey }) => buildUrl('cmsPageView', { url_key: urlKey }),
     editUrl: ({ uuid }) => buildUrl('cmsPageEdit', { id: uuid }),
     updateApi: (page) => buildUrl('updateCmsPage', { id: page.uuid }),
