@@ -1,3 +1,6 @@
+const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
+const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
+const { getCmsPagesBaseQuery } = require('@evershop/evershop/src/modules/cms/services/getCmsPagesBaseQuery');
 const { select } = require('@evershop/postgres-query-builder');
 const { decode } = require('he');
 
@@ -90,12 +93,24 @@ module.exports = {
           description: decode(sliderDescription.value) ?? ''
         })
       }
+      // CMS pages
+      const query = getCmsPagesBaseQuery();
+    
+      const pages = await query.execute(pool);
+
+      const staticPages = pages.map(page => {
+        return {
+          ...camelCase(page),
+          url: `${homeUrl}${buildUrl('cmsPageView', { url_key: page.url_key })}`,
+        };
+      });
   
       return {
         store,
         payment,
         social: socialResponses,
-        sliders: sliders.filter((s) => s.visibility === true)
+        sliders: sliders.filter((s) => s.visibility === true),
+        staticPages
       }
     }
   },
