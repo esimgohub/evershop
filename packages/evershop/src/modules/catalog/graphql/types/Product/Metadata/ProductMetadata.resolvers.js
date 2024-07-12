@@ -44,13 +44,36 @@ module.exports = {
 
       const foundDataTypeAttribute = parentProductAttributes.find((a) => a.attribute_code === 'data-type');
 
+      let dataAmountValue;
       const foundDataAmountAttribute = productVariantAttributes.find((a) => a.attribute_code === 'data-amount');
-      const dataAmountValue = foundDataAmountAttribute ? parseFloat(foundDataAmountAttribute.option_text) : 1;
+      if (foundDataAmountAttribute) {
+        const isUnlimitedData = foundDataAmountAttribute.option_text.toLowerCase() === 'unlimited';
+
+        dataAmountValue = isUnlimitedData ? -1 : parseInt(foundDataAmountAttribute.option_text);
+      }
 
       // NOTE: The Data Amount Unit must be required always.
       const foundDataAmountUnit = productVariantAttributes.find((a) => a.attribute_code === 'data-amount-unit');
 
-      const totalDataAmount = foundDataTypeAttribute.option_text === DataType.DailyData ? dayAmountValue * dataAmountValue : dataAmountValue;
+      let totalDataAmount;
+      
+      const isUnlimitedData = foundDataAmountAttribute.option_text.toLowerCase() === 'unlimited';
+      if (isUnlimitedData) {
+        totalDataAmount = -1;
+      }
+      else {
+        const isDailyData = foundDataTypeAttribute.option_text === DataType.DailyData;
+        if (isDailyData) {
+          totalDataAmount = dayAmountValue * dataAmountValue;
+        }
+        else {
+          totalDataAmount = dayAmountValue * dataAmountValue;
+          // const isUnlimitedData = foundDataAmountAttribute.option_text.toLowerCase() === 'unlimited';
+
+          // totalDataAmount = isUnlimitedData ? -1 : dayAmountValue * dataAmountValue;
+        }
+      }
+      
 
       // Get metadata on categories
       const productCategoryQuery = select().from('product_category');
@@ -65,13 +88,22 @@ module.exports = {
 
       const categories = await productCategoryQuery.execute(pool);
 
-      let totalDataAmountValue = totalDataAmount;
-      if (totalDataAmount > 1024) {
-        totalDataAmountValue = totalDataAmount / 1000;
+      let totalDataAmountText;
+      if (isUnlimitedData) {
+        totalDataAmountText = "Unlimited";
       }
+      else {
+        let totalDataAmountValue = totalDataAmount;
+        if (totalDataAmount > 1024) {
+          totalDataAmountValue = totalDataAmount / 1000;
+        }
+
+        totalDataAmountText = `${totalDataAmountValue}${calculateDataAmountUnit(totalDataAmount, foundDataAmountUnit ? foundDataAmountUnit.option_text : 'GB')}`
+      }
+      
 
       return {
-        totalDataAmount: `${totalDataAmountValue}${calculateDataAmountUnit(totalDataAmount, foundDataAmountUnit ? foundDataAmountUnit.option_text : 'GB')}`,
+        totalDataAmount: totalDataAmountText,
         supportedCountries: categories.length !== 0 ? categories.length - 1 : 0,
       };
     }

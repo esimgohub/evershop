@@ -210,7 +210,7 @@ class ProductCollection {
   }
 
   async items() {
-    let where = `"product"."type" = 'simple' AND "product"."visibility" = TRUE AND "product"."status" = TRUE AND a1.attribute_code = 'local-esim'`;
+    let where = `"product"."type" = 'simple' AND "product"."visibility" = TRUE AND "product"."status" = TRUE`;
 
     // Clone the main query for getting total right before doing the paging
     
@@ -282,13 +282,13 @@ class ProductCollection {
     //     "product"."product_id" DESC
     //   LIMIT ${perPage} OFFSET ${offset * perPage}
     // `);
-    
-    const productByLocalEsim = await execute(pool, `
+
+    console.log("sqlll: ", `
       SELECT
           product.*,
           product_description.*,
-          pa1.option_text,
-          pa2.option_text,
+          pa1.option_text AS pa1Text,
+          pa2.option_text AS pa2Text,
           a1.*,
           a2.*
       FROM
@@ -306,14 +306,40 @@ class ProductCollection {
               WHEN a1.attribute_code = 'local-esim' AND pa1.option_text = 'No' THEN 2
           END,
           "product"."product_id" DESC
-      LIMIT ${this.perPage} OFFSET ${this.offset * this.perPage}
+          LIMIT ${this.perPage} OFFSET ${this.offset * this.perPage}
+    `)
+    
+    const rawQuery = await execute(pool, `
+      SELECT
+          product.*,
+          product_description.*,
+          pa1.option_text AS pa1Text,
+          pa2.option_text AS pa2Text,
+          a1.*,
+          a2.*
+      FROM
+          "product"
+          LEFT JOIN "product_description" AS "product_description" ON ("product_description"."product_description_product_id" = product.product_id)
+          LEFT JOIN "product_image" AS "product_image" ON ("product_image"."product_image_product_id" = product.product_id AND "product_image"."is_main" = TRUE)
+          LEFT JOIN "product_attribute_value_index" AS "pa1" ON ("pa1"."product_id" = product.parent_product_id)
+          LEFT JOIN "product_attribute_value_index" AS "pa2" ON ("pa2"."product_id" = product.product_id)
+          LEFT JOIN "attribute" AS "a1" ON ("a1"."attribute_id" = pa1.attribute_id)
+          LEFT JOIN "attribute" AS "a2" ON ("a2"."attribute_id" = pa2.attribute_id)
+      WHERE (${where})
+      ORDER BY
+          CASE
+              WHEN a1.attribute_code = 'local-esim' AND pa1.option_text = 'Yes' THEN 1
+              WHEN a1.attribute_code = 'local-esim' AND pa1.option_text = 'No' THEN 2
+          END,
+          "product"."product_id" DESC
+          LIMIT ${this.perPage} OFFSET ${this.offset * this.perPage}
     `);
 
     // const items = await this.baseQuery.execute(pool);
 
     // console.log("items [0]: ", items[0]);
 
-    for (const item of productByLocalEsim.rows) {
+    for (const item of rawQuery.rows) {
       const parentProductAttributeQuery = select().from('product_attribute_value_index');
       parentProductAttributeQuery
         .leftJoin('attribute')
@@ -351,34 +377,15 @@ class ProductCollection {
       const localEsimAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'local-esim');
 
       // Init attribute temp to sort by day-amount and total amount unit
-
-      let totalDataAmount;
-      const isUnlimitedDataAmount = dataAmountAttribute.option_text.toLowerCase() === "unlimited";
-      if (isUnlimitedDataAmount) {
-        totalDataAmount = 99999;
-      }
-      else {
-        const isDailyData = dataTypeAttribute.option_text === DataType.DailyData;
-        if (isDailyData) {
-          totalDataAmount = parseFloat(dayAmountAttribute.option_text) * parseFloat(dataAmountAttribute.option_text);
-        } else {
-          // totalDataAmount = dataAmountAttribute.option_text.toLowerCase() === "unlimited" ? 99999 :  parseFloat(dataAmountAttribute.option_text);
-          totalDataAmount = parseFloat(dataAmountAttribute.option_text);
-        }
-      }
-
-      
-
       item.attributeTemp = {
         localEsim: localEsimAttribute.option_text,
-        dayAmount: parseFloat(dayAmountAttribute.option_text),
-        // totalDataAmount: dataTypeAttribute.option_text === DataType.DailyData ? parseFloat(dayAmountAttribute.option_text) * parseFloat(dataAmountAttribute.option_text) : parseFloat(dataAmountAttribute.option_text),
-        totalDataAmount,
+        dayAmount: parseInt(dayAmountAttribute.option_text),
+        totalDataAmount: dataTypeAttribute.option_text === DataType.DailyData ? parseInt(dayAmountAttribute.option_text) * parseInt(dataAmountAttribute.option_text) : parseInt(dataAmountAttribute.option_text),
         dataAmountUnit: dataAmountUnitAttribute.option_text
       };
     }
 
-    const sortedItems = productByLocalEsim.rows.sort((a, b) => {
+    const sortedItems = rawQuery.rows.sort((a, b) => {
       // Check if 'local esim' attribute exists and prioritize it
       if (a.attributeTemp.localEsim.toLowerCase() === "yes" && b.attributeTemp.localEsim.toLowerCase() === "no") {
         return -1; // 'a' has local esim, should come before 'b'
@@ -390,7 +397,7 @@ class ProductCollection {
 
       if (a.attributeTemp.dayAmount !== b.attributeTemp.dayAmount) {
         return a.attributeTemp.dayAmount - b.attributeTemp.dayAmount;
-      }
+      } 
       
       if (a.attributeTemp.totalDataAmount !== b.attributeTemp.totalDataAmount) {
         return a.attributeTemp.totalDataAmount - b.attributeTemp.totalDataAmount;
@@ -421,50 +428,6 @@ class ProductCollection {
     const records = await this.baseQuery.execute(pool);
 
     return records.map((row) => camelCase(row));
-  }
-
-  async isCanLoadMore() {
-    let where = `"product"."type" = 'simple' AND "product"."visibility" = TRUE AND "product"."status" = TRUE`;
-    
-    if (this.productFilter.categoryId) {
-      const foundedCategory = await select()
-        .from('category')
-        .where('category_id', '=', this.productFilter.categoryId)
-        .load(pool);
-
-      if (!foundedCategory) {
-        throw new Error(`Category ${this.productFilter.categoryId} not found`);
-      }
-
-      const productCategories = await select()
-        .from('product_category')
-        .where('category_id', '=', foundedCategory.uuid)
-        .execute(pool);
-
-      where += ` AND product.parent_product_uuid IN (${productCategories.map(p => `'${p.product_id}'`).join(',')})`;
-    }
-
-    if (this.productFilter.tripPeriod) {
-      where += ` AND a2.attribute_code = 'day-amount' AND pa2.option_text >= ${this.productFilter.tripPeriod < 10 ? `'0${this.productFilter.tripPeriod}'` : `'${this.productFilter.tripPeriod}'`}`;
-    }
-    
-    const nextOffset = this.offset + 1;
-    
-    const rawQuery = await execute(pool, `
-      SELECT DISTINCT product.product_id
-      FROM
-          "product"
-          LEFT JOIN "product_description" AS "product_description" ON ("product_description"."product_description_product_id" = product.product_id)
-          LEFT JOIN "product_image" AS "product_image" ON ("product_image"."product_image_product_id" = product.product_id AND "product_image"."is_main" = TRUE)
-          LEFT JOIN "product_attribute_value_index" AS "pa1" ON ("pa1"."product_id" = product.parent_product_id)
-          LEFT JOIN "product_attribute_value_index" AS "pa2" ON ("pa2"."product_id" = product.product_id)
-          LEFT JOIN "attribute" AS "a1" ON ("a1"."attribute_id" = pa1.attribute_id)
-          LEFT JOIN "attribute" AS "a2" ON ("a2"."attribute_id" = pa2.attribute_id)
-      WHERE (${where})
-      LIMIT ${this.perPage} OFFSET ${nextOffset * this.perPage}
-    `);
-
-    return rawQuery.rows.length > 0;
   }
 
   async total() {

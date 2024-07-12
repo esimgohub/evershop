@@ -46,6 +46,7 @@ type ProductCollection {
   adminItems: [Product]
   currentPage: Int!
   total: Int!
+  isCanLoadMore: Boolean
   currentFilters: [Filter]
 }
 
