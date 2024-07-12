@@ -351,10 +351,29 @@ class ProductCollection {
       const localEsimAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'local-esim');
 
       // Init attribute temp to sort by day-amount and total amount unit
+
+      let totalDataAmount;
+      const isUnlimitedDataAmount = dataAmountAttribute.option_text.toLowerCase() === "unlimited";
+      if (isUnlimitedDataAmount) {
+        totalDataAmount = 99999;
+      }
+      else {
+        const isDailyData = dataTypeAttribute.option_text === DataType.DailyData;
+        if (isDailyData) {
+          totalDataAmount = parseFloat(dayAmountAttribute.option_text) * parseFloat(dataAmountAttribute.option_text);
+        } else {
+          // totalDataAmount = dataAmountAttribute.option_text.toLowerCase() === "unlimited" ? 99999 :  parseFloat(dataAmountAttribute.option_text);
+          totalDataAmount = parseFloat(dataAmountAttribute.option_text);
+        }
+      }
+
+      
+
       item.attributeTemp = {
         localEsim: localEsimAttribute.option_text,
-        dayAmount: parseInt(dayAmountAttribute.option_text),
-        totalDataAmount: dataTypeAttribute.option_text === DataType.DailyData ? parseInt(dayAmountAttribute.option_text) * parseInt(dataAmountAttribute.option_text) : parseInt(dataAmountAttribute.option_text),
+        dayAmount: parseFloat(dayAmountAttribute.option_text),
+        // totalDataAmount: dataTypeAttribute.option_text === DataType.DailyData ? parseFloat(dayAmountAttribute.option_text) * parseFloat(dataAmountAttribute.option_text) : parseFloat(dataAmountAttribute.option_text),
+        totalDataAmount,
         dataAmountUnit: dataAmountUnitAttribute.option_text
       };
     }
@@ -371,7 +390,7 @@ class ProductCollection {
 
       if (a.attributeTemp.dayAmount !== b.attributeTemp.dayAmount) {
         return a.attributeTemp.dayAmount - b.attributeTemp.dayAmount;
-      } 
+      }
       
       if (a.attributeTemp.totalDataAmount !== b.attributeTemp.totalDataAmount) {
         return a.attributeTemp.totalDataAmount - b.attributeTemp.totalDataAmount;

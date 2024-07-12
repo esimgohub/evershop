@@ -75,8 +75,8 @@ module.exports = {
         console.log("Data amount not found");
       }
 
-      responses['data-amount'] = parseInt(foundDataAmount[1]);
-      responses['day-amount'] = parseInt(foundDayAmount[1]);
+      responses['data-amount'] = foundDataAmount[1].toLowerCase() === 'unlimited' ? -1 : parseFloat(foundDataAmount[1]);
+      responses['day-amount'] = parseFloat(foundDayAmount[1]);
       
       return responses;
     },
