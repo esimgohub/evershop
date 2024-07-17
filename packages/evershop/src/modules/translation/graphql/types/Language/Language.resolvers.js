@@ -25,7 +25,7 @@ module.exports = {
   Customer: {
     language: async (customer, _, { pool }) => {
       const query = getLanguagesBaseQuery();
-      query.where('language.id', '=', customer.languageId);
+      query.where('language.code', '=', customer.languageCode);
 
       const result = await query.load(pool);
       return camelCase(result);
