@@ -3,6 +3,7 @@ const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const { getOrdersBaseQuery } = require('../../../services/getOrdersBaseQuery');
+const { createProductAttribute, createCategory, createTitleInfo, createTripInfo } = require('@evershop/evershop/src/modules/oms/services/getAdditionalOrderInfo');
 
 module.exports = {
   Query: {
@@ -13,7 +14,9 @@ module.exports = {
       if (!order) {
         return null;
       } else {
-        return camelCase(order);
+        // todo: subtotal
+        const orderCamelCase = camelCase(order);
+        return orderCamelCase;
       }
     },
     shipmentStatusList: () => getConfig('oms.order.shipmentStatus', {}),
@@ -25,7 +28,29 @@ module.exports = {
         .from('order_item')
         .where('order_item_order_id', '=', orderId)
         .execute(pool);
-      return items.map((item) => camelCase(item));
+      const itemsCamelCaseField = items.map((item) => camelCase(item))
+      const addtionalInfoArr = itemsCamelCaseField.map((async (item) => {
+        const product = await select()
+          .from('product')
+          .where('product_id', '=', item?.productId)
+          .and('status', '=', 1)
+          .load(pool);
+        const productAttributeObj = await createProductAttribute(product, pool)
+
+        const titleInfoObj = await createCategory(item?.categoryId, pool);
+
+        const titleInfo = await createTitleInfo(productAttributeObj, titleInfoObj)
+        const tripInfo  = await createTripInfo(item?.trip)
+        // eslint-disable-next-line no-param-reassign
+        item.titleInfo = titleInfo;
+        // eslint-disable-next-line no-param-reassign
+        item.tripText= tripInfo;
+
+        return {
+          ...item
+        }
+      }));
+      return addtionalInfoArr;
     },
     shippingAddress: async ({ shippingAddressId }, _, { pool }) => {
       const address = await select()

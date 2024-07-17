@@ -125,6 +125,31 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
       dependencies: ['items']
     },
     {
+      key: 'sub_total_old_price',
+      resolvers: [
+        async function resolver() {
+          let total = 0;
+          const items = this.getActiveItems();
+          items.forEach((i) => {
+            total += i.getData('old_price') * i.getData('qty');
+          });
+          return toPrice(total);
+        }
+      ],
+      dependencies: ['items']
+    },
+    {
+      key: 'sub_total_discount_amount',
+      resolvers: [
+        async function resolver() {
+          return toPrice(
+            this.getData('sub_total_old_price') - this.getData('sub_total')
+          );
+        }
+      ],
+      dependencies: ['sub_total', 'sub_total_old_price']
+    },
+    {
       key: 'sub_total_incl_tax',
       resolvers: [
         async function resolver() {

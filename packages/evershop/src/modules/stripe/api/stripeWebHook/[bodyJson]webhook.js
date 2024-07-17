@@ -48,7 +48,7 @@ module.exports = async (request, response, delegate, next) => {
     // payment_intent.processing
     // payment_intent.succeeded
     switch (event.type) {
-      case 'payment_intent.succeeded':
+      case 'payment_intent.succeeded': {
         const paymentIntent = event.data.object;
         // eslint-disable-next-line no-case-declarations
         const { orderId } = paymentIntent.metadata;
@@ -92,8 +92,8 @@ module.exports = async (request, response, delegate, next) => {
         // Emit event to add order placed event
         await emit('order_placed', { ...order });
         break;
-
-      case 'payment_intent.payment_failed':
+      }
+      case 'payment_intent.payment_failed': {
         debug('PaymentMethod was failed!');
         const paymentIntent = event.data.object;
         // eslint-disable-next-line no-case-declarations
@@ -117,8 +117,9 @@ module.exports = async (request, response, delegate, next) => {
           })
           .execute(connection);
         break;
+      }
 
-      case 'payment_method.canceled':
+      case 'payment_method.canceled': {
         debug('PaymentMethod was canceled!');
         const paymentIntent = event.data.object;
         // eslint-disable-next-line no-case-declarations
@@ -142,8 +143,9 @@ module.exports = async (request, response, delegate, next) => {
           })
           .execute(connection);
         break;
+      }
 
-      case 'payment_method.processing':
+      case 'payment_method.processing': {
         debug('PaymentMethod is processing!');
         const paymentIntent = event.data.object;
         // eslint-disable-next-line no-case-declarations
@@ -168,6 +170,7 @@ module.exports = async (request, response, delegate, next) => {
           .execute(connection);
 
         break;
+      }
 
       // ... handle other event types
       default:

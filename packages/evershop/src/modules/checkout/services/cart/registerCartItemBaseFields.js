@@ -491,49 +491,15 @@ module.exports.registerCartItemBaseFields =
         dependencies: ['product_id']
       },
       {
-        key: 'category',
+        key: 'old_price',
         resolvers: [
           async function resolver() {
-            const categoryDescriptionQuery = select().from('category_description');
 
-            const categoryId = await this.getData('category_id');
-            if (categoryId == null) {
-              return {};
-            }
-            categoryDescriptionQuery.where('category_description_id', '=', categoryId);
-            const rows = await categoryDescriptionQuery.execute(pool);
-            if (!rows?.length) {
-              return {};
-            }
-            return rows[0];
-          }
-        ],
-        dependencies: ['category_id']
-      },
-      {
-        key: 'product_old_price',
-        resolvers: [
-          async function resolver() {
             const product = await this.getProduct();
-            if (this.getData('product_old_price') == null) {
-              return null;
-            }
             return toPrice(product.old_price);
           }
         ],
         dependencies: ['product_id']
-      },
-      {
-        key: 'old_price',
-        resolvers: [
-          async function resolver() {
-            if (this.getData('product_old_price') == null) {
-              return null;
-            }
-            return toPrice(this.getData('product_old_price')); // TODO This price should include the custom option price
-          }
-        ],
-        dependencies: ['product_old_price']
       },
       {
         key: 'category_id',
@@ -642,14 +608,6 @@ module.exports.registerCartItemBaseFields =
               };
 
             }
-            let dataInfoText;
-            if (attrObj['data-type'] === 'Daily Data') {
-              dataInfoText = `${attrObj['data-amount']} ${attrObj['data-amount-unit']}/day`;
-            } else {
-              const dayAmountText = attrObj['day-amount'] === 1 ? 'day' : 'days';
-              dataInfoText = `${attrObj['data-amount']} ${attrObj['day-amount']}/${attrObj['data-amount-unit']}/${dayAmountText}`;
-            }
-            const title = `${cateObj.name}  ${dataInfoText}`;
             return {
               dataAmount: attrObj['data-amount'],
               dataAmountUnit: attrObj['data-amount-unit'],
