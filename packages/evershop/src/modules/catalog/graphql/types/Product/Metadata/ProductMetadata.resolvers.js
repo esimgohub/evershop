@@ -49,7 +49,7 @@ module.exports = {
       if (foundDataAmountAttribute) {
         const isUnlimitedData = foundDataAmountAttribute.option_text.toLowerCase() === 'unlimited';
 
-        dataAmountValue = isUnlimitedData ? -1 : parseInt(foundDataAmountAttribute.option_text);
+        dataAmountValue = isUnlimitedData ? -1 : parseFloat(foundDataAmountAttribute.option_text);
       }
 
       // NOTE: The Data Amount Unit must be required always.
@@ -67,10 +67,7 @@ module.exports = {
           totalDataAmount = dayAmountValue * dataAmountValue;
         }
         else {
-          totalDataAmount = dayAmountValue * dataAmountValue;
-          // const isUnlimitedData = foundDataAmountAttribute.option_text.toLowerCase() === 'unlimited';
-
-          // totalDataAmount = isUnlimitedData ? -1 : dayAmountValue * dataAmountValue;
+          totalDataAmount = dataAmountValue;
         }
       }
       
