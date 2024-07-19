@@ -4,6 +4,7 @@ const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const { v4: uuidv4 } = require('uuid');
 const dayjs = require('dayjs');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
+const { createAttribute } = require('@evershop/evershop/src/modules/oms/services/getAdditionalOrderInfo');
 const { toPrice } = require('../toPrice');
 const {
   calculateTaxAmount
@@ -416,76 +417,8 @@ module.exports.registerCartItemBaseFields =
         resolvers: [
           async function resolver() {
             const product = await this.getProduct();
-            const productAttributeQuery = select().from('product_attribute_value_index');
-            productAttributeQuery
-              .leftJoin('attribute')
-              .on(
-                'attribute.attribute_id',
-                '=',
-                'product_attribute_value_index.attribute_id'
-              );
-            productAttributeQuery.where(
-              'product_attribute_value_index.product_id',
-              '=',
-              product.product_id
-            );
-            // if (!user) {
-            //   query.andWhere('attribute.display_on_frontend', '=', true);
-            // }
-            const productAttributes = await productAttributeQuery.execute(pool);
-
-            // if product is variant
-            const isVariableProduct = product.type === 'variable';
-            if (isVariableProduct) {
-              return productAttributes.reduce((response, attribute) => {
-                response[attribute.attribute_code] = attribute.option_text;
-
-                return response;
-              }, {});
-            }
-
-            const productVariantAttributeQuery = select().from('product_attribute_value_index');
-            productVariantAttributeQuery
-              .leftJoin('attribute')
-              .on(
-                'attribute.attribute_id',
-                '=',
-                'product_attribute_value_index.attribute_id'
-              );
-            productVariantAttributeQuery.where(
-              'product_attribute_value_index.product_id',
-              '=',
-              product.parent_product_id
-            );
-            const productVariantAttributes = await productVariantAttributeQuery.execute(pool);
-
-            const attributes = [...productAttributes, ...productVariantAttributes];
-
-            const responses = attributes.reduce((response, attribute) => {
-              response[attribute.attribute_code] = attribute.option_text;
-
-              return response;
-            }, {});
-
-            const foundDataType = Object.entries(responses).find(([key, value]) => key === 'data-type');
-            if (!foundDataType) {
-              console.log('Data type not found');
-            }
-
-            const foundDayAmount = Object.entries(responses).find(([key, value]) => key === 'day-amount');
-            if (!foundDayAmount) {
-              console.log('Day amount not found');
-            }
-
-            const foundDataAmount = Object.entries(responses).find(([key, value]) => key === 'data-amount');
-            if (!foundDataAmount) {
-              console.log('Data amount not found');
-            }
-
-            responses['data-amount'] = parseInt(foundDataAmount[1], 10);
-            responses['day-amount'] = parseInt(foundDayAmount[1], 10);
-
-            return responses;
+            const response = await createAttribute(product, pool);
+            return response;
           }
         ],
         dependencies: ['product_id']

@@ -2,8 +2,8 @@ const { select } = require('@evershop/postgres-query-builder');
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
+const { createAttribute, createCategory, createTitleInfo, createTripInfo } = require('@evershop/evershop/src/modules/oms/services/getAdditionalOrderInfo');
 const { getOrdersBaseQuery } = require('../../../services/getOrdersBaseQuery');
-const { createProductAttribute, createCategory, createTitleInfo, createTripInfo } = require('@evershop/evershop/src/modules/oms/services/getAdditionalOrderInfo');
 
 module.exports = {
   Query: {
@@ -14,9 +14,7 @@ module.exports = {
       if (!order) {
         return null;
       } else {
-        // todo: subtotal
-        const orderCamelCase = camelCase(order);
-        return orderCamelCase;
+        return camelCase(order);
       }
     },
     shipmentStatusList: () => getConfig('oms.order.shipmentStatus', {}),
@@ -35,7 +33,7 @@ module.exports = {
           .where('product_id', '=', item?.productId)
           .and('status', '=', 1)
           .load(pool);
-        const productAttributeObj = await createProductAttribute(product, pool)
+        const productAttributeObj = await createAttribute(product, pool)
 
         const titleInfoObj = await createCategory(item?.categoryId, pool);
 
