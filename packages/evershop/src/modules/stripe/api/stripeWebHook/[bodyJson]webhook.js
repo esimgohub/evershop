@@ -32,7 +32,7 @@ module.exports = async (request, response, delegate, next) => {
     }
     const stripe = require('stripe')(stripeSecretKey);
 
-    // Webhook enpoint secret
+    // Webhook endpoint secret
     let endpointSecret;
     if (stripeConfig.endpointSecret) {
       endpointSecret = stripeConfig.endpointSecret;
