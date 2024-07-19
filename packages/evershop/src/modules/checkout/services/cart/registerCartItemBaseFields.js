@@ -92,18 +92,19 @@ module.exports.registerCartItemBaseFields =
         ],
         dependencies: ['product_id']
       },
-      {
-        key: 'category_id',
-        resolvers: [
-          async function resolver() {
-            const product = await this.getProduct();
-            return product.category_id
-              ? parseInt(product.category_id, 10)
-              : null;
-          }
-        ],
-        dependencies: ['product_id']
-      },
+      // {
+      //   key: 'category_id',
+      //   resolvers: [
+      //     async function resolver(category_id) {
+      //     const dummy= category_id
+      //       const product = await this.getProduct();
+      //       return product.category_id
+      //         ? parseInt(product.category_id, 10)
+      //         : null;
+      //     }
+      //   ],
+      //   dependencies: ['product_id']
+      // },
       {
         key: 'product_name',
         resolvers: [
@@ -437,10 +438,13 @@ module.exports.registerCartItemBaseFields =
       {
         key: 'category_id',
         resolvers: [
-          async function resolver() {
+          async function resolver(category_id) {
             const triggeredField = this.getTriggeredField();
             const requestedValue = this.getRequestedValue();
-            return triggeredField === 'category_id' ? requestedValue : this.getData('category_id');
+            if (triggeredField === 'category_id' && requestedValue !== category_id) {
+              return requestedValue;
+            }
+            return category_id;
           }
         ]
       },
@@ -517,10 +521,9 @@ module.exports.registerCartItemBaseFields =
               ...cateObj,
               image: cateObj.image ? `${homeUrl}${cateObj.image}` : null
             };
-            // return rows[0];
           }
         ],
-        dependencies: ['category_id']
+        dependencies: ['product_id','category_id']
       },
       {
         key: 'titleInfo',
@@ -529,17 +532,17 @@ module.exports.registerCartItemBaseFields =
             const attrObj = this.getData('attribute');
             const cateObj = this.getData('category');
 
-            if (!cateObj || !cateObj?.name || !cateObj?.image || !attrObj || !attrObj?.['data-amount'] || !attrObj?.['data-type'] || !attrObj?.['day-amount']) {
+            if (!cateObj || !attrObj) {
               return null
             }
             return {
               dataAmount: attrObj['data-amount'] != null ? parseFloat(attrObj['data-amount']): null,
-              dataAmountUnit: attrObj['data-amount-unit'],
-              dataType: attrObj['data-type'],
+              dataAmountUnit: attrObj['data-amount-unit'] ?? null,
+              dataType: attrObj['data-type'] ?? null,
               dayAmount: attrObj['day-amount'] != null ? parseFloat(attrObj['day-amount']) : null,
-              categoryName: cateObj.name,
-              imgUrl: `${cateObj.image}`,
-              imgAlt: cateObj.name
+              categoryName: cateObj.name ?? null,
+              imgUrl: cateObj.image ? `${cateObj.image}` : null,
+              imgAlt: cateObj.name ?? null
             };
           }
         ],

@@ -98,17 +98,17 @@ exports.createCategory = async function createCategory(categoryId, pool) {
 };
 
 exports.createTitleInfo = async function createTitleInfo(attrObj, cateObj) {
-  if (!cateObj || !cateObj?.name || !cateObj?.image || !attrObj || !attrObj?.['data-amount'] || !attrObj?.['data-type'] || !attrObj?.['day-amount']) {
-    return null;
+  if (!cateObj || !attrObj) {
+    return null
   }
   return {
     dataAmount: attrObj['data-amount'] != null ? parseFloat(attrObj['data-amount']): null,
-    dataAmountUnit: attrObj['data-amount-unit'],
-    dataType: attrObj['data-type'],
+    dataAmountUnit: attrObj['data-amount-unit'] ?? null,
+    dataType: attrObj['data-type'] ?? null,
     dayAmount: attrObj['day-amount'] != null ? parseFloat(attrObj['day-amount']) : null,
-    categoryName: cateObj.name,
-    imgUrl: `${cateObj.image}`,
-    imgAlt: cateObj.name
+    categoryName: cateObj.name ?? null,
+    imgUrl: cateObj.image ? `${cateObj.image}` : null,
+    imgAlt: cateObj.name ?? null
   };
 };
 
