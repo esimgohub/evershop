@@ -108,7 +108,12 @@ module.exports = async (request, response, delegate, next) => {
         await Promise.all(unPurchasedItems.map(async (item) => {
           const prod = await item.getProduct();
           const qty = await item.getData('qty');
+          const categoryId = await item.getData('category_id');
+          const tripStr = await item.getData('trip');
+
           await newCart.addItem(prod.product_id, qty);
+          await item.updateCategoryId(parseInt(categoryId, 10));
+          await item.cloneTripDateStr(tripStr);
         }));
         await saveCart(newCart);
 

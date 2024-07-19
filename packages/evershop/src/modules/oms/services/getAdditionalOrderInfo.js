@@ -102,10 +102,10 @@ exports.createTitleInfo = async function createTitleInfo(attrObj, cateObj) {
     return null;
   }
   return {
-    dataAmount: attrObj['data-amount'] != null ? parseFloat(attrObj['data-amount']).toFixed(1): null,
+    dataAmount: attrObj['data-amount'] != null ? parseFloat(attrObj['data-amount']): null,
     dataAmountUnit: attrObj['data-amount-unit'],
     dataType: attrObj['data-type'],
-    dayAmount: attrObj['day-amount'] != null ? parseFloat(attrObj['day-amount']).toFixed(1) : null,
+    dayAmount: attrObj['day-amount'] != null ? parseFloat(attrObj['day-amount']) : null,
     categoryName: cateObj.name,
     imgUrl: `${cateObj.image}`,
     imgAlt: cateObj.name
