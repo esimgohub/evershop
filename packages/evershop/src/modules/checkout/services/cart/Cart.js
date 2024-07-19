@@ -72,6 +72,16 @@ class Item extends DataObject {
     const trip = [fromDate, toDate].join();
     await this.setData('trip', trip, true);
   }
+
+  /**
+   * Update the tripDate of an item.
+   * @param {string} tripStr
+   * @returns {void}
+   * @throws {Error}
+   */
+  async cloneTripDateStr(tripStr) {
+    await this.setData('trip', tripStr, true);
+  }
 }
 
 class Cart extends DataObject {

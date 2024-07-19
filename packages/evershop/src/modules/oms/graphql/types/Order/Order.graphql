@@ -41,7 +41,7 @@ type OrderItem {
   productCustomOptions: String
   productUrl: String
   tripText: String
-  titleInfo: JSON!
+  titleInfo: JSON
 }
 
 """

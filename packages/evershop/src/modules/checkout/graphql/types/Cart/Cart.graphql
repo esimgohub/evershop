@@ -116,7 +116,7 @@ type CartItem implements ShoppingCartItem {
   oldPrice: Price
   categoryId: Int!
   tripText: String
-  titleInfo: JSON!
+  titleInfo: JSON
 }
 
 """

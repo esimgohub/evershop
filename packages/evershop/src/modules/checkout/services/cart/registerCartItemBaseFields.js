@@ -530,22 +530,13 @@ module.exports.registerCartItemBaseFields =
             const cateObj = this.getData('category');
 
             if (!cateObj || !cateObj?.name || !cateObj?.image || !attrObj || !attrObj?.['data-amount'] || !attrObj?.['data-type'] || !attrObj?.['day-amount']) {
-              return {
-                dataAmount: '',
-                dataAmountUnit: '',
-                dataType: '',
-                dayAmount: '',
-                categoryName: '',
-                imgUrl: '',
-                imgAlt: ''
-              };
-
+              return null
             }
             return {
-              dataAmount: attrObj['data-amount'],
+              dataAmount: attrObj['data-amount'] != null ? parseFloat(attrObj['data-amount']).toFixed(1): null,
               dataAmountUnit: attrObj['data-amount-unit'],
               dataType: attrObj['data-type'],
-              dayAmount: attrObj['day-amount'],
+              dayAmount: attrObj['day-amount'] != null ? parseFloat(attrObj['day-amount']).toFixed(1) : null,
               categoryName: cateObj.name,
               imgUrl: `${cateObj.image}`,
               imgAlt: cateObj.name
