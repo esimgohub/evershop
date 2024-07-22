@@ -111,9 +111,9 @@ module.exports = async (request, response, delegate, next) => {
           const categoryId = await item.getData('category_id');
           const tripStr = await item.getData('trip');
 
-          await newCart.addItem(prod.product_id, qty);
-          await item.updateCategoryId(parseInt(categoryId, 10));
-          await item.cloneTripDateStr(tripStr);
+          const newItem = await newCart.addItem(prod.product_id, qty);
+          await newItem.updateCategoryId(parseInt(categoryId, 10));
+          await newItem.cloneTripDateStr(tripStr);
         }));
         await saveCart(newCart);
 
