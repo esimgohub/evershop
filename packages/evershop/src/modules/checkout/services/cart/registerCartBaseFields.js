@@ -72,7 +72,7 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
       resolvers: [
         async function resolver() {
           let count = 0;
-          const items = this.getActiveItems();
+          const items = this.getItems();
           items.forEach((i) => {
             count += parseInt(i.getData('qty'), 10);
           });
