@@ -78,7 +78,7 @@ exports.addDefaultMiddlewareFuncs = function addDefaultMiddlewareFuncs(
           }),
     secret: cookieSecret,
     cookie: {
-      maxAge: 24 * 60 * 60 * 1000
+      maxAge: 15 * 24 * 60 * 60 * 1000
     },
     resave: getConfig('system.session.resave', false),
     saveUninitialized: true
