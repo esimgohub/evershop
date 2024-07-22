@@ -2,7 +2,12 @@ const { select } = require('@evershop/postgres-query-builder');
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
-const { createAttribute, createCategory, createTitleInfo, createTripInfo } = require('@evershop/evershop/src/modules/oms/services/getAdditionalOrderInfo');
+const {
+  createAttribute,
+  createCategory,
+  createTitleInfo,
+  createTripInfo
+} = require('@evershop/evershop/src/modules/oms/services/getAdditionalOrderInfo');
 const { getOrdersBaseQuery } = require('../../../services/getOrdersBaseQuery');
 
 module.exports = {
@@ -26,27 +31,27 @@ module.exports = {
         .from('order_item')
         .where('order_item_order_id', '=', orderId)
         .execute(pool);
-      const itemsCamelCaseField = items.map((item) => camelCase(item))
+      const itemsCamelCaseField = items.map((item) => camelCase(item));
       const addtionalInfoArr = itemsCamelCaseField.map((async (item) => {
         const product = await select()
           .from('product')
           .where('product_id', '=', item?.productId)
           .and('status', '=', 1)
           .load(pool);
-        const productAttributeObj = await createAttribute(product, pool)
+        const productAttributeObj = await createAttribute(product, pool);
 
         const titleInfoObj = await createCategory(item?.categoryId, pool);
 
-        const titleInfo = await createTitleInfo(productAttributeObj, titleInfoObj)
-        const tripInfo  = await createTripInfo(item?.trip)
+        const titleInfo = await createTitleInfo(productAttributeObj, titleInfoObj);
+        const tripInfo = await createTripInfo(item?.trip);
         // eslint-disable-next-line no-param-reassign
         item.titleInfo = titleInfo;
         // eslint-disable-next-line no-param-reassign
-        item.tripText= tripInfo;
+        item.tripText = tripInfo;
 
         return {
           ...item
-        }
+        };
       }));
       return addtionalInfoArr;
     },
@@ -111,10 +116,11 @@ module.exports = {
   },
   Customer: {
     orders: async ({ customerId }, _, { pool }) => {
-      const orders = await select()
-        .from('order')
-        .where('order.customer_id', '=', customerId)
-        .execute(pool);
+      const query = select().from('order');
+      query.where('customer_id', '=', customerId);
+      query.orderBy('created_at', 'DESC');
+      const orders = await query.execute(pool);
+
       return orders.map((row) => camelCase(row));
     }
   },
