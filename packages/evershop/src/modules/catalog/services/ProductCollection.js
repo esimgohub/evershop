@@ -439,7 +439,7 @@ class ProductCollection {
       ORDER BY
         order_column,
         product.product_id DESC
-      LIMIT 150 OFFSET 0
+      LIMIT ${this.perPage} OFFSET ${this.offset * this.perPage}
     `);
 
     // for (const item of productByLocalEsim.rows) {
