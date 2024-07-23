@@ -210,7 +210,15 @@ class ProductCollection {
   }
 
   async items() {
-    let where = `"product"."type" = 'simple' AND "product"."visibility" = TRUE AND "product"."status" = TRUE AND a1.attribute_code = 'local-esim'`;
+    let where = `
+    dayattr.attribute_code = 'day-amount'
+        AND datatypeattr.attribute_code = 'data-type'
+        AND dataattr.attribute_code = 'data-amount'
+        AND "product"."type" = 'simple'
+        AND "product"."visibility" = TRUE
+        AND "product"."status" = TRUE
+        AND a1.attribute_code = 'local-esim'
+        AND dataunitattr.attribute_code = 'data-amount-unit'`;
 
     // Clone the main query for getting total right before doing the paging
     
@@ -282,137 +290,258 @@ class ProductCollection {
     //     "product"."product_id" DESC
     //   LIMIT ${perPage} OFFSET ${offset * perPage}
     // `);
-    
+
+    // const productByLocalEsim = await execute(pool, `
+    //   SELECT
+    //     product.*,
+    //     product_description.*,
+    //     pa1.option_text,
+    //     pa2.option_text,
+    //     a1.*,
+    //     a2.*,
+    //     CASE WHEN a1.attribute_code = 'data-type'
+    //       AND pa1.option_text = '${DataType.DailyData}' THEN
+    //       CAST(dayattrvalue.option_text AS float8) * CAST(dataattrvalue.option_text AS float8)
+    //     WHEN a1.attribute_code = 'data-type'
+    //       AND pa1.option_text = '${DataType.FixedData}' THEN
+    //       CAST(dayattrvalue.option_text AS float8)
+    //     WHEN LOWER(dataattrvalue.option_text) = 'unlimited' THEN 999999 
+    //     END AS totalAmount
+    //   FROM
+    //     "product"
+    //     LEFT JOIN "product_description" AS "product_description" ON ("product_description"."product_description_product_id" = product.product_id)
+    //     LEFT JOIN "product_image" AS "product_image" ON ("product_image"."product_image_product_id" = product.product_id
+    //         AND "product_image"."is_main" = TRUE)
+    //     LEFT JOIN "product_attribute_value_index" AS "pa1" ON ("pa1"."product_id" = product.parent_product_id)
+    //     LEFT JOIN "product_attribute_value_index" AS "pa2" ON ("pa2"."product_id" = product.product_id)
+    //     LEFT JOIN "product_attribute_value_index" AS "dayattrvalue" ON ("dayattrvalue"."product_id" = product.product_id)
+    //     LEFT JOIN "product_attribute_value_index" AS "dataattrvalue" ON ("dataattrvalue"."product_id" = product.product_id)
+    //     LEFT JOIN "product_attribute_value_index" AS "dataunitattrvalue" ON ("dataunitattrvalue"."product_id" = product.product_id)
+
+    //     LEFT JOIN "attribute" AS "a1" ON ("a1"."attribute_id" = pa1.attribute_id)
+    //     LEFT JOIN "attribute" AS "a2" ON ("a2"."attribute_id" = pa2.attribute_id)
+    //     LEFT JOIN "attribute" AS "dayattr" ON ("dayattr"."attribute_id" = dayattrvalue.attribute_id)
+    //     LEFT JOIN "attribute" AS "dataattr" ON ("dataattr".attribute_id = dataattrvalue.attribute_id)
+    //     LEFT JOIN "attribute" AS "dataunitattr" ON ("dataunitattr".attribute_id = dataunitattrvalue.attribute_id)
+    //         WHERE (${where})
+    //         ORDER BY
+    //             CASE
+    //                 WHEN a1.attribute_code = 'local-esim' AND pa1.option_text = 'Yes' THEN 1
+    //                 WHEN a1.attribute_code = 'local-esim' AND pa1.option_text = 'No' THEN 2
+    //                 ELSE 999999
+    //             END,
+    //             totalAmount ASC,
+    //             product.product_id DESC
+    //     LIMIT ${this.perPage} OFFSET ${this.offset * this.perPage}
+    // `);
+
+    // pa1.option_text,
+    // 	pa2.option_text,
+    // 	a1.*,
+    //   a2.*,
+
+    // TODO: Uncomment this
+    // const productByLocalEsim = await execute(pool, `
+
+    //   SELECT DISTINCT product.product_id,
+    //   product.*,
+    //   product_description.*,
+     	
+    //   -- i want to convert data amount from GB to MB, if unlimited it will be 99999
+    //   CASE
+    //     WHEN dataattrvalue.option_text = 'unlimited' THEN 999999
+    //     WHEN a1.attribute_code = 'data-type' AND pa1.option_text = 'Daily Data' THEN
+    //         CASE WHEN LOWER(dataunitattrvalue.option_text) = 'gb'
+    //           THEN (CAST(dayattrvalue.option_text AS float8) * CAST(dataattrvalue.option_text AS float8)) * 1024
+    //         ELSE
+    //           CAST(dayattrvalue.option_text AS float8) * CAST(dataattrvalue.option_text AS float8)
+    //         END
+      
+    //     WHEN a1.attribute_code = 'data-type' AND pa1.option_text = 'Fixed Data' THEN
+    //       CASE WHEN LOWER(dataunitattrvalue.option_text) = 'gb'
+    //           THEN CAST(dayattrvalue.option_text AS float8) * 1024
+    //         ELSE
+    //           CAST(dayattrvalue.option_text AS float8)
+    //         END			
+    //     END 
+    //     AS totalAmount,
+    //     CASE
+    //           WHEN a1.attribute_code = 'local-esim' AND pa1.option_text = 'Yes' THEN 1
+    //           WHEN a1.attribute_code = 'local-esim' AND pa1.option_text = 'No' THEN 2
+    //       END AS order_column
+    // FROM
+    //   "product"
+    //   LEFT JOIN "product_description" AS "product_description" ON ("product_description"."product_description_product_id" = product.product_id)
+    //   LEFT JOIN "product_image" AS "product_image" ON ("product_image"."product_image_product_id" = product.product_id
+    //       AND "product_image"."is_main" = TRUE)
+    //   LEFT JOIN "product_attribute_value_index" AS "pa1" ON ("pa1"."product_id" = product.parent_product_id)
+    //   LEFT JOIN "product_attribute_value_index" AS "pa2" ON ("pa2"."product_id" = product.product_id)
+    //   LEFT JOIN "product_attribute_value_index" AS "dayattrvalue" ON ("dayattrvalue"."product_id" = product.product_id)
+    //   LEFT JOIN "product_attribute_value_index" AS "dataattrvalue" ON ("dataattrvalue"."product_id" = product.product_id)
+    //   LEFT JOIN "product_attribute_value_index" AS "dataunitattrvalue" ON ("dataunitattrvalue"."product_id" = product.product_id)
+      
+    //   LEFT JOIN "attribute" AS "a1" ON ("a1"."attribute_id" = pa1.attribute_id)
+    //   LEFT JOIN "attribute" AS "a2" ON ("a2"."attribute_id" = pa2.attribute_id)
+    //   LEFT JOIN "attribute" AS "dayattr" ON ("dayattr"."attribute_id" = dayattrvalue.attribute_id)
+    //   LEFT JOIN "attribute" AS "dataattr" ON ("dataattr".attribute_id = dataattrvalue.attribute_id)
+    //   LEFT JOIN "attribute" AS "dataunitattr" ON ("dataunitattr".attribute_id = dataunitattrvalue.attribute_id)
+    //        WHERE (dayattr.attribute_code = 'day-amount' AND dataattr.attribute_code = 'data-amount' AND "product"."type" = 'simple' AND "product"."visibility" = TRUE AND "product"."status" = TRUE AND a1.attribute_code = 'local-esim' AND dataunitattr.attribute_code = 'data-amount-unit')
+    //        ORDER BY
+    //            order_column,
+    //            totalAmount ASC,
+    //            product.product_id DESC
+    // LIMIT 150 OFFSET 0
+    // `);
+
     const productByLocalEsim = await execute(pool, `
-      SELECT
-          product.*,
-          product_description.*,
-          pa1.option_text,
-          pa2.option_text,
-          a1.*,
-          a2.*
+      SELECT DISTINCT
+        product.product_id,
+        product.*,
+        product_description.*,
+        CASE WHEN pa1.option_text = 'Yes' THEN 1
+        WHEN pa1.option_text = 'No' THEN
+          CASE WHEN LOWER(dataattrvalue.option_text) = 'unlimited' THEN
+            999999
+          WHEN datatypeattrvalue.option_text = 'Daily Data' THEN
+            CASE WHEN LOWER(dataunitattrvalue.option_text) = 'gb' THEN
+              (CAST(dayattrvalue.option_text AS float8) * CAST(dataattrvalue.option_text AS float8)) * 1024 
+            ELSE
+              CAST(dayattrvalue.option_text AS float8) * CAST(dataattrvalue.option_text AS float8)
+              END
+          WHEN datatypeattrvalue.option_text = 'Fixed Data' THEN
+            CASE WHEN LOWER(dataunitattrvalue.option_text) = 'gb' THEN
+              CAST(dataattrvalue.option_text AS float8) * 1024
+            ELSE
+              CAST(dataattrvalue.option_text AS float8)
+              END
+            END
+        END AS order_column
       FROM
-          "product"
-          LEFT JOIN "product_description" AS "product_description" ON ("product_description"."product_description_product_id" = product.product_id)
-          LEFT JOIN "product_image" AS "product_image" ON ("product_image"."product_image_product_id" = product.product_id AND "product_image"."is_main" = TRUE)
-          LEFT JOIN "product_attribute_value_index" AS "pa1" ON ("pa1"."product_id" = product.parent_product_id)
-          LEFT JOIN "product_attribute_value_index" AS "pa2" ON ("pa2"."product_id" = product.product_id)
-          LEFT JOIN "attribute" AS "a1" ON ("a1"."attribute_id" = pa1.attribute_id)
-          LEFT JOIN "attribute" AS "a2" ON ("a2"."attribute_id" = pa2.attribute_id)
+        "product"
+        LEFT JOIN "product_description" AS "product_description" ON ("product_description"."product_description_product_id" = product.product_id)
+        LEFT JOIN "product_image" AS "product_image" ON ("product_image"."product_image_product_id" = product.product_id
+            AND "product_image"."is_main" = TRUE)
+        LEFT JOIN "product_attribute_value_index" AS "pa1" ON ("pa1"."product_id" = product.parent_product_id)
+        LEFT JOIN "product_attribute_value_index" AS "datatypeattrvalue" ON ("datatypeattrvalue"."product_id" = product.parent_product_id)
+        
+        LEFT JOIN "product_attribute_value_index" AS "pa2" ON ("pa2"."product_id" = product.product_id)
+        LEFT JOIN "product_attribute_value_index" AS "dayattrvalue" ON ("dayattrvalue"."product_id" = product.product_id)
+        LEFT JOIN "product_attribute_value_index" AS "dataattrvalue" ON ("dataattrvalue"."product_id" = product.product_id)
+        LEFT JOIN "product_attribute_value_index" AS "dataunitattrvalue" ON ("dataunitattrvalue"."product_id" = product.product_id)
+        
+        LEFT JOIN "attribute" AS "a1" ON ("a1"."attribute_id" = pa1.attribute_id)
+        LEFT JOIN "attribute" AS "a2" ON ("a2"."attribute_id" = pa2.attribute_id)
+        LEFT JOIN "attribute" AS "datatypeattr" ON ("datatypeattr"."attribute_id" = datatypeattrvalue.attribute_id)
+        LEFT JOIN "attribute" AS "dayattr" ON ("dayattr"."attribute_id" = dayattrvalue.attribute_id)
+        LEFT JOIN "attribute" AS "dataattr" ON ("dataattr".attribute_id = dataattrvalue.attribute_id)
+        LEFT JOIN "attribute" AS "dataunitattr" ON ("dataunitattr".attribute_id = dataunitattrvalue.attribute_id)
       WHERE (${where})
       ORDER BY
-          CASE
-              WHEN a1.attribute_code = 'local-esim' AND pa1.option_text = 'Yes' THEN 1
-              WHEN a1.attribute_code = 'local-esim' AND pa1.option_text = 'No' THEN 2
-          END,
-          "product"."product_id" DESC
-      LIMIT ${this.perPage} OFFSET ${this.offset * this.perPage}
+        order_column,
+        product.product_id DESC
+      LIMIT 150 OFFSET 0
     `);
 
-    // const items = await this.baseQuery.execute(pool);
+    // for (const item of productByLocalEsim.rows) {
+    //   const parentProductAttributeQuery = select().from('product_attribute_value_index');
+    //   parentProductAttributeQuery
+    //     .leftJoin('attribute')
+    //     .on(
+    //       'attribute.attribute_id',
+    //       '=',
+    //       'product_attribute_value_index.attribute_id'
+    //     );
+    //   parentProductAttributeQuery.where(
+    //     'product_attribute_value_index.product_id',
+    //     '=',
+    //     item.parent_product_id
+    //   );
+    //   const matchedParentProductAttributes = await parentProductAttributeQuery.execute(pool);
 
-    // console.log("items [0]: ", items[0]);
+    //   const productAttributeQuery = select().from('product_attribute_value_index');
+    //   productAttributeQuery
+    //     .leftJoin('attribute')
+    //     .on(
+    //       'attribute.attribute_id',
+    //       '=',
+    //       'product_attribute_value_index.attribute_id'
+    //     );
+    //   productAttributeQuery.where(
+    //     'product_attribute_value_index.product_id',
+    //     '=',
+    //     item.product_id
+    //   );
+    //   const matchedProductAttributes = await productAttributeQuery.execute(pool);
 
-    for (const item of productByLocalEsim.rows) {
-      const parentProductAttributeQuery = select().from('product_attribute_value_index');
-      parentProductAttributeQuery
-        .leftJoin('attribute')
-        .on(
-          'attribute.attribute_id',
-          '=',
-          'product_attribute_value_index.attribute_id'
-        );
-      parentProductAttributeQuery.where(
-        'product_attribute_value_index.product_id',
-        '=',
-        item.parent_product_id
-      );
-      const matchedParentProductAttributes = await parentProductAttributeQuery.execute(pool);
+    //   const dataTypeAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'data-type');
+    //   const dayAmountAttribute = matchedProductAttributes.find(a => a.attribute_code === 'day-amount');
+    //   const dataAmountAttribute = matchedProductAttributes.find(a => a.attribute_code === 'data-amount');
+    //   const dataAmountUnitAttribute = matchedProductAttributes.find(a => a.attribute_code === 'data-amount-unit');
+    //   const localEsimAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'local-esim');
 
-      const productAttributeQuery = select().from('product_attribute_value_index');
-      productAttributeQuery
-        .leftJoin('attribute')
-        .on(
-          'attribute.attribute_id',
-          '=',
-          'product_attribute_value_index.attribute_id'
-        );
-      productAttributeQuery.where(
-        'product_attribute_value_index.product_id',
-        '=',
-        item.product_id
-      );
-      const matchedProductAttributes = await productAttributeQuery.execute(pool);
-
-      const dataTypeAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'data-type');
-      const dayAmountAttribute = matchedProductAttributes.find(a => a.attribute_code === 'day-amount');
-      const dataAmountAttribute = matchedProductAttributes.find(a => a.attribute_code === 'data-amount');
-      const dataAmountUnitAttribute = matchedProductAttributes.find(a => a.attribute_code === 'data-amount-unit');
-      const localEsimAttribute = matchedParentProductAttributes.find(a => a.attribute_code === 'local-esim');
-
-      // Init attribute temp to sort by day-amount and total amount unit
-
-      let totalDataAmount;
-      const isUnlimitedDataAmount = dataAmountAttribute.option_text.toLowerCase() === "unlimited";
-      if (isUnlimitedDataAmount) {
-        totalDataAmount = 99999;
-      }
-      else {
-        const isDailyData = dataTypeAttribute.option_text === DataType.DailyData;
-        if (isDailyData) {
-          totalDataAmount = parseFloat(dayAmountAttribute.option_text) * parseFloat(dataAmountAttribute.option_text);
-        } else {
-          // totalDataAmount = dataAmountAttribute.option_text.toLowerCase() === "unlimited" ? 99999 :  parseFloat(dataAmountAttribute.option_text);
-          totalDataAmount = parseFloat(dataAmountAttribute.option_text);
-        }
-      }
+    //   // Init attribute temp to sort by day-amount and total amount unit
+    //   let totalDataAmount;
+    //   const isUnlimitedDataAmount = dataAmountAttribute.option_text.toLowerCase() === "unlimited";
+    //   if (isUnlimitedDataAmount) {
+    //     totalDataAmount = 99999;
+    //   }
+    //   else {
+    //     const isDailyData = dataTypeAttribute.option_text === DataType.DailyData;
+    //     if (isDailyData) {
+    //       totalDataAmount = parseFloat(dayAmountAttribute.option_text) * parseFloat(dataAmountAttribute.option_text);
+    //     } else {
+    //       // totalDataAmount = dataAmountAttribute.option_text.toLowerCase() === "unlimited" ? 99999 :  parseFloat(dataAmountAttribute.option_text);
+    //       totalDataAmount = parseFloat(dataAmountAttribute.option_text);
+    //     }
+    //   }
 
       
 
-      item.attributeTemp = {
-        localEsim: localEsimAttribute.option_text,
-        dayAmount: parseFloat(dayAmountAttribute.option_text),
-        // totalDataAmount: dataTypeAttribute.option_text === DataType.DailyData ? parseFloat(dayAmountAttribute.option_text) * parseFloat(dataAmountAttribute.option_text) : parseFloat(dataAmountAttribute.option_text),
-        totalDataAmount,
-        dataAmountUnit: dataAmountUnitAttribute.option_text
-      };
-    }
+    //   item.attributeTemp = {
+    //     localEsim: localEsimAttribute.option_text,
+    //     dayAmount: parseFloat(dayAmountAttribute.option_text),
+    //     // totalDataAmount: dataTypeAttribute.option_text === DataType.DailyData ? parseFloat(dayAmountAttribute.option_text) * parseFloat(dataAmountAttribute.option_text) : parseFloat(dataAmountAttribute.option_text),
+    //     totalDataAmount,
+    //     dataAmountUnit: dataAmountUnitAttribute.option_text
+    //   };
+    // }
 
-    const sortedItems = productByLocalEsim.rows.sort((a, b) => {
-      // Check if 'local esim' attribute exists and prioritize it
-      if (a.attributeTemp.localEsim.toLowerCase() === "yes" && b.attributeTemp.localEsim.toLowerCase() === "no") {
-        return -1; // 'a' has local esim, should come before 'b'
-      }
+    // const sortedItems = productByLocalEsim.rows.sort((a, b) => {
+    //   // Check if 'local esim' attribute exists and prioritize it
+    //   if (a.attributeTemp.localEsim.toLowerCase() === "yes" && b.attributeTemp.localEsim.toLowerCase() === "no") {
+    //     return -1; // 'a' has local esim, should come before 'b'
+    //   }
 
-      if (a.attributeTemp.localEsim.toLowerCase() === "no" && b.attributeTemp.localEsim.toLowerCase() === "yes") {
-        return 1; // 'b' has local esim, should come before 'a'
-      }
+    //   if (a.attributeTemp.localEsim.toLowerCase() === "no" && b.attributeTemp.localEsim.toLowerCase() === "yes") {
+    //     return 1; // 'b' has local esim, should come before 'a'
+    //   }
 
-      if (a.attributeTemp.dayAmount !== b.attributeTemp.dayAmount) {
-        return a.attributeTemp.dayAmount - b.attributeTemp.dayAmount;
-      }
+    //   if (a.attributeTemp.dayAmount !== b.attributeTemp.dayAmount) {
+    //     return a.attributeTemp.dayAmount - b.attributeTemp.dayAmount;
+    //   }
       
-      if (a.attributeTemp.totalDataAmount !== b.attributeTemp.totalDataAmount) {
-        return a.attributeTemp.totalDataAmount - b.attributeTemp.totalDataAmount;
-      } 
+    //   if (a.attributeTemp.totalDataAmount !== b.attributeTemp.totalDataAmount) {
+    //     return a.attributeTemp.totalDataAmount - b.attributeTemp.totalDataAmount;
+    //   } 
 
-      // Compare data amount unit
-      if (a.attributeTemp.dataAmountUnit.toLowerCase() === "mb" && b.attributeTemp.dataAmountUnit.toLowerCase() === "gb") {
-        return -1; // "MB" should come before "GB"
-      } else if (a.attributeTemp.dataAmountUnit.toLowerCase() === "gb" && b.attributeTemp.dataAmountUnit.toLowerCase() === "mb") {
-        return 1; // "GB" should come after "MB"
-      } else {
-        return 0; // Same unit or both units are equal
-      }
-    }).map((row) => camelCase(row));
+    //   // Compare data amount unit
+    //   if (a.attributeTemp.dataAmountUnit.toLowerCase() === "mb" && b.attributeTemp.dataAmountUnit.toLowerCase() === "gb") {
+    //     return -1; // "MB" should come before "GB"
+    //   } else if (a.attributeTemp.dataAmountUnit.toLowerCase() === "gb" && b.attributeTemp.dataAmountUnit.toLowerCase() === "mb") {
+    //     return 1; // "GB" should come after "MB"
+    //   } else {
+    //     return 0; // Same unit or both units are equal
+    //   }
+    // }).map((row) => camelCase(row));
 
-    // Remove attribute temp.
-    sortedItems.forEach((item) => {
-      delete item.attributeTemp
-    });
+    // // Remove attribute temp.
+    // sortedItems.forEach((item) => {
+    //   delete item.attributeTemp
+    // });
 
+    // console.log("con me no: ", productByLocalEsim.rows);
 
-    return sortedItems;
+    return productByLocalEsim.rows.map(row => camelCase(row));
   }
 
   async adminItems() {
@@ -519,3 +648,4 @@ class ProductCollection {
 }
 
 module.exports.ProductCollection = ProductCollection;
+
