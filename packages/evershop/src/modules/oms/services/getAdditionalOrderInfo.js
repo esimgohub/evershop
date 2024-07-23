@@ -1,11 +1,10 @@
 const { select } = require('@evershop/postgres-query-builder');
 const dayjs = require('dayjs');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
-const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 
 module.exports = exports = {};
 // eslint-disable-next-line no-unused-vars
-exports.createProductAttribute = async function createAttribute(product, pool) {
+exports.createAttribute = async function createAttribute(product, pool) {
   const productAttributeQuery = select().from('product_attribute_value_index');
   productAttributeQuery
     .leftJoin('attribute')
@@ -17,15 +16,12 @@ exports.createProductAttribute = async function createAttribute(product, pool) {
   productAttributeQuery.where(
     'product_attribute_value_index.product_id',
     '=',
-    product.product_id
+    product?.product_id
   );
-  // if (!user) {
-  //   query.andWhere('attribute.display_on_frontend', '=', true);
-  // }
   const productAttributes = await productAttributeQuery.execute(pool);
 
   // if product is variant
-  const isVariableProduct = product.type === 'variable';
+  const isVariableProduct = product?.type === 'variable';
   if (isVariableProduct) {
     return productAttributes.reduce((response, attribute) => {
       response[attribute.attribute_code] = attribute.option_text;
@@ -45,7 +41,7 @@ exports.createProductAttribute = async function createAttribute(product, pool) {
   productVariantAttributeQuery.where(
     'product_attribute_value_index.product_id',
     '=',
-    product.parent_product_id
+    product?.parent_product_id
   );
   const productVariantAttributes = await productVariantAttributeQuery.execute(pool);
 
@@ -60,23 +56,25 @@ exports.createProductAttribute = async function createAttribute(product, pool) {
   const foundDataType = Object.entries(responses).find(([key, value]) => key === 'data-type');
   if (!foundDataType) {
     console.log('Data type not found');
+    return {}
   }
 
   const foundDayAmount = Object.entries(responses).find(([key, value]) => key === 'day-amount');
   if (!foundDayAmount) {
     console.log('Day amount not found');
+    return {}
   }
 
   const foundDataAmount = Object.entries(responses).find(([key, value]) => key === 'data-amount');
   if (!foundDataAmount) {
     console.log('Data amount not found');
+    return {}
   }
 
-  responses['data-amount'] = parseInt(foundDataAmount[1], 10);
-  responses['day-amount'] = parseInt(foundDayAmount[1], 10);
+  responses['data-amount'] = foundDataAmount[1].toLowerCase() === 'unlimited' ? -1 : parseFloat(foundDataAmount[1]);
+  responses['day-amount'] = parseFloat(foundDayAmount[1]);
 
   return responses;
-
 };
 
 exports.createCategory = async function createCategory(categoryId, pool) {
@@ -100,28 +98,18 @@ exports.createCategory = async function createCategory(categoryId, pool) {
 };
 
 exports.createTitleInfo = async function createTitleInfo(attrObj, cateObj) {
-  if (!cateObj || !cateObj?.name || !cateObj?.image || !attrObj || !attrObj?.['data-amount'] || !attrObj?.['data-type'] || !attrObj?.['day-amount']) {
-    return {
-      dataAmount: '',
-      dataAmountUnit: '',
-      dataType: '',
-      dayAmount: '',
-      categoryName: '',
-      imgUrl: '',
-      imgAlt: ''
-    };
-
+  if (!cateObj || !attrObj) {
+    return null
   }
   return {
-    dataAmount: attrObj['data-amount'],
-    dataAmountUnit: attrObj['data-amount-unit'],
-    dataType: attrObj['data-type'],
-    dayAmount: attrObj['day-amount'],
-    categoryName: cateObj.name,
-    imgUrl: `${cateObj.image}`,
-    imgAlt: cateObj.name
+    dataAmount: attrObj['data-amount'] != null ? parseFloat(attrObj['data-amount']): null,
+    dataAmountUnit: attrObj['data-amount-unit'] ?? null,
+    dataType: attrObj['data-type'] ?? null,
+    dayAmount: attrObj['day-amount'] != null ? parseFloat(attrObj['day-amount']) : null,
+    categoryName: cateObj.name ?? null,
+    imgUrl: cateObj.image ? `${cateObj.image}` : null,
+    imgAlt: cateObj.name ?? null
   };
-
 };
 
 exports.createTripInfo = async function createTripInfo(trip) {

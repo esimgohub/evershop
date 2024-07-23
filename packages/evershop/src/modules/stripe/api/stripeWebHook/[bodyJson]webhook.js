@@ -23,22 +23,11 @@ module.exports = async (request, response, delegate, next) => {
   let event;
   const connection = await getConnection();
   try {
-    const stripeConfig = getConfig('system.stripe', {});
-    let stripeSecretKey;
-    if (stripeConfig.secretKey) {
-      stripeSecretKey = stripeConfig.secretKey;
-    } else {
-      stripeSecretKey = await getSetting('stripeSecretKey', '');
-    }
+    const stripeSecretKey = await getSetting('stripeSecretKey', '');
     const stripe = require('stripe')(stripeSecretKey);
 
-    // Webhook enpoint secret
-    let endpointSecret;
-    if (stripeConfig.endpointSecret) {
-      endpointSecret = stripeConfig.endpointSecret;
-    } else {
-      endpointSecret = await getSetting('stripeEndpointSecret', '');
-    }
+    // Webhook endpoint secret
+    const endpointSecret = await getSetting('stripeEndpointSecret', '');
 
     event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
     await startTransaction(connection);

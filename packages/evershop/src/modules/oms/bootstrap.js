@@ -29,9 +29,9 @@ module.exports = () => {
       },
       paymentStatus: {
         pending: {
-          name: 'Pending',
+          name: 'Processing',
           badge: 'default',
-          progress: 'pending',
+          progress: 'processing',
           isDefault: true
         },
         paid: {

@@ -72,7 +72,7 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
       resolvers: [
         async function resolver() {
           let count = 0;
-          const items = this.getActiveItems();
+          const items = this.getItems();
           items.forEach((i) => {
             count += parseInt(i.getData('qty'), 10);
           });
@@ -131,7 +131,11 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
           let total = 0;
           const items = this.getActiveItems();
           items.forEach((i) => {
-            total += i.getData('old_price') * i.getData('qty');
+            const oldPrice = Number(i.getData('old_price'));
+            const qty = Number(i.getData('qty'));
+            if (oldPrice > 0) {
+              total += oldPrice * qty;
+            }
           });
           return toPrice(total);
         }
@@ -142,12 +146,25 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
       key: 'sub_total_discount_amount',
       resolvers: [
         async function resolver() {
+          const items = this.getActiveItems();
+          let totalNewPrice = 0;
+
+          items.forEach((i) => {
+            const oldPrice = Number(i.getData('old_price'));
+            const finalPrice = Number(i.getData('final_price'));
+            const qty = Number(i.getData('qty'));
+            // if this item have old price, then add to the new total amount
+            if (oldPrice > 0) {
+              totalNewPrice += finalPrice * qty;
+            }
+          });
+
           return toPrice(
-            this.getData('sub_total_old_price') - this.getData('sub_total')
+            this.getData('sub_total_old_price') - totalNewPrice
           );
         }
       ],
-      dependencies: ['sub_total', 'sub_total_old_price']
+      dependencies: ['sub_total_old_price', 'final_price']
     },
     {
       key: 'sub_total_incl_tax',
