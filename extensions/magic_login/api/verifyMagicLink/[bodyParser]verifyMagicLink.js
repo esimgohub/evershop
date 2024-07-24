@@ -106,7 +106,9 @@ module.exports = async (request, response, delegate, next) => {
     response.status(OK);
     response.$body = {
       data: {
-        name: customer.full_name,
+        firstName: customer.first_name,
+        lastName: customer.last_name,
+        avatarUrl: customer.avatar_url,
         email: customer.email,
         isFirstLogin,
         language: createLanguageResponse(language),

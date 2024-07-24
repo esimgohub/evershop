@@ -3,6 +3,9 @@ const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { select, insert } = require('@evershop/postgres-query-builder');
 const { sendMagicLink } = require('../../services/magicLink/sendMagicLink');
 const { info } = require('@evershop/evershop/src/lib/log/logger');
+const {
+  AccountStatus
+} = require('@evershop/evershop/src/modules/customer/constant');
 
 module.exports = async (request, response, delegate, next) => {
   info(`Send Magic Link Controller ${JSON.stringify(request.body)}`);

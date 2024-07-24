@@ -15,7 +15,17 @@ module.exports.getFacebookUserInfoByAccessToken = async (accessToken) => {
     info('Facebook user info response', response.data);
 
     const { data } = response;
-    return data;
+    const names = data.name.split(' ');
+    const firstName = names[0];
+    const lastName = names.slice(1).join(' ');
+
+    return {
+      id: data.id,
+      given_name: firstName,
+      family_name: lastName,
+      picture: data.picture,
+      email: data.email
+    };
   } catch (err) {
     error(`Failed to get facebook user info ${err.message}`);
     return null;
