@@ -30,9 +30,12 @@ module.exports = {
       const isVariableProduct = product.type === 'variable';
       if (isVariableProduct) {
         return productAttributes.reduce((response, attribute) => {
+          if (attribute.attribute_code === 'link') {
+            response[attribute.attribute_code] = attribute.option_text.replace("esimgohub.com", "gohub.com");
+            return response;
+          }
+
           response[attribute.attribute_code] = attribute.option_text;
-          responses['link'] = responses['link'].replace("esimgohub.com", "gohub.com");
-          
           return response;
         }, {});
       }
