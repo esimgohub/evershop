@@ -77,6 +77,7 @@ module.exports = {
 
       responses['data-amount'] = foundDataAmount[1].toLowerCase() === 'unlimited' ? -1 : parseFloat(foundDataAmount[1]);
       responses['day-amount'] = parseFloat(foundDayAmount[1]);
+      responses['link'] = responses['link'].replace("esimgohub.com", "gohub.com");
       
       return responses;
     },
