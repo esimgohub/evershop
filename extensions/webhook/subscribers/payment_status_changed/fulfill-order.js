@@ -56,7 +56,7 @@ module.exports = async function sendFulfillOrder(data) {
       source: orderSource.b2b,
       shippingFirstName: order.customer_first_name,
       shippingLastName: order.customer_last_name,
-      shippingPhone: order.shipping_address.telephone || '0866440022',
+      shippingPhone: order.shipping_address?.telephone || '0866440022',
       shippingEmail: order.order_email || order.customer_email,
       language: 'en',
       paymentStatus: order.payment_status,
