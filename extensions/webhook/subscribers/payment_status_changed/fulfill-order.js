@@ -60,7 +60,7 @@ module.exports = async function sendFulfillOrder(data) {
     const gohubCloudApiKey = getConfig('webhook.gohub_cloud_api_key');
 
     const response = await axios.post(
-      `${gohubCloudBaseUrl}/internal-orders`,
+      `${gohubCloudBaseUrl}/webhooks/b2c/payments`,
       orderPayload,
       {
         headers: {

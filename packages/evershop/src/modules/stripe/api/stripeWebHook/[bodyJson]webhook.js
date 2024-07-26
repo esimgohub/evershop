@@ -86,10 +86,39 @@ module.exports = async (request, response, delegate, next) => {
 
         // Emit event to add order placed event
         await emit('order_placed', { ...order });
+        await emit('payment_status_changed', { ...order });
+
         break;
       }
       case 'payment_method.attached': {
         debug('PaymentMethod was attached to a Customer!');
+        break;
+      }
+      case 'payment_intent.payment_failed': {
+        debug('PaymentMethod was failed!');
+        const paymentIntent = event.data.object;
+        // eslint-disable-next-line no-case-declarations
+        const { orderId } = paymentIntent.metadata;
+        // Load the order
+        const order = await select()
+          .from('order')
+          .where('uuid', '=', orderId)
+          .load(connection);
+        // Update the order status
+        await update('order')
+          .given({ payment_status: 'failed' })
+          .where('order_id', '=', order.order_id)
+          .execute(connection);
+
+        // Add an activity log
+        await insert('order_activity')
+          .given({
+            order_activity_order_id: order.order_id,
+            comment: `PaymentMethod was failed. Stripe payment method ID: ${paymentIntent.id}`
+          })
+          .execute(connection);
+
+        await emit('payment_status_changed', { ...order });
         break;
       }
       // ... handle other event types
@@ -97,6 +126,7 @@ module.exports = async (request, response, delegate, next) => {
         debug(`Unhandled event type ${event.type}`);
       }
     }
+
     await commit(connection);
     // Return a response to acknowledge receipt of the event
     response.json({ received: true });
