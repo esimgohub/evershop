@@ -10,7 +10,6 @@ const {
 const {
   getConnection
 } = require('@evershop/evershop/src/lib/postgres/connection');
-const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const { emit } = require('@evershop/evershop/src/lib/event/emitter');
 const { debug } = require('@evershop/evershop/src/lib/log/logger');
 const { display } = require('zero-decimal-currencies');
@@ -80,6 +79,8 @@ module.exports = async (request, response, delegate, next) => {
 
         // Emit event to add order placed event
         await emit('order_placed', { ...order });
+        await emit('payment_status_changed', { ...order });
+
         break;
       }
       case 'payment_intent.payment_failed': {
@@ -105,6 +106,8 @@ module.exports = async (request, response, delegate, next) => {
             comment: `PaymentMethod was failed. Stripe payment method ID: ${paymentIntent.id}`
           })
           .execute(connection);
+
+        await emit('payment_status_changed', { ...order });
         break;
       }
 
@@ -164,8 +167,8 @@ module.exports = async (request, response, delegate, next) => {
       // ... handle other event types
       default:
         debug(`Unhandled event type ${event.type}`);
-
     }
+
     await commit(connection);
     // Return a response to acknowledge receipt of the event
     response.json({ received: true });
