@@ -40,7 +40,9 @@ module.exports = async function sendFulfillOrder(data) {
     const orderDetailsPayload = order.items.map((item) => {
       return {
         itemCode: item.product_sku,
-        quantity: item.qty
+        quantity: item.qty,
+        price: parseFloat(item.total),
+        discount: parseFloat(item.discount_amount)
       };
     });
 
