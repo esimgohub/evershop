@@ -37,6 +37,11 @@ module.exports = async function sendFulfillOrder(data) {
       .where('order_item_order_id', '=', orderId)
       .execute(pool);
 
+    order.shipping_address = await select()
+      .from('order_address')
+      .where('order_address_id', '=', order.shipping_address_id)
+      .load(pool);
+
     const orderDetailsPayload = order.items.map((item) => {
       return {
         itemCode: item.product_sku,
@@ -51,7 +56,7 @@ module.exports = async function sendFulfillOrder(data) {
       source: orderSource.b2b,
       shippingFirstName: order.customer_first_name,
       shippingLastName: order.customer_last_name,
-      shippingPhone: '0932198705',
+      shippingPhone: order.shipping_address.telephone || '0866440022',
       shippingEmail: order.order_email || order.customer_email,
       language: 'en',
       paymentStatus: order.payment_status,
