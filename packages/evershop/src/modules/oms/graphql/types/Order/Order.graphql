@@ -85,6 +85,8 @@ type Order implements ShoppingCart {
   updatedAt: String!
   activities: [Activity]
   shipment: Shipment
+  stripePaymentMethodId: String
+  stripeClientSecKey: String
 }
 
 """
