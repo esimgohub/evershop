@@ -1,0 +1,68 @@
+{
+  "type": "object",
+  "properties": {
+    "orderCode": {
+      "type": "string"
+    },
+    "referenceOrderCode": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "orderDetails": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "qrImageUrl": {
+            "type": "string"
+          },
+          "iccid": {
+            "type": "string"
+          },
+          "lpa": {
+            "type": "string"
+          },
+          "iosLpa": {
+            "type": "string"
+          },
+          "androidLpa": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sku",
+          "qrImageUrl",
+          "iccid",
+          "lpa",
+          "iosLpa",
+          "androidLpa"
+        ],
+        "additionalProperties": true,
+        "errorMessage": {
+          "properties": {
+            "sku": "SKU is required",
+            "qrCode": "eSIM QR Image is required",
+            "iccid": "Iccid is required",
+            "lpa": "LPA is required",
+            "iosLpa": "IOS LPA is required",
+            "androidLpa": "Android LPA is required"
+          }
+        }
+      }
+    }
+  },
+  "required": ["orderCode", "referenceOrderCode", "status"],
+  "additionalProperties": true,
+  "errorMessage": {
+    "properties": {
+      "orderCode": "Order Id is required",
+      "referenceOrderCode": "Reference Order Id is required",
+      "status": "Status is required"
+    }
+  }
+}
