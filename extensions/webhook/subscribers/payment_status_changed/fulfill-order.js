@@ -15,6 +15,7 @@ module.exports = async function sendFulfillOrder(data) {
       .select('odr.customer_email', 'order_email')
       .select('odr.shipping_address_id', 'shipping_address_id')
       .select('odr.billing_address_id', 'billing_address_id')
+      .select('odr.payment_status', 'payment_status')
       .select('customer.email', 'customer_email')
       .select('customer.first_name', 'customer_first_name')
       .select('customer.last_name', 'customer_last_name')
@@ -51,10 +52,11 @@ module.exports = async function sendFulfillOrder(data) {
       shippingPhone: '0932198705',
       shippingEmail: order.order_email || order.customer_email,
       language: 'en',
+      paymentStatus: order.payment_status,
       orderDetails: orderDetailsPayload
     };
 
-    info(`sendFulfillOrder order payload: ${orderPayload}`);
+    info(`sendFulfillOrder order payload: ${JSON.stringify(orderPayload)}`);
 
     const gohubCloudBaseUrl = getConfig('webhook.gohub_cloud_base_url');
     const gohubCloudApiKey = getConfig('webhook.gohub_cloud_api_key');
@@ -71,7 +73,9 @@ module.exports = async function sendFulfillOrder(data) {
     );
 
     const { data: responseData } = response;
-    info(`sendFulfillOrder axios response data: ${JSON.stringify(data)} `);
+    info(
+      `sendFulfillOrder axios response data: ${JSON.stringify(responseData)} `
+    );
 
     await update('order')
       .given({ fulfillment_status: 'Processing' })
