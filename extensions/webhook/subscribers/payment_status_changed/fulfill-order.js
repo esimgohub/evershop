@@ -71,11 +71,7 @@ module.exports = async function sendFulfillOrder(data) {
     );
 
     const { data: responseData } = response;
-    info(`sendFulfillOrder axios response data: ${data} `);
-
-    if (responseData.status !== 200) {
-      throw new Error('Failed to send order confirmation email');
-    }
+    info(`sendFulfillOrder axios response data: ${JSON.stringify(data)} `);
 
     await update('order')
       .given({ fulfillment_status: 'Processing' })
