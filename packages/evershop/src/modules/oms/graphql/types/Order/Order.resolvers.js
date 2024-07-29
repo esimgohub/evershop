@@ -1,3 +1,4 @@
+const Stripe = require('stripe');
 const { select } = require('@evershop/postgres-query-builder');
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
@@ -8,6 +9,7 @@ const {
   createTitleInfo,
   createTripInfo
 } = require('@evershop/evershop/src/modules/oms/services/getAdditionalOrderInfo');
+const { getSetting } = require('@evershop/evershop/src/modules/setting/services/setting');
 const { getOrdersBaseQuery } = require('../../../services/getOrdersBaseQuery');
 
 module.exports = {
@@ -26,6 +28,27 @@ module.exports = {
     paymentStatusList: () => getConfig('oms.order.paymentStatus', {})
   },
   Order: {
+    stripePaymentMethod: async ({ stripePaymentMethodId }) => {
+      const stripeSecretKey = await getSetting('stripeSecretKey', '');
+
+      if (!stripePaymentMethodId || !stripeSecretKey) {
+        return null;
+      }
+      const stripeInstance = new Stripe(stripeSecretKey);
+      const paymentMethod = await stripeInstance.paymentMethods.retrieve(
+        stripePaymentMethodId
+      );
+
+      if (!paymentMethod) {
+        return null
+      }
+      return {
+        last4: paymentMethod.card.last4,
+        brand: paymentMethod.card.brand,
+        expMonth: paymentMethod.card.exp_month,
+        expYear: paymentMethod.card.exp_year
+      }
+    },
     items: async ({ orderId }, _, { pool }) => {
       const items = await select()
         .from('order_item')

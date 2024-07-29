@@ -44,6 +44,13 @@ type OrderItem {
   titleInfo: JSON
 }
 
+type StripePaymentMethod {
+  last4: String
+  brand: String
+  expMonth: Int
+  expYear: Int
+}
+
 """
 Represents an Order.
 """
@@ -85,8 +92,7 @@ type Order implements ShoppingCart {
   updatedAt: String!
   activities: [Activity]
   shipment: Shipment
-  stripePaymentMethodId: String
-  stripeClientSecKey: String
+  stripePaymentMethod: StripePaymentMethod
 }
 
 """
