@@ -1,15 +1,13 @@
 /* eslint-disable camelcase */
-const { select, insert, startTransaction, commit, rollback, update } = require('@evershop/postgres-query-builder');
-const { pool, getConnection } = require('@evershop/evershop/src/lib/postgres/connection');
+// eslint-disable-next-line max-classes-per-file
+const { select, insert, update } = require('@evershop/postgres-query-builder');
+const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const {
   INVALID_PAYLOAD,
   INTERNAL_SERVER_ERROR,
   OK
 } = require('@evershop/evershop/src/lib/util/httpStatus');
-
-const { error } = require('../../../../lib/log/logger');
-
 const { saveCart } = require('@evershop/evershop/src/modules/checkout/services/saveCart');
 const { getCartByUUID } = require('@evershop/evershop/src/modules/checkout/services/getCartByUUID');
 const { createNewCart } = require('@evershop/evershop/src/modules/checkout/services/createNewCart');
@@ -18,6 +16,8 @@ const { getSetting } = require('@evershop/evershop/src/modules/setting/services/
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const stripePayment = require('stripe');
 const smallestUnit = require('zero-decimal-currencies');
+const { error } = require('../../../../lib/log/logger');
+
 const { createOrder } = require('../../../../../../../extensions/checkoutApi/services/orderCreator');
 
 const convertFromUSD = (amount, rate, currentIsoCode) => {
@@ -255,9 +255,13 @@ const createPaymentIntent = async (order, paymentMethodId, pool) => {
         metadata: {
           orderId: order.uuid
         },
-        // payment_method: paymentMethodId
         payment_method: paymentMethodId
       });
+
+      await update('order')
+        .given({ stripe_client_sec_key: intent.client_secret, stripe_payment_method_id: paymentMethodId })
+        .where('uuid', '=', order.uuid)
+        .execute(pool);
 
       const response = await stripe.paymentIntents.confirm(intent.id);
       if (!response) {
@@ -265,10 +269,6 @@ const createPaymentIntent = async (order, paymentMethodId, pool) => {
           order
         });
       }
-      await update('order')
-        .given({ stripe_client_sec_key: response.client_secret, stripe_payment_method_id: response.payment_method })
-        .where('uuid', '=', order.uuid)
-        .execute(pool);
 
       return response;
 
