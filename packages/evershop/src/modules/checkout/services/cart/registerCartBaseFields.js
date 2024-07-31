@@ -135,7 +135,7 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
             const qty = Number(i.getData('qty'));
             if (oldPrice > 0) {
               total += oldPrice * qty;
-            } else if (oldPrice === null) {
+            } else if (oldPrice == null) {
               total += Number(i.getData('final_price')) * qty;
             }
           });
