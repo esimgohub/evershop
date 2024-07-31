@@ -148,25 +148,12 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
       key: 'sub_total_discount_amount',
       resolvers: [
         async function resolver() {
-          const items = this.getActiveItems();
-          let totalNewPrice = 0;
-
-          items.forEach((i) => {
-            const oldPrice = Number(i.getData('old_price'));
-            const finalPrice = Number(i.getData('final_price'));
-            const qty = Number(i.getData('qty'));
-            // if this item have old price, then add to the new total amount
-            if (oldPrice > 0) {
-              totalNewPrice += finalPrice * qty;
-            }
-          });
-
           return toPrice(
-            this.getData('sub_total_old_price') - totalNewPrice
+            this.getData('sub_total_old_price') - this.getData('sub_total')
           );
         }
       ],
-      dependencies: ['sub_total_old_price', 'final_price']
+      dependencies: ['sub_total_old_price', 'sub_total']
     },
     {
       key: 'sub_total_incl_tax',
