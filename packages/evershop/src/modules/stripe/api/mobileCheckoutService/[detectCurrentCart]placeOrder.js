@@ -251,6 +251,7 @@ const createPaymentIntent = async (order, paymentMethodId, pool) => {
           enabled: true,
           allow_redirects: 'never'
         },
+        use_stripe_sdk: true,
         currency: order.currency,
         metadata: {
           orderId: order.uuid
