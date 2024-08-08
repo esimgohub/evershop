@@ -2,7 +2,6 @@
 // eslint-disable-next-line max-classes-per-file
 const { select, insert, update } = require('@evershop/postgres-query-builder');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
-const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const {
   INVALID_PAYLOAD,
   INTERNAL_SERVER_ERROR,
@@ -19,6 +18,33 @@ const smallestUnit = require('zero-decimal-currencies');
 const { error } = require('../../../../lib/log/logger');
 
 const { createOrder } = require('../../../../../../../extensions/checkoutApi/services/orderCreator');
+
+const generateResponse = (intent) => {
+  // Note that if your API version is before 2019-02-11, 'requires_action'
+  // appears as 'requires_source_action'.
+  if (
+    intent.status === 'requires_action' &&
+    intent.next_action.type === 'use_stripe_sdk'
+  ) {
+    // Tell the client to handle the action
+    return {
+      requires_action: true,
+      payment_intent_client_secret: intent.client_secret
+    };
+  } else if (intent.status === 'succeeded') {
+    // The payment didn’t need any additional actions and completed!
+    // Handle post-payment fulfillment
+    return {
+      success: true
+    };
+  } else {
+    // Invalid status
+    return {
+      error: 'Invalid PaymentIntent status'
+    }
+  }
+};
+
 
 const convertFromUSD = (amount, rate, currentIsoCode) => {
   if (currentIsoCode === 'USD') {
@@ -142,39 +168,17 @@ module.exports = async (request, response, delegate, next) => {
       .where('order_address_id', '=', order.billing_address_id)
       .load(pool);
 
-    // todo: order created validation
     if (!order) {
       throw new OrderCreationError('Order create failed');
     }
 
-    // todo: handle payment method
-
-    // todo: create payment intent and confirm intent
     const paymentIntent = await createPaymentIntent(order, payment_method_id, pool);
-
-    // todo: payment intent validation
-    if (!paymentIntent) {
-      throw new PaymentIntentCreationError('Payment intent create failed', {
-        order
-      });
-    }
-
-    // todo: return orderData + stripeData
-    // await commit(pool);
 
     response.status(OK);
     response.$body = {
       data: {
         orderData: { ...order },
-        stripeData: paymentIntent,
-        links: [
-          {
-            rel: 'edit',
-            href: buildUrl('orderEdit', { id: order.uuid }),
-            action: 'GET',
-            types: ['text/xml']
-          }
-        ]
+        stripeData: paymentIntent
       }
     };
     next();
@@ -194,15 +198,7 @@ module.exports = async (request, response, delegate, next) => {
       response.$body = {
         data: {
           orderData: { ...e.errorExtraParams.order },
-          stripeData: null,
-          links: [
-            {
-              rel: 'edit',
-              href: buildUrl('orderEdit', { id: e.errorExtraParams.order.uuid }),
-              action: 'GET',
-              types: ['text/xml']
-            }
-          ]
+          stripeData: { error: 'Payment failed' }
         }
       };
       next();
@@ -246,6 +242,7 @@ const createPaymentIntent = async (order, paymentMethodId, pool) => {
       // todo: create payment intent with plain card
 
       const intent = await stripe.paymentIntents.create({
+        confirm: true,
         amount: smallestUnit.default(formatedGrandTotal, order.currency),
         automatic_payment_methods: {
           enabled: true,
@@ -264,14 +261,13 @@ const createPaymentIntent = async (order, paymentMethodId, pool) => {
         .where('uuid', '=', order.uuid)
         .execute(pool);
 
-      const response = await stripe.paymentIntents.confirm(intent.id);
-      if (!response) {
+      if (!intent) {
         throw new PaymentIntentCreationError(`Payment intent create failed`, {
           order
         });
       }
 
-      return response;
+      return generateResponse(intent);
 
     } catch (e) {
       throw new PaymentIntentCreationError(`Payment intent create failed: ${e}`, {
