@@ -3,7 +3,7 @@ name: Publish to ECR
 on:
   pull_request:
   push:
-    branches: [master]
+    branches: [master, develop]
 env:
   ECR_REPOSITORY: ${{ vars.AWS_ECR_REPO }}
 jobs:
@@ -37,7 +37,7 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest -f Dockerfile .
 
-      - name: Push Image
+      - name: Push Image production
         if: github.ref == 'refs/heads/master'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -45,3 +45,11 @@ jobs:
         run: |
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+      - name: Push Image dev
+        if: github.ref == 'refs/heads/develop'
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{env.sha_short}}
+        run: |
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG-dev-latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:dev-latest
