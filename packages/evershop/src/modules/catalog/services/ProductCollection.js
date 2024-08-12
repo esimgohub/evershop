@@ -393,6 +393,69 @@ class ProductCollection {
     // LIMIT 150 OFFSET 0
     // `);
 
+    // const productByLocalEsim = await execute(pool, `
+    //   SELECT DISTINCT
+    //     product.product_id,
+    //     product.*,
+    //     product_description.*,
+    //     CASE WHEN pa1.option_text = 'Yes' THEN 1
+    //     WHEN pa1.option_text = 'No' THEN
+    //       CASE WHEN LOWER(dataattrvalue.option_text) = 'unlimited' THEN
+    //         999999
+    //       WHEN datatypeattrvalue.option_text = 'Daily Data' THEN
+    //         CASE WHEN LOWER(dataunitattrvalue.option_text) = 'gb' THEN
+    //           (CAST(dayattrvalue.option_text AS float8) * CAST(dataattrvalue.option_text AS float8)) * 1024
+    //         ELSE
+    //           CAST(dayattrvalue.option_text AS float8) * CAST(dataattrvalue.option_text AS float8)
+    //           END
+    //       WHEN datatypeattrvalue.option_text = 'Fixed Data' THEN
+    //         CASE WHEN LOWER(dataunitattrvalue.option_text) = 'gb' THEN
+    //           CAST(dataattrvalue.option_text AS float8) * 1024
+    //         ELSE
+    //           CAST(dataattrvalue.option_text AS float8)
+    //           END
+    //         END
+    //     END AS total_data_amount_by_mb,
+    //     CASE 
+    //     	WHEN LOWER(dataattrvalue.option_text) = 'unlimited' THEN 999999
+    //     	ELSE CAST(dayattrvalue.option_text AS float8) 
+    //     END
+    //     AS day_amount_for_tie_breaker
+    //   FROM
+    //     "product"
+    //     LEFT JOIN "product_description" AS "product_description" ON ("product_description"."product_description_product_id" = product.product_id)
+    //     LEFT JOIN "product_image" AS "product_image" ON ("product_image"."product_image_product_id" = product.product_id
+    //         AND "product_image"."is_main" = TRUE)
+    //     LEFT JOIN "product_attribute_value_index" AS "pa1" ON ("pa1"."product_id" = product.parent_product_id)
+    //     LEFT JOIN "product_attribute_value_index" AS "datatypeattrvalue" ON ("datatypeattrvalue"."product_id" = product.parent_product_id)
+
+    //     LEFT JOIN "product_attribute_value_index" AS "pa2" ON ("pa2"."product_id" = product.product_id)
+    //     LEFT JOIN "product_attribute_value_index" AS "dayattrvalue" ON ("dayattrvalue"."product_id" = product.product_id)
+    //     LEFT JOIN "product_attribute_value_index" AS "dataattrvalue" ON ("dataattrvalue"."product_id" = product.product_id)
+    //     LEFT JOIN "product_attribute_value_index" AS "dataunitattrvalue" ON ("dataunitattrvalue"."product_id" = product.product_id)
+
+    //     LEFT JOIN "attribute" AS "a1" ON ("a1"."attribute_id" = pa1.attribute_id)
+    //     LEFT JOIN "attribute" AS "a2" ON ("a2"."attribute_id" = pa2.attribute_id)
+    //     LEFT JOIN "attribute" AS "datatypeattr" ON ("datatypeattr"."attribute_id" = datatypeattrvalue.attribute_id)
+    //     LEFT JOIN "attribute" AS "dayattr" ON ("dayattr"."attribute_id" = dayattrvalue.attribute_id)
+    //     LEFT JOIN "attribute" AS "dataattr" ON ("dataattr".attribute_id = dataattrvalue.attribute_id)
+    //     LEFT JOIN "attribute" AS "dataunitattr" ON ("dataunitattr".attribute_id = dataunitattrvalue.attribute_id)
+    //   WHERE (
+    // dayattr.attribute_code = 'day-amount'
+    //     AND datatypeattr.attribute_code = 'data-type'
+    //     AND dataattr.attribute_code = 'data-amount'
+    //     AND "product"."type" = 'simple'
+    //     AND "product"."visibility" = TRUE
+    //     AND "product"."status" = TRUE
+    //     AND a1.attribute_code = 'local-esim'
+    //     AND dataunitattr.attribute_code = 'data-amount-unit')
+    //   ORDER BY
+    //     total_data_amount_by_mb,
+    //     day_amount_for_tie_breaker ASC,
+    //     product.product_id DESC
+    //   LIMIT ${this.perPage} OFFSET ${this.offset * this.perPage}
+    // `);
+
     const productByLocalEsim = await execute(pool, `
       SELECT DISTINCT
         product.product_id,
@@ -404,7 +467,7 @@ class ProductCollection {
             999999
           WHEN datatypeattrvalue.option_text = 'Daily Data' THEN
             CASE WHEN LOWER(dataunitattrvalue.option_text) = 'gb' THEN
-              (CAST(dayattrvalue.option_text AS float8) * CAST(dataattrvalue.option_text AS float8)) * 1024 
+              (CAST(dayattrvalue.option_text AS float8) * CAST(dataattrvalue.option_text AS float8)) * 1024
             ELSE
               CAST(dayattrvalue.option_text AS float8) * CAST(dataattrvalue.option_text AS float8)
               END
@@ -415,7 +478,32 @@ class ProductCollection {
               CAST(dataattrvalue.option_text AS float8)
               END
             END
-        END AS order_column
+        END AS total_data_amount_by_mb,
+        CASE WHEN LOWER(dataattrvalue.option_text) = 'unlimited' THEN
+            999999
+          WHEN datatypeattrvalue.option_text = 'Daily Data' THEN
+            CASE WHEN LOWER(dataunitattrvalue.option_text) = 'gb' THEN
+              (CAST(dayattrvalue.option_text AS float8) * CAST(dataattrvalue.option_text AS float8)) * 1024
+            ELSE
+              CAST(dayattrvalue.option_text AS float8) * CAST(dataattrvalue.option_text AS float8)
+              END
+          WHEN datatypeattrvalue.option_text = 'Fixed Data' THEN
+            CASE WHEN LOWER(dataunitattrvalue.option_text) = 'gb' THEN
+              CAST(dataattrvalue.option_text AS float8) * 1024
+            ELSE
+              CAST(dataattrvalue.option_text AS float8)
+              END
+            END AS real_total_data_amount_by_mb,
+        CASE
+        	WHEN LOWER(dataattrvalue.option_text) = 'unlimited' THEN 999999
+        	ELSE CAST(dayattrvalue.option_text AS float8)
+        END
+        AS day_amount_for_tie_breaker,
+        CASE
+        	WHEN LOWER(dataattrvalue.option_text) = 'unlimited' THEN 99999999
+        	ELSE CAST(dataattrvalue.option_text AS float8)
+        END
+        AS data_amount_for_tie_breaker
       FROM
         "product"
         LEFT JOIN "product_description" AS "product_description" ON ("product_description"."product_description_product_id" = product.product_id)
@@ -423,24 +511,97 @@ class ProductCollection {
             AND "product_image"."is_main" = TRUE)
         LEFT JOIN "product_attribute_value_index" AS "pa1" ON ("pa1"."product_id" = product.parent_product_id)
         LEFT JOIN "product_attribute_value_index" AS "datatypeattrvalue" ON ("datatypeattrvalue"."product_id" = product.parent_product_id)
-        
+
         LEFT JOIN "product_attribute_value_index" AS "pa2" ON ("pa2"."product_id" = product.product_id)
         LEFT JOIN "product_attribute_value_index" AS "dayattrvalue" ON ("dayattrvalue"."product_id" = product.product_id)
         LEFT JOIN "product_attribute_value_index" AS "dataattrvalue" ON ("dataattrvalue"."product_id" = product.product_id)
         LEFT JOIN "product_attribute_value_index" AS "dataunitattrvalue" ON ("dataunitattrvalue"."product_id" = product.product_id)
-        
+
         LEFT JOIN "attribute" AS "a1" ON ("a1"."attribute_id" = pa1.attribute_id)
         LEFT JOIN "attribute" AS "a2" ON ("a2"."attribute_id" = pa2.attribute_id)
         LEFT JOIN "attribute" AS "datatypeattr" ON ("datatypeattr"."attribute_id" = datatypeattrvalue.attribute_id)
         LEFT JOIN "attribute" AS "dayattr" ON ("dayattr"."attribute_id" = dayattrvalue.attribute_id)
         LEFT JOIN "attribute" AS "dataattr" ON ("dataattr".attribute_id = dataattrvalue.attribute_id)
         LEFT JOIN "attribute" AS "dataunitattr" ON ("dataunitattr".attribute_id = dataunitattrvalue.attribute_id)
-      WHERE (${where})
+      WHERE (
+    dayattr.attribute_code = 'day-amount'
+        AND datatypeattr.attribute_code = 'data-type'
+        AND dataattr.attribute_code = 'data-amount'
+        AND "product"."type" = 'simple'
+        AND "product"."visibility" = TRUE
+        AND "product"."status" = TRUE
+        AND a1.attribute_code = 'local-esim'
+        AND dataunitattr.attribute_code = 'data-amount-unit')
       ORDER BY
-        order_column,
+        total_data_amount_by_mb,
+        day_amount_for_tie_breaker ASC,
+        data_amount_for_tie_breaker ASC,
         product.product_id DESC
       LIMIT ${this.perPage} OFFSET ${this.offset * this.perPage}
     `);
+
+    // console.log("sqll product: ", `
+    //   SELECT DISTINCT
+    //     product.product_id,
+    //     product.*,
+    //     product_description.*,
+    //     CASE WHEN pa1.option_text = 'Yes' THEN 1
+    //     WHEN pa1.option_text = 'No' THEN
+    //       CASE WHEN LOWER(dataattrvalue.option_text) = 'unlimited' THEN
+    //         999999
+    //       WHEN datatypeattrvalue.option_text = 'Daily Data' THEN
+    //         CASE WHEN LOWER(dataunitattrvalue.option_text) = 'gb' THEN
+    //           (CAST(dayattrvalue.option_text AS float8) * CAST(dataattrvalue.option_text AS float8)) * 1024
+    //         ELSE
+    //           CAST(dayattrvalue.option_text AS float8) * CAST(dataattrvalue.option_text AS float8)
+    //           END
+    //       WHEN datatypeattrvalue.option_text = 'Fixed Data' THEN
+    //         CASE WHEN LOWER(dataunitattrvalue.option_text) = 'gb' THEN
+    //           CAST(dataattrvalue.option_text AS float8) * 1024
+    //         ELSE
+    //           CAST(dataattrvalue.option_text AS float8)
+    //           END
+    //         END
+    //     END AS total_data_amount_by_mb,
+    //     CASE 
+    //     	WHEN LOWER(dataattrvalue.option_text) = 'unlimited' THEN 999999
+    //     	ELSE CAST(dayattrvalue.option_text AS float8) 
+    //     END
+    //     AS day_amount_for_tie_breaker
+    //   FROM
+    //     "product"
+    //     LEFT JOIN "product_description" AS "product_description" ON ("product_description"."product_description_product_id" = product.product_id)
+    //     LEFT JOIN "product_image" AS "product_image" ON ("product_image"."product_image_product_id" = product.product_id
+    //         AND "product_image"."is_main" = TRUE)
+    //     LEFT JOIN "product_attribute_value_index" AS "pa1" ON ("pa1"."product_id" = product.parent_product_id)
+    //     LEFT JOIN "product_attribute_value_index" AS "datatypeattrvalue" ON ("datatypeattrvalue"."product_id" = product.parent_product_id)
+
+    //     LEFT JOIN "product_attribute_value_index" AS "pa2" ON ("pa2"."product_id" = product.product_id)
+    //     LEFT JOIN "product_attribute_value_index" AS "dayattrvalue" ON ("dayattrvalue"."product_id" = product.product_id)
+    //     LEFT JOIN "product_attribute_value_index" AS "dataattrvalue" ON ("dataattrvalue"."product_id" = product.product_id)
+    //     LEFT JOIN "product_attribute_value_index" AS "dataunitattrvalue" ON ("dataunitattrvalue"."product_id" = product.product_id)
+
+    //     LEFT JOIN "attribute" AS "a1" ON ("a1"."attribute_id" = pa1.attribute_id)
+    //     LEFT JOIN "attribute" AS "a2" ON ("a2"."attribute_id" = pa2.attribute_id)
+    //     LEFT JOIN "attribute" AS "datatypeattr" ON ("datatypeattr"."attribute_id" = datatypeattrvalue.attribute_id)
+    //     LEFT JOIN "attribute" AS "dayattr" ON ("dayattr"."attribute_id" = dayattrvalue.attribute_id)
+    //     LEFT JOIN "attribute" AS "dataattr" ON ("dataattr".attribute_id = dataattrvalue.attribute_id)
+    //     LEFT JOIN "attribute" AS "dataunitattr" ON ("dataunitattr".attribute_id = dataunitattrvalue.attribute_id)
+    //   WHERE (
+    // dayattr.attribute_code = 'day-amount'
+    //     AND datatypeattr.attribute_code = 'data-type'
+    //     AND dataattr.attribute_code = 'data-amount'
+    //     AND "product"."type" = 'simple'
+    //     AND "product"."visibility" = TRUE
+    //     AND "product"."status" = TRUE
+    //     AND a1.attribute_code = 'local-esim'
+    //     AND dataunitattr.attribute_code = 'data-amount-unit')
+    //   ORDER BY
+    //     total_data_amount_by_mb,
+    //     day_amount_for_tie_breaker ASC,
+    //     product.product_id DESC
+    //   LIMIT ${this.perPage} OFFSET ${this.offset * this.perPage}
+    // `);
 
     // for (const item of productByLocalEsim.rows) {
     //   const parentProductAttributeQuery = select().from('product_attribute_value_index');
@@ -534,14 +695,55 @@ class ProductCollection {
     //   }
     // }).map((row) => camelCase(row));
 
-    // // Remove attribute temp.
+    // Remove attribute temp.
     // sortedItems.forEach((item) => {
     //   delete item.attributeTemp
     // });
 
     // console.log("con me no: ", productByLocalEsim.rows);
 
-    return productByLocalEsim.rows.map(row => camelCase(row));
+    console.log("productByLocalEsim.rows: ", productByLocalEsim.rows[0]);
+    const localEsimProducts = productByLocalEsim.rows.filter(
+      product => product.total_data_amount_by_mb === 1,
+    );
+
+    console.log("localEsimProducts: ", localEsimProducts);
+    const unLocalEsimProducts = productByLocalEsim.rows.filter(
+      product => !productByLocalEsim.rows.includes(p => p.product_id !== product.product_id)
+    );
+
+    const sortedProducts = [
+      ...localEsimProducts.sort((a, b) => {
+        // If products have the same total data amount
+        if (a.real_total_data_amount_by_mb !== b.real_total_data_amount_by_mb) {
+          return a.real_total_data_amount_by_mb - b.real_total_data_amount_by_mb;
+        }
+
+        // It will let data_amount from smallest to highest, for example: 20144 > 5231
+        if (a.data_amount_for_tie_breaker !== b.data_amount_for_tie_breaker) {
+          return a.data_amount_for_tie_breaker - b.data_amount_for_tie_breaker;
+        }
+
+        // If have same data_amount, it will compare day_amount from smallest to highest
+        return a.day_amount_for_tie_breaker - b.day_amount_for_tie_breaker;
+      }),
+      ...unLocalEsimProducts.sort((a, b) => {
+        // If products have the same total data amount
+        if (a.real_total_data_amount_by_mb !== b.real_total_data_amount_by_mb) {
+          return a.real_total_data_amount_by_mb - b.real_total_data_amount_by_mb;
+        }
+
+        // It will let data_amount from smallest to highest, for example: 20144 > 5231
+        if (a.data_amount_for_tie_breaker !== b.data_amount_for_tie_breaker) {
+          return a.data_amount_for_tie_breaker - b.data_amount_for_tie_breaker;
+        }
+
+        // If have same data_amount, it will compare day_amount from smallest to highest
+        return a.day_amount_for_tie_breaker - b.day_amount_for_tie_breaker;
+      })
+    ];
+
+    return sortedProducts.map(row => camelCase(row));
   }
 
   async adminItems() {
@@ -648,4 +850,3 @@ class ProductCollection {
 }
 
 module.exports.ProductCollection = ProductCollection;
-
