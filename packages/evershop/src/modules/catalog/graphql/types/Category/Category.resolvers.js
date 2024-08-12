@@ -82,7 +82,6 @@ module.exports = {
               INNER JOIN product p ON p.uuid = pc.product_id
               WHERE p.status = true AND p.visibility = true AND pc.category_id = c.uuid
             ) >= 1
-          ORDER BY c.is_popular DESC, c.sort_order ASC
       `);
 
       const supportedCountries = supportedCountryQueryResult.rows || [];
