@@ -6,7 +6,7 @@ module.exports = exports = async (connection) => {
   await execute(
     connection,
     `ALTER TABLE customer
-    ADD COLUMN full_name VARCHAR(50);
+    ADD COLUMN IF NOT EXISTS full_name VARCHAR(50);
 `
   );
 };
