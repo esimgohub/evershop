@@ -20,5 +20,5 @@ services:
 
 networks:
   backend-network:
-    name: backend-network
+    name: gohub-backend_default
     external: true
