@@ -26,9 +26,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGIONS }}
-      - name: Sync config
-        run: |
-          aws s3 cp --recursive s3://gohub-environments-files/evershop/${{env.ENV_S3_CONFIG}}/config/* config/
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -39,6 +36,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{env.sha_short}}
         run: |
+          aws s3 cp --recursive s3://gohub-environments-files/evershop/${{env.ENV_S3_CONFIG}}/config config
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest -f Dockerfile .
       - name: Push Image dev
         if: github.ref == 'refs/heads/develop'
