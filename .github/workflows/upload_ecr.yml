@@ -28,7 +28,7 @@ jobs:
           aws-region: ${{ vars.AWS_REGIONS }}
       - name: Sync config
         run: |
-          aws s3 cp --recursive s3://gohub-environments-files/evershop/${{env.ENV_S3_CONFIG}}/config config
+          aws s3 cp --recursive s3://gohub-environments-files/evershop/${{env.ENV_S3_CONFIG}}/config/* config/
 
       - name: Login to Amazon ECR
         id: login-ecr
