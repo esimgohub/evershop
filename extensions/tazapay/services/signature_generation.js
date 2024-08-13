@@ -28,7 +28,8 @@ async function makeRequest(method, urlPath, body = null) {
       }
     };
 
-    return await httpRequest(options, body);
+    const response = await httpRequest(options, body);
+    return generateResponse(response);
   } catch (e) {
     error("Error generating request options");
     throw e;
@@ -113,6 +114,22 @@ async function httpRequest(options, body) {
     }
   });
 }
+
+function generateResponse (response) {
+  if (response.statusCode === 200) {
+    return {
+      success: true,
+      redirect_url: response?.body?.data?.url
+    };
+  } else {
+    // Invalid status
+    return {
+      error: 'Failed to process payment'
+    };
+  }
+}
+
+
 
 
 module.exports = { makeRequest };
