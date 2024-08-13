@@ -1,0 +1,5 @@
+extend type Setting {
+  tazapaySecretKey: String
+  tazapayAccessKey: String
+  tazapayEndpointSecret: String
+}
