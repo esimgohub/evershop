@@ -80,6 +80,7 @@ async function httpRequest(options, body) {
       }
 
       console.log(`httpRequest options: ${JSON.stringify(options)}`);
+      console.log(`httpRequest body: ${JSON.stringify(body)}`);
       const req = https.request(options, (res) => {
         let response = {
           statusCode: res.statusCode,
