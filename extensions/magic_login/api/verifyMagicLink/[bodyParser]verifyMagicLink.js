@@ -27,7 +27,10 @@ module.exports = async (request, response, delegate, next) => {
   const { token } = request.body;
 
   try {
+    console.log("to verify token", token);
     const payload = await verifyToken(token);
+
+    console.log("payload", payload);
 
     let customerQuery = select('customer.customer_id', 'customer_id')
       .select('customer.status', 'status')
@@ -102,6 +105,8 @@ module.exports = async (request, response, delegate, next) => {
     request.locals.customer = customer;
     request.session.customerID = customer.customer_id;
     request.session.loginSource = LoginSource.MAGIC_LINK;
+
+    console.log("request session", request.session);
 
     response.status(OK);
     response.$body = {

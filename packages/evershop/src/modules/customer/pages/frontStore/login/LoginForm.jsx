@@ -1,72 +1,69 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Field } from '@components/common/form/Field';
 import { Form } from '@components/common/form/Form';
 import './LoginForm.scss';
 import { _ } from '@evershop/evershop/src/lib/locale/translate';
 import Area from '@components/common/Area';
 
-export default function LoginForm({
-  action,
-  homeUrl,
-  registerUrl,
-  forgotPasswordUrl
-}) {
+export default function LoginForm({ sendMagicLink }) {
+  console.log('send magic link: ', sendMagicLink);
+
   const [error, setError] = React.useState(null);
+  const [isMagicLoginSuccess, setMagicLoginSuccessStatus] =
+    React.useState(false);
+
+  const renderMagicLoginContent = useCallback(() => {
+    if (isMagicLoginSuccess) {
+      return <p className="text-center">Vui long cho 1 chut nhe</p>;
+    }
+
+    return (
+      <>
+        <h1 className="text-center">{_('Login')}</h1>
+        {error && <div className="text-critical mb-1">{error}</div>}
+        <Form
+          id="loginForm"
+          action={sendMagicLink}
+          isJSON
+          method="POST"
+          onSuccess={(response) => {
+            console.log('login success: ', response);
+
+            if (response.error) {
+              // window.location.href = homeUrl;
+              setError(response.error.message);
+              return;
+            }
+
+            setMagicLoginSuccessStatus(true);
+          }}
+          btnText={_('SIGN IN')}
+        >
+          <Area
+            id="loginFormInner"
+            coreComponents={[
+              {
+                component: { default: Field },
+                props: {
+                  name: 'email',
+                  type: 'text',
+                  placeholder: _('Email'),
+                  validationRules: ['notEmpty', 'email']
+                },
+                sortOrder: 10
+              }
+            ]}
+          />
+        </Form>
+      </>
+    );
+  }, [sendMagicLink, error, isMagicLoginSuccess]);
 
   return (
     <div className="flex justify-center items-center">
       <div className="login-form flex justify-center items-center">
-        <div className="login-form-inner">
-          <h1 className="text-center">{_('Login')}</h1>
-          {error && <div className="text-critical mb-1">{error}</div>}
-          <Form
-            id="loginForm"
-            action={action}
-            isJSON
-            method="POST"
-            onSuccess={(response) => {
-              if (!response.error) {
-                window.location.href = homeUrl;
-              } else {
-                setError(response.error.message);
-              }
-            }}
-            btnText={_('SIGN IN')}
-          >
-            <Area
-              id="loginFormInner"
-              coreComponents={[
-                {
-                  component: { default: Field },
-                  props: {
-                    name: 'email',
-                    type: 'text',
-                    placeholder: _('Email'),
-                    validationRules: ['notEmpty', 'email']
-                  },
-                  sortOrder: 10
-                },
-                {
-                  component: { default: Field },
-                  props: {
-                    name: 'password',
-                    type: 'password',
-                    placeholder: _('Password'),
-                    validationRules: ['notEmpty']
-                  },
-                  sortOrder: 20
-                }
-              ]}
-            />
-          </Form>
-          <div className="text-center mt-1 gap-2 flex justify-center">
-            <a className="text-interactive" href={registerUrl}>
-              {_('Create an account')}
-            </a>
-            <a href={forgotPasswordUrl}>{_('Forgot your password?')}</a>
-          </div>
-        </div>
+        <div className="login-form-inner">{renderMagicLoginContent()}</div>
       </div>
     </div>
   );
@@ -86,9 +83,6 @@ export const layout = {
 
 export const query = `
   query Query {
-    homeUrl: url(routeId: "homepage")
-    action: url(routeId: "customerLoginJson")
-    registerUrl: url(routeId: "register")
-    forgotPasswordUrl: url(routeId: "resetPasswordPage")
+    sendMagicLink: url(routeId: "sendMagicLink")
   }
 `;
