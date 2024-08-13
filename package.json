@@ -56,6 +56,9 @@
   },
   "dependencies": {
     "@evershop/evershop": "^1.1.0",
-    "he": "^1.2.0"
+    "crypto-js": "^4.2.0",
+    "geoip-lite": "^1.4.10",
+    "he": "^1.2.0",
+    "https": "^1.0.0"
   }
 }
