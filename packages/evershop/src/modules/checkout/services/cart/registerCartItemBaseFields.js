@@ -547,6 +547,14 @@ module.exports.registerCartItemBaseFields =
           }
         ],
         dependencies: ['category', 'attribute']
+      },
+      {
+        key: 'updated_at',
+        resolvers: [
+          function resolver(value) {
+            return value;
+          }
+        ]
       }
     ];
   };
