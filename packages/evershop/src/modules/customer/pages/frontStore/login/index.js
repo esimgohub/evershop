@@ -16,7 +16,6 @@ module.exports = (request, response, delegate, next) => {
     // Redirect to homepage
     response.redirect(buildUrl('account'));
   } else {
-    console.log("to set login page");
     setContextValue(request, 'pageInfo', {
       title: translate('Login'),
       description: translate('Login')
