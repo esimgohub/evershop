@@ -6,16 +6,21 @@ const { getSetting } = require('@evershop/evershop/src/modules/setting/services/
 /**
  * Makes a signed HTTP request to the specified URL path using the given HTTP method.
  *
+ * @param {string} idempotencyKey - The unique key for Tazapay payment.
  * @param {string} method - The HTTP method (e.g., 'GET', 'POST').
  * @param {string} urlPath - The URL path of the request.
  * @param {Object} [body=null] - The request payload (optional).
  * @returns {Promise<Object>} - The response data from the server.
  * @throws {Error} - Throws an error if the request fails.
  */
-async function makeRequest(method, urlPath, body = null) {
+async function makeRequest(idempotencyKey, method, urlPath, body = null) {
   try {
-    httpMethod = method;
-    httpBaseURL = "service-sandbox.tazapay.com";
+    const httpMethod = method;
+    const httpBaseURL = await getSetting('tazapayBaseUrl', null);
+    if (!httpBaseURL) {
+      error(`httpBaseURL: ${httpBaseURL}`);
+      throw new Error('Tazapay base URL is not configured');
+    }
 
     const options = {
       hostname: httpBaseURL,
@@ -24,6 +29,7 @@ async function makeRequest(method, urlPath, body = null) {
       headers: {
         accept: 'application/json',
         'content-type': 'application/json',
+        'Idempotency-Key': idempotencyKey,
         authorization: await authBasic()
       }
     };
