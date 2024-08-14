@@ -65,8 +65,11 @@ module.exports = {
       const secretKey = await getSetting('tazapaySecretKey', '');
       const userPwd = `${accessKey}:${secretKey}`;
       const authBasic = `Basic ${Buffer.from(userPwd).toString('base64')}`;
-
-      const url = `https://service-sandbox.tazapay.com/v3/payment_attempt/${paymentTransaction.transaction_id}`;
+      const baseUrl = await getSetting('tazapayBaseUrl', null);
+      if (!baseUrl) {
+        return null;
+      }
+      const endpoint = `${baseUrl}/v3/payment_attempt/${paymentTransaction.transaction_id}`;
       const options = {
         method: 'GET',
         headers: {
@@ -75,7 +78,7 @@ module.exports = {
         }
       };
 
-      const response = await fetch(url, options)
+      const response = await fetch(endpoint, options)
         .then(res => res.json())
         .catch(() => null);
 

@@ -15,8 +15,12 @@ const { getSetting } = require('@evershop/evershop/src/modules/setting/services/
  */
 async function makeRequest(idempotencyKey, method, urlPath, body = null) {
   try {
-    httpMethod = method;
-    httpBaseURL = "service-sandbox.tazapay.com";
+    const httpMethod = method;
+    const httpBaseURL = await getSetting('tazapayBaseUrl', null);
+    if (!httpBaseURL) {
+      error(`httpBaseURL: ${httpBaseURL}`);
+      throw new Error('Tazapay base URL is not configured');
+    }
 
     const options = {
       hostname: httpBaseURL,
