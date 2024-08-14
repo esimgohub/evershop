@@ -69,7 +69,7 @@ module.exports = {
       if (!baseUrl) {
         return null;
       }
-      const endpoint = `${baseUrl}/v3/payment_attempt/${paymentTransaction.transaction_id}`;
+      const endpoint = `https://${baseUrl}/v3/payment_attempt/${paymentTransaction.transaction_id}`;
       const options = {
         method: 'GET',
         headers: {
