@@ -1,4 +1,5 @@
 const Stripe = require('stripe');
+const fetch = require('node-fetch');
 const { select } = require('@evershop/postgres-query-builder');
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
@@ -48,6 +49,49 @@ module.exports = {
         expMonth: paymentMethod.card.exp_month,
         expYear: paymentMethod.card.exp_year
       }
+    },
+    tazaPaymentMethod: async ({ orderId }, _, { pool }) => {
+      // get txnId form pay_txn by order id
+      const paymentTransaction = await select()
+        .from('payment_transaction')
+        .where('payment_transaction_order_id', '=', orderId)
+        .load(pool);
+
+      if (!paymentTransaction?.transaction_id) {
+        return null
+      }
+
+      const accessKey = await getSetting('tazapayAccessKey', '');
+      const secretKey = await getSetting('tazapaySecretKey', '');
+      const userPwd = `${accessKey}:${secretKey}`;
+      const authBasic = `Basic ${Buffer.from(userPwd).toString('base64')}`;
+
+      const url = `https://service-sandbox.tazapay.com/v3/payment_attempt/${paymentTransaction.transaction_id}`;
+      const options = {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          authorization: authBasic
+        }
+      };
+
+      const response = await fetch(url, options)
+        .then(res => res.json())
+        .catch(() => null);
+
+      if (!response?.data?.payment_method_details) {
+        return null
+      }
+      const paymentDetails = response.data.payment_method_details;
+      if (paymentDetails?.type === 'card' && paymentDetails?.card) {
+        return {
+          last4: paymentDetails.card.last4,
+          brand: paymentDetails.card.scheme,
+          expMonth: paymentDetails.card.expiry?.month,
+          expYear: paymentDetails.card.expiry?.year
+        }
+      }
+      return null
     },
     items: async ({ orderId }, _, { pool }) => {
       const items = await select()
