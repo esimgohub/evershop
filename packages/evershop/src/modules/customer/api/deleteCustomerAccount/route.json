@@ -1,5 +1,5 @@
 {
   "methods": ["DELETE"],
-  "path": "/v1/customers/:id",
+  "path": "/v1/customers",
   "access": "public"
 }

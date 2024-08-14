@@ -7,7 +7,12 @@ const deleteCustomerAccount = require('../../services/customer/deleteCustomerAcc
 // eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
   try {
-    const customer = await deleteCustomerAccount(request.params.id, {
+    const { customerID } = request.session;
+    if (!customerID) {
+      throw new Error("User is not logged in or session expired");
+    }
+
+    const customer = await deleteCustomerAccount(customerID, {
       routeId: request.currentRoute.id
     });
     response.status(OK);
