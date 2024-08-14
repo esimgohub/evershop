@@ -15,6 +15,7 @@ const { debug } = require('@evershop/evershop/src/lib/log/logger');
 const { display } = require('zero-decimal-currencies');
 const { getSetting } = require('@evershop/evershop/src/modules/setting/services/setting');
 const { error} = require('@evershop/evershop/src/lib/log/logger');
+const { OK } = require('@evershop/evershop/src/lib/util/httpStatus');
 
 // eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
@@ -131,7 +132,8 @@ module.exports = async (request, response, delegate, next) => {
 
     await commit(connection);
     // Return a response to acknowledge receipt of the event
-    response.status(200).json({})
+    response.status(OK);
+    response.json({});
   } catch (err) {
     await rollback(connection);
     response.status(400).send(`Webhook Error: ${err.message}`);
