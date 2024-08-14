@@ -12,8 +12,9 @@ const {
 } = require('@evershop/evershop/src/lib/postgres/connection');
 const { AccountStatus } = require('../../constant');
 
-async function deleteCustomerData(id, connection) {
-  await update('customer').given({ email: '', status: AccountStatus.DISABLED, external_id: '' }).where('customer_id', '=', id).execute(connection);
+async function deleteCustomerData(id, connection, customer) {
+  console.log("adduuu: ", customer)
+  await update('customer').given({ email: `${customer.email}-deleted-${new Date().getTime()}`, status: AccountStatus.DISABLED, external_id: '' }).where('customer_id', '=', id).execute(connection);
 }
 /**
  * Delete customer service. This service will delete a customer with all related data
@@ -31,7 +32,8 @@ async function deleteCustomerAccount(id, context) {
     }
     await hookable(deleteCustomerData, { ...context, connection, customer })(
       id,
-      connection
+      connection,
+      customer,
     );
 
     await commit(connection);
