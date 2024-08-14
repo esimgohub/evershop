@@ -28,7 +28,9 @@ function Button({
         onClick={(e) => {
           onActionFunc(e);
         }}
-        className={className.join(' ')}
+        className={`${className.join(
+          ' '
+        )} !rounded-[32px] !bg-[#43D3FE] &:hover:opacity-80`}
       >
         <span>{title}</span>
         {isLoading === true && (
@@ -67,7 +69,7 @@ function Button({
     );
   } else {
     return (
-      <a href={url} className={className.join(' ')}>
+      <a href={url} className={`bg-[#43D3FE] ${className.join(' ')}`}>
         <span>{title}</span>
       </a>
     );
