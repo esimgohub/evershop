@@ -39,25 +39,28 @@ module.exports = async (request, response, delegate, next) => {
       .where('uuid', '=', txnData.reference_id)
       .load(connection);
 
+    if (!order) {
+      error(`Tazapay - Order not found with order uuid: ${txnData.reference_id}`);
+      throw new Error(`Tazapay - Order not found with order uuid: ${txnData.reference_id}`);
+    }
+
     await startTransaction(connection);
     // Handle the event
     // todo: handle other event types: payment_attempt.failed, payment_attempt.succeeded, payment_method.processing
     switch (webhookData.type) {
-      case 'payment_attempt.succeeded':
-      case 'checkout.paid': {
-        const { amount, invoice_currency, charge_currency, id, payin } = txnData;
-        let txnId = webhookData.type === 'checkout.paid' ? id : payin;
-        let txnCurrency = webhookData.type === 'checkout.paid' ? invoice_currency : charge_currency;
+      case 'payment_attempt.succeeded': {
+        // avoid `checkout.paid` and `payment_attempt.succeeded` to be processed twice on the same order
+        const { amount, charge_currency, id } = txnData;
 
         // Update the order
         // Create payment transaction
         await insert('payment_transaction')
           .given({
             amount: parseFloat(
-              display(amount, txnCurrency)
+              display(amount, charge_currency)
             ),
             payment_transaction_order_id: order.order_id,
-            transaction_id: txnId,
+            transaction_id: id,
             transaction_type: 'online',
             payment_action: 'Capture'
           })
@@ -65,7 +68,10 @@ module.exports = async (request, response, delegate, next) => {
 
         // Update the order status
         await update('order')
-          .given({ payment_status: 'paid' })
+          .given({
+            payment_status: 'paid',
+
+          })
           .where('order_id', '=', order.order_id)
           .execute(connection);
 
@@ -73,7 +79,7 @@ module.exports = async (request, response, delegate, next) => {
         await insert('order_activity')
           .given({
             order_activity_order_id: order.order_id,
-            comment: `Customer paid by using credit card. Tazapay PaymentMethodId: ${txnId}`
+            comment: `Customer paid by using credit card. Tazapay PaymentAttemptId: ${id}`
           })
           .execute(connection);
 
@@ -104,25 +110,26 @@ module.exports = async (request, response, delegate, next) => {
         break;
       }
 
-      case 'checkout.expired': {
-        debug(`Tazapay - Payment txn was expired with PaymentMethodId: ${txnData.id}`);
-        // Update the order status
-        await update('order')
-          .given({ payment_status: 'failed' })
-          .where('order_id', '=', order.order_id)
-          .execute(connection);
-
-        // Add an activity log
-        await insert('order_activity')
-          .given({
-            order_activity_order_id: order.order_id,
-            comment: `Tazapay payment method was expired. PaymentMethodId: ${txnData.id}`
-          })
-          .execute(connection);
-
-        await emit('payment_status_changed', { ...order });
-        break;
-      }
+      // todo: handle expired event
+      // case 'checkout.expired': {
+      //   debug(`Tazapay - Payment txn was expired with PaymentMethodId: ${txnData.id}`);
+      //   // Update the order status
+      //   await update('order')
+      //     .given({ payment_status: 'failed' })
+      //     .where('order_id', '=', order.order_id)
+      //     .execute(connection);
+      //
+      //   // Add an activity log
+      //   await insert('order_activity')
+      //     .given({
+      //       order_activity_order_id: order.order_id,
+      //       comment: `Tazapay payment method was expired. PaymentMethodId: ${txnData.id}`
+      //     })
+      //     .execute(connection);
+      //
+      //   await emit('payment_status_changed', { ...order });
+      //   break;
+      // }
 
 
       // ... handle other event types
@@ -132,8 +139,7 @@ module.exports = async (request, response, delegate, next) => {
 
     await commit(connection);
     // Return a response to acknowledge receipt of the event
-    response.status(OK);
-    response.json({});
+    response.status(OK).send('Webhook received');
   } catch (err) {
     await rollback(connection);
     response.status(400).send(`Webhook Error: ${err.message}`);
