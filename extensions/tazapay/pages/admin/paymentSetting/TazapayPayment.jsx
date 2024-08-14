@@ -10,7 +10,11 @@ export default function TazapayPayment({
     tazapayDislayName,
     tazapayPublishableKey,
     tazapaySecretKey,
-    tazapayEndpointSecret
+    tazapayEndpointSecret,
+    tazapaySuccessUrl,
+    tazapayCancelUrl,
+    tazapayBaseUrl,
+    tazapayAccessKey
   }
 }) {
   return (
@@ -159,7 +163,7 @@ TazapayPayment.propTypes = {
     tazapayEndpointSecret: PropTypes.string,
     tazapaySuccessUrl: PropTypes.string,
     tazapayCancelUrl: PropTypes.string,
-    tazapayBaseUrl: PropTypes.string
+    tazapayBaseUrl: PropTypes.string,
   }).isRequired
 };
 
@@ -177,6 +181,9 @@ export const query = `
       tazapaySecretKey
       tazapayAccessKey
       tazapayEndpointSecret
+      tazapaySuccessUrl
+      tazapayCancelUrl
+      tazapayBaseUrl
     }
   }
 `;
