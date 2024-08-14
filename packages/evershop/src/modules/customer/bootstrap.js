@@ -95,6 +95,27 @@ module.exports = () => {
     this.session.save(callback);
   };
 
+  request.loginCustomerViaMagicLogin = async function loginCustomerViaMagicLogin(
+    email,
+    callback,
+  ) {
+    const customer = await select()
+      .from('customer')
+      .where('email', '=', email)
+      .load(pool);
+
+    if (!customer) {
+      throw new Error(`Cannot found any customer with email: ${email}`);
+    }
+
+    this.session.customerID = customer.customer_id;
+    // Delete the password field
+    delete customer.password;
+    // Save the customer in the request
+    this.locals.customer = customer;
+    this.session.save(callback);
+  };
+
   request.logoutCustomer = function logoutCustomer(callback) {
     this.session.customerID = undefined;
     this.locals.customer = undefined;
@@ -103,6 +124,8 @@ module.exports = () => {
   };
 
   request.isCustomerLoggedIn = function isCustomerLoggedIn() {
+    console.log("isCustomerLoggedIn", this.session);
+
     return !!this.session?.customerID;
   };
 
