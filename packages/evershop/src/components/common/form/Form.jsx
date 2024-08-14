@@ -28,7 +28,8 @@ export function Form(props) {
     children,
     submitBtn = true,
     btnText,
-    dataFilter
+    dataFilter,
+    formClassName
   } = props;
 
   const [fields, setFields] = React.useState([]);
@@ -185,6 +186,7 @@ export function Form(props) {
         state,
         ...props
       }}
+      className={formClassName}
     >
       <FormDispatch.Provider value={{ submit, validate }}>
         <form
@@ -196,7 +198,8 @@ export function Form(props) {
         >
           {children}
           {submitBtn === true && (
-            <div className="form-submit-button flex border-t border-divider mt-1 pt-1">
+            // <div className="form-submit-button flex border-t border-divider mt-1 pt-1">
+            <div className="form-submit-button flex border-divider mt-1 pt-1">
               <Button
                 title={btnText || 'Save'}
                 onAction={() => {
