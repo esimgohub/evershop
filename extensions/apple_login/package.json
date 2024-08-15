@@ -1,0 +1,14 @@
+{
+  "name": "apple_login",
+  "version": "1.0.0",
+  "description": "A Apple authentication extension for EverShop.",
+  "keywords": [],
+  "author": "",
+  "license": "",
+  "engines": {
+    "node": ">= 14.0.0"
+  },
+  "dependencies": {
+    "apple-auth": "^1.0.9"
+  }
+}
