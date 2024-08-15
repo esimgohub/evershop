@@ -69,7 +69,7 @@ module.exports = async (request, response, delegate, next) => {
     info('IP====', ip);
     info('customerCountry====', customerCountry);
 
-    const { cart_id } = request.body;
+    const { cart_id, method_code, method_name } = request.body;
 
     const cart = await select()
       .from('cart')
@@ -117,8 +117,12 @@ module.exports = async (request, response, delegate, next) => {
 
       const result = await insert('cart_address').given(address).execute(pool);
       await cart.setData('billing_address_id', parseInt(result.insertId, 10));
-      await saveCart(cart);
 
+      // Save payment method
+      await cart.setData('payment_method', method_code);
+      await cart.setData('payment_method_name', method_name);
+
+      await saveCart(cart);
 
       const orderId = await createOrder(cart);
 
@@ -175,7 +179,6 @@ module.exports = async (request, response, delegate, next) => {
         .where('order_address_id', '=', order.billing_address_id)
         .load(pool);
     }
-
 
     if (!order) {
       throw new OrderCreationError('Order create failed');
