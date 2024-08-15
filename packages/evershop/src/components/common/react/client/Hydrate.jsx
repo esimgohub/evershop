@@ -10,6 +10,7 @@ export default function Hydrate({ client }) {
     <Provider value={client}>
       <AppProvider value={window.eContext}>
         <Alert>
+          <Area id="blank-body" className="wrapper" />
           <Area id="body" className="wrapper" />
         </Alert>
       </AppProvider>
