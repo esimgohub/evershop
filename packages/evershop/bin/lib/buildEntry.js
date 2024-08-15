@@ -55,6 +55,7 @@ module.exports.buildEntry = async function buildEntry(
               sortOrder: layout.sortOrder,
               component: `---require('${module}')---`
             };
+
           } catch (e) {
             error(`Error parsing layout from ${module}`);
             error(e);
@@ -63,12 +64,30 @@ module.exports.buildEntry = async function buildEntry(
       });
 
       const isDeepLinkRoute = route.id === 'magicLogin' || route.id === 'failedPayment';
-      const isLoginRoute = routeId === 'login';
-      const isMyProfileRoute = routeId === 'account';
-      const isAccountSettingRoute = routeId === 'accountSetting';
+      const isLoginRoute = route.id === 'login';
+      const isMyProfileRoute = route.id === 'account';
+      const isAccountSettingRoute = route.id === 'accountSetting';
+
 
       if (isDeepLinkRoute || isLoginRoute || isMyProfileRoute || isAccountSettingRoute) {
+        if (isDeepLinkRoute) {
+          console.log("to delete body [deep link]", isDeepLinkRoute);
+        }
+
+        if (isLoginRoute) {
+          console.log("to delete body [login]", isLoginRoute);
+        }
+
+        if (isMyProfileRoute) {
+          console.log("to delete body [my profile]",isMyProfileRoute);
+        }
+
+        if (isAccountSettingRoute) {
+          console.log("to delete body [account setting]", isAccountSettingRoute);
+        }
+
         delete areas['body'];
+        delete areas['content'];
       }
       else {
         delete areas['blank-body'];
@@ -96,6 +115,10 @@ module.exports.buildEntry = async function buildEntry(
       if (!fs.existsSync(path.resolve(subPath, 'client'))) {
         await mkdir(path.resolve(subPath, 'client'), { recursive: true });
       }
+
+      console.log("aloo: ", path.resolve(subPath, 'client'));
+      console.log("path.resolve(subPath, 'client', 'entry.jsx'): ", path.resolve(subPath, 'client', 'entry.jsx'))
+
       await writeFile(
         path.resolve(subPath, 'client', 'entry.jsx'),
         contentClient

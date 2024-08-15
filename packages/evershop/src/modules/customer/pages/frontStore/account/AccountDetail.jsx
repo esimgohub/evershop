@@ -4,8 +4,6 @@ import Spinner from '@components/common/Spinner';
 import { Input } from '@components/common/form/fields/Input';
 
 export default function AccountDetails({ account }) {
-  console.log('account: ', account);
-
   if (!account) {
     return <Spinner />;
   }
