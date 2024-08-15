@@ -35,9 +35,22 @@ const inputProps = function buidProps(props) {
 };
 
 const Input = React.forwardRef((props, ref) => {
-  const { label, name, instruction, prefix, suffix, error, disabled } = props;
+  const {
+    label,
+    name,
+    instruction,
+    prefix,
+    className,
+    suffix,
+    error,
+    disabled
+  } = props;
   return (
-    <div className={`form-field-container ${error ? 'has-error' : null}`}>
+    <div
+      className={`form-field-container ${
+        error ? 'has-error' : null
+      } ${className}`}
+    >
       {label && <label htmlFor={name}>{label}</label>}
       <div
         className={`${

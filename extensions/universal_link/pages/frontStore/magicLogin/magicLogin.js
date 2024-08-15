@@ -43,7 +43,7 @@ module.exports = async (request, response, delegate, next) => {
           });
         } 
         
-        response.redirect(`/account`);
+        response.redirect(`/account/my-account`);
       })
 
       // Redirect to profile page

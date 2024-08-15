@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { _ } from '@evershop/evershop/src/lib/locale/translate';
-import { DeepLinkModal } from '../../../components/DeepLinkModal';
-import { useDevice } from '../../../hooks/useDevice';
 import Spinner from '@components/common/Spinner';
-const MobileDetect = require('mobile-detect');
 
 function FailedPayment() {
-  console.log("to failed payment page");
+  console.log('to failed payment page');
 
   // const [isAccessOnMobile, setAccessOnMobileStatus] = useState(null);
   // const { isMobile: isMobileScreen } = useDevice();

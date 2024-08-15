@@ -7,14 +7,14 @@ const {
 } = require('../../../../graphql/services/contextHelper');
 
 module.exports = (request, response, delegate, next) => {
-  // Check if the user is logged in
-  if (request.isCustomerLoggedIn()) {
-    // Redirect to homepage
-    response.redirect(buildUrl('account'));
+  // Check if the customer is logged in
+  if (!request.isCustomerLoggedIn()) {
+    // Redirect to admin dashboard
+    response.redirect(buildUrl('login'));
   } else {
     setContextValue(request, 'pageInfo', {
-      title: translate('Login'),
-      description: translate('Login')
+      title: translate('Account settings'),
+      description: translate('Account settings')
     });
     next();
   }
