@@ -47,7 +47,7 @@ module.exports = async (request, response, delegate, next) => {
     info('customerCountry====', customerCountry);
 
     const { order_uuid } = request.body;
-    const idempotencyKey = request.sessionID;
+    const idempotencyKey = request.locals.sessionID;
 
     let order = null;
     const query = getOrdersBaseQuery();

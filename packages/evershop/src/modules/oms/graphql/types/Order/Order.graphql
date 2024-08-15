@@ -44,18 +44,9 @@ type OrderItem {
   titleInfo: JSON
 }
 
-type StripePaymentMethod {
-  last4: String
-  brand: String
-  expMonth: Int
-  expYear: Int
-}
-
-type TazaPaymentMethod {
-  last4: String
-  brand: String
-  expMonth: Int
-  expYear: Int
+type paymentInfo {
+  type: String
+  details: JSON
 }
 
 """
@@ -99,8 +90,7 @@ type Order implements ShoppingCart {
   updatedAt: String!
   activities: [Activity]
   shipment: Shipment
-  stripePaymentMethod: StripePaymentMethod
-  tazaPaymentMethod: TazaPaymentMethod
+  paymentDetails: paymentInfo
 }
 
 """

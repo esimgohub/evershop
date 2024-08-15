@@ -45,11 +45,11 @@ async function makeRequest(idempotencyKey, method, urlPath, body = null) {
 
 const nodeFetchRequest = async (options, body) => {
   let bodyString = body ? JSON.stringify(body) : undefined;
-  const baseUrl = `https://${options.hostname}`;
+  const endpoint = options.hostname + options.path;
   try {
     console.log(`httpRequest options: ${JSON.stringify(options)}`);
     console.log(`httpRequest body: ${JSON.stringify(body)}`);
-    const response = await fetch(baseUrl + options.path, {
+    const response = await fetch(endpoint, {
       method: options.method,
       headers: options.headers,
       body: bodyString
