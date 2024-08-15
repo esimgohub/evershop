@@ -7,7 +7,7 @@ import axios from 'axios';
 import { buildUrl } from '@evershop/evershop/src/lib/router/buildUrl';
 import { Input } from '@components/common/form/fields/Input';
 import { toast } from 'react-toastify';
-import { getConfig } from '@evershop/evershop/src/lib/util/getConfig';
+// import { getConfig } from '@evershop/evershop/src/lib/util/getConfig';
 
 // import { getConfig } from '@evershop/evershop/src/lib/util/getConfig';
 
@@ -21,10 +21,7 @@ export default function AccountSettings({ homeUrl, account }) {
       const response = await axios.delete(
         // `${homeUrl}${buildUrl('deleteCustomerAccount')}`
         // `http://localhost:3000/api/v1/customers/${account.customerId}`,
-        `${getConfig(
-          'shop.homeUrl',
-          'http://localhost:3000'
-        )}/api/v1/customers/${account.customerId}`,
+        `http://45.119.85.182:3001/api/v1/customers/${account.customerId}`,
         null
       );
       const { data, error } = response.data;
