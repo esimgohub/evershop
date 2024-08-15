@@ -16,7 +16,7 @@ const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const smallestUnit = require('zero-decimal-currencies');
 const { error, info } = require('@evershop/evershop/src/lib/log/logger');
 const { makeRequest } = require('../../services/signature_generation');
-const { calculateExpiryPlus10Minutes } = require('../../services/utils');
+const { calculateExpiry } = require('../../services/utils');
 const { createOrder } = require('../../../checkoutApi/services/orderCreator');
 const geoip = require('geoip-lite');
 const { getOrdersBaseQuery } = require('@evershop/evershop/src/modules/oms/services/getOrdersBaseQuery');
@@ -263,7 +263,7 @@ const createPaymentIntent = async (order, customerCountry, pool) => {
         },
         transaction_description: generateTxnDescription(items),
         payment_methods: ['card'],
-        expires_at: calculateExpiryPlus10Minutes()
+        expires_at: calculateExpiry(10)
       };
       const txn = await makeRequest(order.uuid, 'POST', '/v3/checkout', body);
 

@@ -1,5 +1,3 @@
-const axios = require('axios');
-const https = require("https");
 const { error } = require('@evershop/evershop/src/lib/log/logger');
 const { getSetting } = require('@evershop/evershop/src/modules/setting/services/setting');
 
@@ -34,32 +32,37 @@ async function makeRequest(idempotencyKey, method, urlPath, body = null) {
       }
     };
 
-    const response = await httpRequest(options, body);
+    const response = await nodeFetchRequest(options, body);
+    if (!response) {
+      return null;
+    }
     return generateResponse(response);
   } catch (e) {
-    error("Error generating request options");
-    throw e;
+    error(JSON.stringify(e));
+    return null;
   }
 }
 
-const axiosRequest = async (options, body) => {
+const nodeFetchRequest = async (options, body) => {
   let bodyString = body ? JSON.stringify(body) : undefined;
-
+  const baseUrl = `https://${options.hostname}`;
   try {
-    const response = await axios.request({
+    console.log(`httpRequest options: ${JSON.stringify(options)}`);
+    console.log(`httpRequest body: ${JSON.stringify(body)}`);
+    const response = await fetch(baseUrl + options.path, {
       method: options.method,
-      baseURL: options.hostname,
-      url: options.path,
       headers: options.headers,
-      data: bodyString,
-      validateStatus: function (status) {
-        return [200, 201].includes(status);
-      },
+      body: bodyString
     });
-    return response.data;
+    console.log(`httpRequest response: ${JSON.stringify(response)}`);
+    if (response.ok) {
+      return response.json();
+    } else {
+      throw new Error(JSON.stringify(response));
+    }
   } catch (e) {
-    error("Error making request");
-    throw e;
+    error(`Failed to call Tazapay api: ${e}`);
+    return null;
   }
 };
 
@@ -76,57 +79,11 @@ async function authBasic() {
   }
 }
 
-async function httpRequest(options, body) {
-  return new Promise((resolve, reject) => {
-    try {
-      let bodyString = "";
-      if (body) {
-        bodyString = JSON.stringify(body);
-        bodyString = bodyString == "{}" ? "" : bodyString;
-      }
-
-      console.log(`httpRequest options: ${JSON.stringify(options)}`);
-      console.log(`httpRequest body: ${JSON.stringify(body)}`);
-      const req = https.request(options, (res) => {
-        let response = {
-          statusCode: res.statusCode,
-          headers: res.headers,
-          body: "",
-        };
-
-        res.on("data", (data) => {
-          response.body += data;
-        });
-
-        res.on("end", () => {
-          response.body = response.body ? JSON.parse(response.body) : {};
-          console.log(`httpRequest response: ${JSON.stringify(response)}`);
-
-          if (response.statusCode !== 200) {
-            return reject(response);
-          }
-
-          return resolve(response);
-        });
-      });
-
-      req.on("error", (error) => {
-        return reject(error);
-      });
-
-      req.write(bodyString);
-      req.end();
-    } catch (err) {
-      return reject(err);
-    }
-  });
-}
-
 function generateResponse (response) {
-  if (response.statusCode === 200) {
+  if (response?.status === 'success') {
     return {
       success: true,
-      redirect_url: response?.body?.data?.url
+      redirect_url: response?.data?.url
     };
   } else {
     // Invalid status
