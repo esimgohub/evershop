@@ -1,0 +1,8 @@
+type PayItem {
+    type: String
+    details: JSON
+}
+
+extend type Query {
+    paymentMethods: [JSON]
+}

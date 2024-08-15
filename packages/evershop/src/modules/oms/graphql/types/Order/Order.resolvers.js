@@ -29,28 +29,8 @@ module.exports = {
     paymentStatusList: () => getConfig('oms.order.paymentStatus', {})
   },
   Order: {
-    stripePaymentMethod: async ({ stripePaymentMethodId }) => {
-      const stripeSecretKey = await getSetting('stripeSecretKey', '');
-
-      if (!stripePaymentMethodId || !stripeSecretKey) {
-        return null;
-      }
-      const stripeInstance = new Stripe(stripeSecretKey);
-      const paymentMethod = await stripeInstance.paymentMethods.retrieve(
-        stripePaymentMethodId
-      );
-
-      if (!paymentMethod) {
-        return null
-      }
-      return {
-        last4: paymentMethod.card.last4,
-        brand: paymentMethod.card.brand,
-        expMonth: paymentMethod.card.exp_month,
-        expYear: paymentMethod.card.exp_year
-      }
-    },
-    tazaPaymentMethod: async ({ orderId }, _, { pool }) => {
+    paymentDetails: async ({ orderId, paymentMethod, stripePaymentMethodId }, _, { pool }) => {
+      const result = null;
       // get txnId form pay_txn by order id
       const paymentTransaction = await select()
         .from('payment_transaction')
@@ -58,43 +38,78 @@ module.exports = {
         .load(pool);
 
       if (!paymentTransaction?.transaction_id) {
-        return null
-      }
-
-      const accessKey = await getSetting('tazapayAccessKey', '');
-      const secretKey = await getSetting('tazapaySecretKey', '');
-      const userPwd = `${accessKey}:${secretKey}`;
-      const authBasic = `Basic ${Buffer.from(userPwd).toString('base64')}`;
-      const baseUrl = await getSetting('tazapayBaseUrl', null);
-      if (!baseUrl) {
         return null;
       }
-      const endpoint = `https://${baseUrl}/v3/payment_attempt/${paymentTransaction.transaction_id}`;
-      const options = {
-        method: 'GET',
-        headers: {
-          accept: 'application/json',
-          authorization: authBasic
-        }
-      };
 
-      const response = await fetch(endpoint, options)
-        .then(res => res.json())
-        .catch(() => null);
+      switch (paymentMethod) {
+        case 'tazapay': {
+          const accessKey = await getSetting('tazapayAccessKey', '');
+          const secretKey = await getSetting('tazapaySecretKey', '');
+          const userPwd = `${accessKey}:${secretKey}`;
+          const authBasic = `Basic ${Buffer.from(userPwd).toString('base64')}`;
+          const baseUrl = await getSetting('tazapayBaseUrl', null);
+          if (!baseUrl) {
+            return null;
+          }
+          const endpoint = `${baseUrl}/v3/payment_attempt/${paymentTransaction.transaction_id}`;
+          const options = {
+            method: 'GET',
+            headers: {
+              accept: 'application/json',
+              authorization: authBasic
+            }
+          };
 
-      if (!response?.data?.payment_method_details) {
-        return null
-      }
-      const paymentDetails = response.data.payment_method_details;
-      if (paymentDetails?.type === 'card' && paymentDetails?.card) {
-        return {
-          last4: paymentDetails.card.last4,
-          brand: paymentDetails.card.scheme,
-          expMonth: paymentDetails.card.expiry?.month,
-          expYear: paymentDetails.card.expiry?.year
+          const response = await fetch(endpoint, options)
+            .then(res => res.json())
+            .catch(() => null);
+
+          if (!response?.data?.payment_method_details) {
+            return null;
+          }
+          const paymentDetails = response.data.payment_method_details;
+          if (paymentDetails?.type === 'card' && paymentDetails?.card) {
+            return {
+              type: paymentDetails.type,
+              details: {
+                last4: paymentDetails.card.last4,
+                brand: paymentDetails.card.scheme,
+                expMonth: paymentDetails.card.expiry?.month,
+                expYear: paymentDetails.card.expiry?.year
+              }
+            };
+          }
+          break;
         }
+        case 'stripe': {
+          const stripeSecretKey = await getSetting('stripeSecretKey', '');
+
+          if (!stripePaymentMethodId || !stripeSecretKey) {
+            return null;
+          }
+          const stripeInstance = new Stripe(stripeSecretKey);
+          const paymentMethod = await stripeInstance.paymentMethods.retrieve(
+            stripePaymentMethodId
+          );
+
+          if (!paymentMethod) {
+            return null;
+          }
+          // TODO: check payment type
+          return {
+            type: 'card',
+            details: {
+              last4: paymentMethod.card.last4,
+              brand: paymentMethod.card.brand,
+              expMonth: paymentMethod.card.exp_month,
+              expYear: paymentMethod.card.exp_year
+            }
+          };
+        }
+        default:
+          break;
       }
-      return null
+      return result;
     },
     items: async ({ orderId }, _, { pool }) => {
       const items = await select()

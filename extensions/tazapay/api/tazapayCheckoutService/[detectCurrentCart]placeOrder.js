@@ -16,7 +16,7 @@ const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const smallestUnit = require('zero-decimal-currencies');
 const { error, info } = require('@evershop/evershop/src/lib/log/logger');
 const { makeRequest } = require('../../services/signature_generation');
-const { calculateExpiryPlus10Minutes } = require('../../services/utils');
+const { calculateExpiry } = require('../../services/utils');
 const { createOrder } = require('../../../checkoutApi/services/orderCreator');
 const geoip = require('geoip-lite');
 const { getOrdersBaseQuery } = require('@evershop/evershop/src/modules/oms/services/getOrdersBaseQuery');
@@ -69,7 +69,7 @@ module.exports = async (request, response, delegate, next) => {
     info('IP====', ip);
     info('customerCountry====', customerCountry);
 
-    const { cart_id } = request.body;
+    const { cart_id, method_code, method_name } = request.body;
 
     const cart = await select()
       .from('cart')
@@ -117,8 +117,12 @@ module.exports = async (request, response, delegate, next) => {
 
       const result = await insert('cart_address').given(address).execute(pool);
       await cart.setData('billing_address_id', parseInt(result.insertId, 10));
-      await saveCart(cart);
 
+      // Save payment method
+      await cart.setData('payment_method', method_code);
+      await cart.setData('payment_method_name', method_name);
+
+      await saveCart(cart);
 
       const orderId = await createOrder(cart);
 
@@ -175,7 +179,6 @@ module.exports = async (request, response, delegate, next) => {
         .where('order_address_id', '=', order.billing_address_id)
         .load(pool);
     }
-
 
     if (!order) {
       throw new OrderCreationError('Order create failed');
@@ -260,7 +263,7 @@ const createPaymentIntent = async (order, customerCountry, pool) => {
         },
         transaction_description: generateTxnDescription(items),
         payment_methods: ['card'],
-        expires_at: calculateExpiryPlus10Minutes()
+        expires_at: calculateExpiry(10)
       };
       const txn = await makeRequest(order.uuid, 'POST', '/v3/checkout', body);
 
