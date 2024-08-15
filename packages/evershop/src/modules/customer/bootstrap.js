@@ -124,8 +124,6 @@ module.exports = () => {
   };
 
   request.isCustomerLoggedIn = function isCustomerLoggedIn() {
-    console.log("isCustomerLoggedIn", this.session);
-
     return !!this.session?.customerID;
   };
 

@@ -64,8 +64,10 @@ module.exports.buildEntry = async function buildEntry(
 
       const isDeepLinkRoute = route.id === 'magicLogin' || route.id === 'failedPayment';
       const isLoginRoute = routeId === 'login';
+      const isMyProfileRoute = routeId === 'account';
+      const isAccountSettingRoute = routeId === 'accountSetting';
 
-      if (isDeepLinkRoute || isLoginRoute) {
+      if (isDeepLinkRoute || isLoginRoute || isMyProfileRoute || isAccountSettingRoute) {
         delete areas['body'];
       }
       else {

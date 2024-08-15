@@ -3,7 +3,6 @@ import React from 'react';
 import { toast } from 'react-toastify';
 import Area from '@components/common/Area';
 import { _ } from '@evershop/evershop/src/lib/locale/translate';
-import { buildUrl } from '@evershop/evershop/src/lib/router/buildUrl';
 import SettingIcon from '@heroicons/react/outline/CogIcon';
 import UserIcon from '@heroicons/react/outline/UserIcon';
 import Button from '@components/common/form/Button';
@@ -74,26 +73,28 @@ export default function Layout({ logoutUrl }) {
             >
               <ul className="space-y-[5px]">
                 <li>
-                  <a className="text-[18px] rounded-[8px] py-1 px-2 cursor-not-allowed flex items-center bg-[#43D3FE] text-[#ffffff] font-medium">
+                  <a
+                    href="/account/my-account"
+                    className="text-[18px] rounded-[8px] py-1 px-2 flex items-center cursor-pointer hover:text-[#ffffff] hover:bg-[#43D3FE] font-medium"
+                  >
                     <UserIcon
                       className="mr-1 text-[20px]"
                       width={20}
                       height={20}
                     />
-                    <span className="cursor-not-allowed">My Profile</span>
+                    <label className="cursor-pointer">My Profile</label>
                   </a>
                 </li>
-                <li className="cursor-pointer">
-                  <a
-                    href="/account/settings"
-                    className="text-[18px] rounded-[8px] py-1 px-2 flex items-center hover:text-[#ffffff] hover:bg-[#43D3FE] font-medium"
-                  >
+                <li>
+                  <a className="text-[18px] rounded-[8px] py-1 px-2 flex items-center bg-[#43D3FE] text-[#ffffff] cursor-not-allowed font-medium">
                     <SettingIcon
                       className="mr-1 text-[20px]"
                       width={20}
                       height={20}
                     />
-                    <span className="cursor-pointer">Account Settings</span>
+                    <label className="cursor-not-allowed">
+                      Account Settings
+                    </label>
                   </a>
                 </li>
               </ul>
@@ -108,8 +109,8 @@ export default function Layout({ logoutUrl }) {
           </div>
         </aside>
 
-        {/* <!-- My Account Content --> */}
-        <Area id="my-account" noOuter />
+        {/* <!-- Account Setting Content --> */}
+        <Area id="account-setting" noOuter />
       </div>
     </div>
   );

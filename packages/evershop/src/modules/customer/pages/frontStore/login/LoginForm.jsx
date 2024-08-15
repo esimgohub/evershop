@@ -76,13 +76,13 @@ export default function LoginForm({ sendMagicLink }) {
       </div>
 
       {/* Right side */}
-      <div class="w-2/5 px-[100px] flex items-center justify-center bg-[#43D3FE]">
-        <div class="rounded-lg shadow-lg">
-          <div class="mb-8">
+      <div className="w-2/5 px-[100px] flex items-center justify-center bg-[#43D3FE]">
+        <div className="rounded-lg shadow-lg">
+          <div className="mb-8">
             {/* <!-- Logo --> */}
             <img
               src="/images/gohub-logo.png"
-              className="w-[150px] mb-4"
+              classNameName="w-[150px] mb-4"
               alt="Gohub Logo"
             />
             {/* <!-- Illustration --> */}
@@ -92,11 +92,11 @@ export default function LoginForm({ sendMagicLink }) {
             />
           </div>
 
-          <h1 class="text-2xl font-bold text-gray-800">
+          <h1 className="text-2xl font-bold text-gray-800">
             SEAMLESS NETWORK CONNECTIVITY IN OVER 100 COUNTRIES!
           </h1>
 
-          <p class="mt-4 text-gray-600">
+          <p className="mt-4 text-gray-600">
             Become a member of Gohub to easily manage your eSIM like never
             before!
           </p>
