@@ -116,6 +116,27 @@ module.exports = () => {
     this.session.save(callback);
   };
 
+  request.loginCustomerViaExternalApp = async function loginCustomerViaExternalApp(
+    externalId,
+    callback,
+  ) {
+    const customer = await select()
+      .from('customer')
+      .where('external_id', '=', externalId)
+      .load(pool);
+
+    if (!customer) {
+      throw new Error(`Cannot found any customer with external id: ${externalId}`);
+    }
+
+    this.session.customerID = customer.customer_id;
+    // Delete the password field
+    delete customer.password;
+    // Save the customer in the request
+    this.locals.customer = customer;
+    this.session.save(callback);
+  };
+
   request.logoutCustomer = function logoutCustomer(callback) {
     this.session.customerID = undefined;
     this.locals.customer = undefined;

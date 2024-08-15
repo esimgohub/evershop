@@ -61,6 +61,21 @@ module.exports = async (request, response, delegate, next) => {
     request.session.loginSource = LoginSource.GOOGLE;
     request.locals.customer = customer;
 
+    // Set cookie for logged customer for web
+    await request.loginCustomerViaExternalApp(userInfo.id, (error) => {
+      if (error) {
+        response.status(INTERNAL_SERVER_ERROR);
+        response.json({
+          error: {
+            status: INTERNAL_SERVER_ERROR,
+            message
+          }
+        });
+      } 
+      
+      response.redirect(`/account`);
+    });
+
     response.redirect(success_redirect_url);
   } catch (err) {
     error(err);
