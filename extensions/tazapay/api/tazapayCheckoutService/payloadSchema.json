@@ -4,20 +4,20 @@
     "cart_id": {
       "type": "string"
     },
-    "payment_method": {
+    "method_code": {
       "type": "string"
     },
-    "payment_method_name": {
+    "method_name": {
       "type": "string"
     }
   },
-  "required": ["cart_id", "payment_method", "payment_method_name"],
+  "required": ["cart_id", "method_code", "method_name"],
   "additionalProperties": true,
   "errorMessage": {
     "properties": {
       "cart_id": "Cart id is required",
-      "payment_method": "Payment method is required",
-      "payment_method_name": "Payment method name is required"
+      "method_code": "Payment method is required",
+      "method_name": "Payment method name is required"
     }
   }
 }
