@@ -1,15 +1,8 @@
-import PropTypes from 'prop-types';
 import React, { useState } from 'react';
-import EmailIcon from '@heroicons/react/outline/MailIcon';
-import User from '@heroicons/react/outline/UserIcon';
 import Button from '@components/common/form/Button';
 import axios from 'axios';
-import { buildUrl } from '@evershop/evershop/src/lib/router/buildUrl';
 import { Input } from '@components/common/form/fields/Input';
 import { toast } from 'react-toastify';
-// import { getConfig } from '@evershop/evershop/src/lib/util/getConfig';
-
-// import { getConfig } from '@evershop/evershop/src/lib/util/getConfig';
 
 export default function AccountSettings({ homeUrl, account }) {
   const [deleteText, setDeleteText] = useState('');
@@ -21,7 +14,7 @@ export default function AccountSettings({ homeUrl, account }) {
       const response = await axios.delete(
         // `${homeUrl}${buildUrl('deleteCustomerAccount')}`
         // `http://localhost:3000/api/v1/customers/${account.customerId}`,
-        `http://45.119.85.182:3001/api/v1/customers/${account.customerId}`,
+        `https://app.gohub.cloud/api/v1/customers/${account.customerId}`,
         null
       );
       const { data, error } = response.data;
