@@ -10,7 +10,11 @@ export default function TazapayPayment({
     tazapayDislayName,
     tazapayPublishableKey,
     tazapaySecretKey,
-    tazapayEndpointSecret
+    tazapayEndpointSecret,
+    tazapaySuccessUrl,
+    tazapayCancelUrl,
+    tazapayBaseUrl,
+    tazapayAccessKey
   }
 }) {
   return (
@@ -43,6 +47,51 @@ export default function TazapayPayment({
       <Card.Session>
         <div className="grid grid-cols-3 gap-2">
           <div className="col-span-1 items-center flex">
+            <h4>Base Url</h4>
+          </div>
+          <div className="col-span-2">
+            <Field
+              type="text"
+              name="tazapayBaseUrl"
+              placeholder="Base Url"
+              value={tazapayBaseUrl}
+            />
+          </div>
+        </div>
+      </Card.Session>
+      <Card.Session>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="col-span-1 items-center flex">
+            <h4>Success Url</h4>
+          </div>
+          <div className="col-span-2">
+            <Field
+              type="text"
+              name="tazapaySuccessUrl"
+              placeholder="Success Url"
+              value={tazapaySuccessUrl}
+            />
+          </div>
+        </div>
+      </Card.Session>
+      <Card.Session>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="col-span-1 items-center flex">
+            <h4>Cancel Url</h4>
+          </div>
+          <div className="col-span-2">
+            <Field
+              type="text"
+              name="tazapayCancelUrl"
+              placeholder="Cancel Url"
+              value={tazapayCancelUrl}
+            />
+          </div>
+        </div>
+      </Card.Session>
+      <Card.Session>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="col-span-1 items-center flex">
             <h4>Publishable Key</h4>
           </div>
           <div className="col-span-2">
@@ -65,7 +114,7 @@ export default function TazapayPayment({
               type="text"
               name="tazapayAccessKey"
               placeholder="Access Key"
-              value={tazapayPublishableKey}
+              value={tazapayAccessKey}
             />
           </div>
         </div>
@@ -111,7 +160,10 @@ TazapayPayment.propTypes = {
     tazapayPublishableKey: PropTypes.string,
     tazapaySecretKey: PropTypes.string,
     tazapayAccessKey: PropTypes.string,
-    tazapayEndpointSecret: PropTypes.string
+    tazapayEndpointSecret: PropTypes.string,
+    tazapaySuccessUrl: PropTypes.string,
+    tazapayCancelUrl: PropTypes.string,
+    tazapayBaseUrl: PropTypes.string,
   }).isRequired
 };
 
@@ -129,6 +181,9 @@ export const query = `
       tazapaySecretKey
       tazapayAccessKey
       tazapayEndpointSecret
+      tazapaySuccessUrl
+      tazapayCancelUrl
+      tazapayBaseUrl
     }
   }
 `;

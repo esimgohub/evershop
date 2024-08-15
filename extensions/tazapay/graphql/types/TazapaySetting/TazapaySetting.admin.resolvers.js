@@ -16,6 +16,62 @@ module.exports = {
         return null;
       }
     },
+    tazapayAccessKey: (setting) => {
+      const tazapayConfig = getConfig('system.tazapay', {});
+      if (tazapayConfig.accessKey) {
+        return tazapayConfig.accessKey;
+      }
+      const tazapayAccessKey = setting.find(
+        (s) => s.name === 'tazapayAccessKey'
+      );
+      if (tazapayAccessKey) {
+        return tazapayAccessKey.value;
+      } else {
+        return null;
+      }
+    },
+    tazapayBaseUrl: (setting) => {
+      const tazapayConfig = getConfig('system.tazapay', {});
+      if (tazapayConfig.baseUrl) {
+        return tazapayConfig.baseUrl;
+      }
+      const tazapayBaseUrl = setting.find(
+        (s) => s.name === 'tazapayBaseUrl'
+      );
+      if (tazapayBaseUrl) {
+        return tazapayBaseUrl.value;
+      } else {
+        return null;
+      }
+    },
+    tazapaySuccessUrl: (setting) => {
+      const tazapayConfig = getConfig('system.tazapay', {});
+      if (tazapayConfig.successUrl) {
+        return tazapayConfig.successUrl;
+      }
+      const tazapaySuccessUrl = setting.find(
+        (s) => s.name === 'tazapaySuccessUrl'
+      );
+      if (tazapaySuccessUrl) {
+        return tazapaySuccessUrl.value;
+      } else {
+        return null;
+      }
+    },
+    tazapayCancelUrl: (setting) => {
+      const tazapayConfig = getConfig('system.tazapay', {});
+      if (tazapayConfig.cancelUrl) {
+        return tazapayConfig.cancelUrl;
+      }
+      const tazapayCancelUrl = setting.find(
+        (s) => s.name === 'tazapayCancelUrl'
+      );
+      if (tazapayCancelUrl) {
+        return tazapayCancelUrl.value;
+      } else {
+        return null;
+      }
+    },
     tazapaySecretKey: (setting, _, { user }) => {
       const tazapayConfig = getConfig('system.tazapay', {});
       if (tazapayConfig.secretKey) {

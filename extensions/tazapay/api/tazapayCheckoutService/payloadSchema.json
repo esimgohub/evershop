@@ -3,13 +3,21 @@
   "properties": {
     "cart_id": {
       "type": "string"
+    },
+    "payment_method": {
+      "type": "string"
+    },
+    "payment_method_name": {
+      "type": "string"
     }
   },
-  "required": ["cart_id"],
+  "required": ["cart_id", "payment_method", "payment_method_name"],
   "additionalProperties": true,
   "errorMessage": {
     "properties": {
-      "cart_id": "Cart id is required"
+      "cart_id": "Cart id is required",
+      "payment_method": "Payment method is required",
+      "payment_method_name": "Payment method name is required"
     }
   }
 }

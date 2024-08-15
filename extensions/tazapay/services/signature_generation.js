@@ -1,21 +1,24 @@
-const axios = require('axios');
-const https = require("https");
 const { error } = require('@evershop/evershop/src/lib/log/logger');
 const { getSetting } = require('@evershop/evershop/src/modules/setting/services/setting');
 
 /**
  * Makes a signed HTTP request to the specified URL path using the given HTTP method.
  *
+ * @param {string} idempotencyKey - The unique key for Tazapay payment.
  * @param {string} method - The HTTP method (e.g., 'GET', 'POST').
  * @param {string} urlPath - The URL path of the request.
  * @param {Object} [body=null] - The request payload (optional).
  * @returns {Promise<Object>} - The response data from the server.
  * @throws {Error} - Throws an error if the request fails.
  */
-async function makeRequest(method, urlPath, body = null) {
+async function makeRequest(idempotencyKey, method, urlPath, body = null) {
   try {
-    httpMethod = method;
-    httpBaseURL = "service-sandbox.tazapay.com";
+    const httpMethod = method;
+    const httpBaseURL = await getSetting('tazapayBaseUrl', null);
+    if (!httpBaseURL) {
+      error(`httpBaseURL: ${httpBaseURL}`);
+      throw new Error('Tazapay base URL is not configured');
+    }
 
     const options = {
       hostname: httpBaseURL,
@@ -24,36 +27,42 @@ async function makeRequest(method, urlPath, body = null) {
       headers: {
         accept: 'application/json',
         'content-type': 'application/json',
+        'Idempotency-Key': idempotencyKey,
         authorization: await authBasic()
       }
     };
 
-    const response = await httpRequest(options, body);
+    const response = await nodeFetchRequest(options, body);
+    if (!response) {
+      return null;
+    }
     return generateResponse(response);
   } catch (e) {
-    error("Error generating request options");
-    throw e;
+    error(JSON.stringify(e));
+    return null;
   }
 }
 
-const axiosRequest = async (options, body) => {
+const nodeFetchRequest = async (options, body) => {
   let bodyString = body ? JSON.stringify(body) : undefined;
-
+  const endpoint = options.hostname + options.path;
   try {
-    const response = await axios.request({
+    console.log(`httpRequest options: ${JSON.stringify(options)}`);
+    console.log(`httpRequest body: ${JSON.stringify(body)}`);
+    const response = await fetch(endpoint, {
       method: options.method,
-      baseURL: options.hostname,
-      url: options.path,
       headers: options.headers,
-      data: bodyString,
-      validateStatus: function (status) {
-        return [200, 201].includes(status);
-      },
+      body: bodyString
     });
-    return response.data;
+    console.log(`httpRequest response: ${JSON.stringify(response)}`);
+    if (response.ok) {
+      return response.json();
+    } else {
+      throw new Error(JSON.stringify(response));
+    }
   } catch (e) {
-    error("Error making request");
-    throw e;
+    error(`Failed to call Tazapay api: ${e}`);
+    return null;
   }
 };
 
@@ -70,57 +79,11 @@ async function authBasic() {
   }
 }
 
-async function httpRequest(options, body) {
-  return new Promise((resolve, reject) => {
-    try {
-      let bodyString = "";
-      if (body) {
-        bodyString = JSON.stringify(body);
-        bodyString = bodyString == "{}" ? "" : bodyString;
-      }
-
-      console.log(`httpRequest options: ${JSON.stringify(options)}`);
-      console.log(`httpRequest body: ${JSON.stringify(body)}`);
-      const req = https.request(options, (res) => {
-        let response = {
-          statusCode: res.statusCode,
-          headers: res.headers,
-          body: "",
-        };
-
-        res.on("data", (data) => {
-          response.body += data;
-        });
-
-        res.on("end", () => {
-          response.body = response.body ? JSON.parse(response.body) : {};
-          console.log(`httpRequest response: ${JSON.stringify(response)}`);
-
-          if (response.statusCode !== 200) {
-            return reject(response);
-          }
-
-          return resolve(response);
-        });
-      });
-
-      req.on("error", (error) => {
-        return reject(error);
-      });
-
-      req.write(bodyString);
-      req.end();
-    } catch (err) {
-      return reject(err);
-    }
-  });
-}
-
 function generateResponse (response) {
-  if (response.statusCode === 200) {
+  if (response?.status === 'success') {
     return {
       success: true,
-      redirect_url: response?.body?.data?.url
+      redirect_url: response?.data?.url
     };
   } else {
     // Invalid status
