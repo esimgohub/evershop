@@ -27,10 +27,7 @@ module.exports = async (request, response, delegate, next) => {
   const { token } = request.body;
 
   try {
-    console.log("to verify token", token);
     const payload = await verifyToken(token);
-
-    console.log("payload", payload);
 
     let customerQuery = select('customer.customer_id', 'customer_id')
       .select('customer.status', 'status')

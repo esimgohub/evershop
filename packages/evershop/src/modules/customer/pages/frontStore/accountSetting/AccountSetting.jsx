@@ -4,17 +4,16 @@ import axios from 'axios';
 import { Input } from '@components/common/form/fields/Input';
 import { toast } from 'react-toastify';
 
-export default function AccountSettings({ homeUrl, account }) {
+export default function AccountSettings({ baseUrl, account }) {
   const [deleteText, setDeleteText] = useState('');
   const [isDeletingAccount, setDeleteAccountStatus] = useState(false);
 
+  console.log('baseUrl: ', baseUrl);
   const handleDeleteAccount = async () => {
     try {
       setDeleteAccountStatus(true);
       const response = await axios.delete(
-        // `${homeUrl}${buildUrl('deleteCustomerAccount')}`
-        // `http://localhost:3000/api/v1/customers/${account.customerId}`,
-        `https://app.gohub.cloud/api/v1/customers/${account.customerId}`,
+        `${baseUrl}/api/v1/customers/${account.customerId}`,
         null
       );
       const { data, error } = response.data;
@@ -27,8 +26,6 @@ export default function AccountSettings({ homeUrl, account }) {
       toast.success('Account deleted successfully');
 
       window.location.href = '/account/login';
-
-      console.log('delete account response: ', response);
     } catch (error) {
       console.log('delete account error: ', error);
       toast.error(error.message);
@@ -83,7 +80,7 @@ export const layout = {
 
 export const query = `
   query Query {
-    homeUrl: url(routeId: "homepage"),
+    baseUrl
     account: currentCustomer {
       customerId
     }
