@@ -115,10 +115,6 @@ module.exports.buildEntry = async function buildEntry(
       if (!fs.existsSync(path.resolve(subPath, 'client'))) {
         await mkdir(path.resolve(subPath, 'client'), { recursive: true });
       }
-
-      console.log("aloo: ", path.resolve(subPath, 'client'));
-      console.log("path.resolve(subPath, 'client', 'entry.jsx'): ", path.resolve(subPath, 'client', 'entry.jsx'))
-
       await writeFile(
         path.resolve(subPath, 'client', 'entry.jsx'),
         contentClient
