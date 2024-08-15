@@ -24,8 +24,8 @@ module.exports = async (request, response, delegate, next) => {
     const payloadBuffer = request.body;
     const payloadString = payloadBuffer.toString('utf8'); // 'utf8' is the encoding
     const webhookData = JSON.parse(payloadString);
-
-
+    
+    await startTransaction(connection);
     const txnData = webhookData.data;
     // eslint-disable-next-line no-case-declarations
     // Load the order
@@ -44,7 +44,6 @@ module.exports = async (request, response, delegate, next) => {
       throw new Error(`Tazapay - Order not found with order uuid: ${txnData.reference_id}`);
     }
 
-    await startTransaction(connection);
     // Handle the event
     // todo: handle other event types: payment_attempt.failed, payment_attempt.succeeded, payment_method.processing
     switch (webhookData.type) {
@@ -54,6 +53,9 @@ module.exports = async (request, response, delegate, next) => {
 
         // Update the order
         // Create payment transaction
+        if (order.payment_status === 'paid') {
+          break;
+        }
         await insert('payment_transaction')
           .given({
             amount: parseFloat(
