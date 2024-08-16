@@ -71,9 +71,16 @@ module.exports = async (request, response, delegate, next) => {
             message
           }
         });
-      } 
-      
-      response.redirect(`/account`);
+      }
+    });
+
+    request.session.save((e) => {
+      if (e) {
+        error(e);
+        response.redirect(failureUrl);
+      } else {
+        response.redirect(successUrl);
+      }
     });
 
     response.redirect(success_redirect_url);
