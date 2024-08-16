@@ -49,13 +49,25 @@ module.exports = async (request, response, delegate, next) => {
     switch (webhookData.type) {
       case 'payment_attempt.succeeded': {
         // avoid `checkout.paid` and `payment_attempt.succeeded` to be processed twice on the same order
-        const { amount, charge_currency, id } = txnData;
-
         // Update the order
         // Create payment transaction
         if (order.payment_status === 'paid') {
           break;
         }
+        const { amount, charge_currency, id, payment_method_details } = txnData;
+        let payment_details = null;
+        if (payment_method_details?.type === 'card' && payment_method_details?.card) {
+          payment_details = JSON.stringify({
+            type: payment_method_details.type,
+            details: {
+              last4: payment_method_details.card.last4,
+              brand: payment_method_details.card.scheme,
+              expMonth: payment_method_details.card.expiry?.month,
+              expYear: payment_method_details.card.expiry?.year
+            }
+          });
+        }
+
         await insert('payment_transaction')
           .given({
             amount: parseFloat(
@@ -72,7 +84,7 @@ module.exports = async (request, response, delegate, next) => {
         await update('order')
           .given({
             payment_status: 'paid',
-
+            payment_details
           })
           .where('order_id', '=', order.order_id)
           .execute(connection);
