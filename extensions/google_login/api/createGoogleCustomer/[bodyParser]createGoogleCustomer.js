@@ -121,5 +121,6 @@ module.exports = async (request, response, delegate, next) => {
   response.$body = {
     data: customerResponseData
   };
+
   next();
 };
