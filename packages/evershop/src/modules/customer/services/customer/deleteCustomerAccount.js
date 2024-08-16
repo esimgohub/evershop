@@ -13,7 +13,6 @@ const {
 const { AccountStatus } = require('../../constant');
 
 async function deleteCustomerData(id, connection, customer) {
-  console.log("adduuu: ", customer)
   await update('customer').given({ email: `${customer.email}-deleted-${new Date().getTime()}`, status: AccountStatus.DISABLED, external_id: '' }).where('customer_id', '=', id).execute(connection);
 }
 /**

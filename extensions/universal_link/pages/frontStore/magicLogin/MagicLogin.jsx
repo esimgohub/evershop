@@ -25,20 +25,10 @@ function MagicLogin() {
       );
     }
 
-    return <p>Con me no</p>;
+    return <p>Loading...</p>;
   };
 
   return renderContent();
-
-  // return (
-  //   <DeepLinkModal title="Nofication" webPageUrl="https://esimgohub.com" />
-  // );
-
-  // return (
-  //   <div className="fixed top-0 left-0 bottom-0 right-0 flex justify-center">
-  //     <Spinner width={30} height={30} className="absolute-center" />
-  //   </div>
-  // );
 }
 
 export const layout = {
