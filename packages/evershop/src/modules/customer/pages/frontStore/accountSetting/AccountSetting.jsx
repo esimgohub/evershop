@@ -4,13 +4,13 @@ import axios from 'axios';
 import { Input } from '@components/common/form/fields/Input';
 import { toast } from 'react-toastify';
 
-export default function AccountSettings({ baseUrl, account }) {
+export default function AccountSettings({ baseUrl, loginUrl, account }) {
   const [deleteText, setDeleteText] = useState('');
   const [isDeletingAccount, setDeleteAccountStatus] = useState(false);
 
-  console.log('baseUrl: ', baseUrl);
   const handleDeleteAccount = async () => {
     try {
+      console.log('to handle delete account');
       setDeleteAccountStatus(true);
       const response = await axios.delete(
         `${baseUrl}/api/v1/customers/${account.customerId}`,
@@ -24,8 +24,9 @@ export default function AccountSettings({ baseUrl, account }) {
       setDeleteText('');
 
       toast.success('Account deleted successfully');
+      console.log('login Url delete ne: ', loginUrl);
 
-      window.location.href = '/account/login';
+      window.location.href = loginUrl;
     } catch (error) {
       console.log('delete account error: ', error);
       toast.error(error.message);
@@ -81,6 +82,7 @@ export const layout = {
 export const query = `
   query Query {
     baseUrl
+    loginUrl: url(routeId: "login")
     account: currentCustomer {
       customerId
     }

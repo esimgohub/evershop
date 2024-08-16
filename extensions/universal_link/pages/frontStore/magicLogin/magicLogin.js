@@ -1,5 +1,6 @@
 const MobileDetect = require('mobile-detect');
 const axios = require('axios');
+const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 
 module.exports = async (request, response, delegate, next) => {
   try {
@@ -20,7 +21,7 @@ module.exports = async (request, response, delegate, next) => {
 
     // Verify magic login
     try {
-      const verifiedTokenResponse = await axios.post(`${request.protocol}://${request.get('host')}/api/auth/magicLogin/verify`, {
+      const verifiedTokenResponse = await axios.post(`${getConfig('shop.homeUrl', 'http://localhost:3000')}/api/auth/magicLogin/verify`, {
         token,
       });
       const { data, error } = verifiedTokenResponse.data;

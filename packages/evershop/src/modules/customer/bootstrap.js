@@ -116,6 +116,15 @@ module.exports = () => {
     this.session.save(callback);
   };
 
+  request.deleteCustomerAccount = async function deleteCustomerAccount(callback) {
+    console.log("to here");
+    this.session.customerID = undefined;
+    this.locals.customer = undefined;
+    this.locals.user = undefined;
+
+    this.session.save(callback);
+  };
+
   request.loginCustomerViaExternalApp = async function loginCustomerViaExternalApp(
     externalId,
     callback,
@@ -140,6 +149,7 @@ module.exports = () => {
   request.logoutCustomer = function logoutCustomer(callback) {
     this.session.customerID = undefined;
     this.locals.customer = undefined;
+    this.locals.user = undefined;
 
     this.session.save(callback);
   };

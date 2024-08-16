@@ -14,6 +14,19 @@ module.exports = async (request, response, delegate, next) => {
     response.json({
       data: customer
     });
+
+    console.log("to delete customer account ne");
+    await request.deleteCustomerAccount((error) => {
+      if (error) {
+        response.status(INTERNAL_SERVER_ERROR);
+        response.json({
+          error: {
+            status: INTERNAL_SERVER_ERROR,
+            message
+          }
+        });
+      }
+    });
   } catch (e) {
     response.status(INTERNAL_SERVER_ERROR);
     response.json({
