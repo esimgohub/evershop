@@ -53,7 +53,7 @@ export default function Layout({ logoutUrl }) {
     <div className="bg-[#F9FAFB]">
       <div className="flex h-screen">
         {/* <!-- Sidebar --> */}
-        <aside className="w-64 py-3 border-r">
+        <aside className="w-64 py-3 shadow-[lightgray_4px_0px_15px_0px] hidden md:block">
           <div className="px-[28px] flex flex-col h-full">
             <div className="flex items-center mb-8">
               <img

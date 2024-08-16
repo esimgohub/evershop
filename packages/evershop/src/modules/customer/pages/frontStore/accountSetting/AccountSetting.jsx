@@ -35,10 +35,10 @@ export default function AccountSettings({ baseUrl, account }) {
   };
 
   return (
-    <div className="flex-1 p-[40px]">
+    <div className="flex-1 py-[40px] px-[20px] md:px-[40px]">
       <h2 className="mb-8 text-2xl font-semibold mb-3">Account Settings</h2>
 
-      <div className="flex bg-[#ffffff] border-[1px] shadow-[lightgray] rounded-[8px]">
+      <div className="flex bg-[#ffffff] shadow-[0_0_10px_0_rgba(0,0,0,0.1)] rounded-[8px]">
         <div className="w-full space-y-2 px-[32px] py-[40px]">
           <h3 className="text-[#CF3738] font-bold">Delete Account</h3>
 
@@ -60,7 +60,7 @@ export default function AccountSettings({ baseUrl, account }) {
 
               <Button
                 isLoading={isDeletingAccount}
-                title="Delete Account"
+                title="Confirm"
                 disabled={deleteText !== 'delete' && deleteText !== 'DELETE'}
                 variant="delete"
                 onAction={handleDeleteAccount}
