@@ -69,7 +69,7 @@ module.exports = async (request, response, delegate, next) => {
     info('IP====', ip);
     info('customerCountry====', customerCountry);
 
-    const { cart_id, method_code, method_name } = request.body;
+    const { cart_id, method_code } = request.body;
 
     const cart = await select()
       .from('cart')
@@ -120,7 +120,6 @@ module.exports = async (request, response, delegate, next) => {
 
       // Save payment method
       await cart.setData('payment_method', method_code);
-      await cart.setData('payment_method_name', method_name);
 
       await saveCart(cart);
 
