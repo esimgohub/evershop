@@ -1,7 +1,6 @@
-const axios = require('axios');
 const jwksClient = require('jwks-rsa');
 const jwt = require('jsonwebtoken');
-const { info, error } = require('@evershop/evershop/src/lib/log/logger');
+const { error } = require('@evershop/evershop/src/lib/log/logger');
 
 async function getSigningKey(kid) {
   const client = jwksClient({
@@ -11,7 +10,6 @@ async function getSigningKey(kid) {
   const key = await client.getSigningKey(kid);
   const signingKey = key.getPublicKey();
   return signingKey;
-
 }
 
 module.exports.getAppleUserInfo = async (id_token) => {
