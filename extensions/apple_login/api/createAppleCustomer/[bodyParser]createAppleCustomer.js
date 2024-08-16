@@ -92,7 +92,7 @@ module.exports = async (request, response, delegate, next) => {
     let email = null;
     if (appleUserInfo.email) {
       const privateRelayDomain = '@privaterelay.appleid.com';
-      const isPrivateEmail = appleUserInfo.email.endsWith();
+      const isPrivateEmail = appleUserInfo.email.endsWith(privateRelayDomain);
       email = isPrivateEmail ? null : appleUserInfo.email;
     }
 
