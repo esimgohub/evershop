@@ -145,20 +145,5 @@ module.exports = async (request, response, delegate, next) => {
     data: customerResponseData
   };
 
-  // Set cookie for logged customer
-  await request.loginCustomerViaExternalApp(facebookUserId, (error) => {
-    if (error) {
-      response.status(INTERNAL_SERVER_ERROR);
-      response.json({
-        error: {
-          status: INTERNAL_SERVER_ERROR,
-          message
-        }
-      });
-    } 
-    
-    response.redirect(`/account`);
-  });
-
   next();
 };

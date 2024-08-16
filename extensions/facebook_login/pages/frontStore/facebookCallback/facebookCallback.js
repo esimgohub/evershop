@@ -76,6 +76,20 @@ module.exports = async (request, response, delegate, next) => {
     request.session.loginSource = LoginSource.FACEBOOK;
 
     request.locals.customer = customer;
+
+    // Set cookie for logged customer
+    await request.loginCustomerViaExternalApp(userInfo.id, (error) => {
+      if (error) {
+        response.status(INTERNAL_SERVER_ERROR);
+        response.json({
+          error: {
+            status: INTERNAL_SERVER_ERROR,
+            message
+          }
+        });
+      }
+    });
+
     request.session.save((e) => {
       if (e) {
         error(e);
