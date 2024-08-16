@@ -13,7 +13,7 @@
   "errorMessage": {
     "properties": {
       "cart_id": "Cart id is required",
-      "method_code": "Payment method is required",
+      "method_code": "Payment method is required"
     }
   }
 }

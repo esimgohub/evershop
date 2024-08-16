@@ -254,7 +254,7 @@ const createPaymentIntent = async (order, customerCountry, pool) => {
         invoice_currency: order.currency,
         amount: smallestUnit.default(formatedGrandTotal, order.currency),
         customer_details: {
-          name: order.customer_full_name,
+          name: order.customer_full_name ?? 'Gohub Bear',
           // todo: use real email of customer
           email: order.customer_email ?? await getSetting('storeEmail', 'booking@gohub.vn'),
           // todo: refactor later, this is just for test

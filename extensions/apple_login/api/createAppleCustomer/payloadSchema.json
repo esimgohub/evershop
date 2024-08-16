@@ -3,57 +3,8 @@
   "properties": {
     "id_token": {
       "type": "string"
-    },
-    "user": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "object",
-          "properties": {
-            "first_name": {
-              "type": "string"
-            },
-            "last_name": {
-              "type": "string"
-            }
-          },
-          "required": ["first_name", "last_name"],
-          "additionalProperties": false,
-          "errorMessage": {
-            "required": {
-              "first_name": "first_name is required",
-              "last_name": "last_name is required"
-            }
-          }
-        },
-        "email": {
-          "type": "string",
-          "format": "email"
-        }
-      },
-      "required": ["name", "email"],
-      "additionalProperties": false,
-      "errorMessage": {
-        "required": {
-          "name": "name is required",
-          "email": "email is required"
-        },
-        "properties": {
-          "email": "email must be a valid email address"
-        }
-      }
     }
   },
-  "required": ["id_token", "user"],
-  "additionalProperties": false,
-  "errorMessage": {
-    "required": {
-      "id_token": "id_token is required",
-      "user": "user object is required"
-    },
-    "properties": {
-      "id_token": "id_token must be a string",
-      "user": "user object must be valid"
-    }
-  }
+  "required": ["id_token"],
+  "additionalProperties": true
 }
