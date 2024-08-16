@@ -89,12 +89,7 @@ module.exports = async (request, response, delegate, next) => {
     language = defaultLanguage;
     currency = defaultCurrency;
 
-    let email = null;
-    if (appleUserInfo.email) {
-      const privateRelayDomain = '@privaterelay.appleid.com';
-      const isPrivateEmail = appleUserInfo.email.endsWith(privateRelayDomain);
-      email = isPrivateEmail ? null : appleUserInfo.email;
-    }
+    let email = !appleUserInfo.is_private_email && appleUserInfo.email_verified ? appleUserInfo.email : null;
 
     customer = await insert('customer')
       .given({
