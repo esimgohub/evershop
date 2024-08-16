@@ -23,7 +23,7 @@ module.exports = async (request, response, delegate, next) => {
     console.log("full link url: ", `${request.protocol}://${request.get('host')}`);
 
     try {
-      const verifiedTokenResponse = await axios.post(`${getConfig('shop.homeUrl')}/api/auth/magicLogin/verify`, {
+      const verifiedTokenResponse = await axios.post(`${getConfig('shop.homeUrl', 'http://localhost:3000')}/api/auth/magicLogin/verify`, {
         token,
       });
       const { data, error } = verifiedTokenResponse.data;
