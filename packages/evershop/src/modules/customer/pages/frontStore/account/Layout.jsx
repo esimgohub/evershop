@@ -30,8 +30,6 @@ export default function Layout({ logoutUrl }) {
     }
   };
   const logout = async () => {
-    console.log('to logout');
-
     openAlert({
       heading: `Alert`,
       content: 'Are you sure you want to logout?',
@@ -41,7 +39,7 @@ export default function Layout({ logoutUrl }) {
         variant: 'normal'
       },
       secondaryAction: {
-        title: 'Save',
+        title: 'Confirm',
         onAction: handleConfirmLogout,
         variant: 'primary',
         isLoading: false
