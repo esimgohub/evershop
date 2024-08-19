@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import Spinner from '@components/common/Spinner';
 import { Input } from '@components/common/form/fields/Input';
+import Button from '@components/common/form/Button';
 
 export default function AccountDetails({ account }) {
   if (!account) {
@@ -16,29 +17,24 @@ export default function AccountDetails({ account }) {
         <div className="w-full space-y-[12px] px-[32px] py-[40px]">
           <h3 className="font-bold">Personal Information</h3>
 
-          <p className="text-[lightgray]">Contains basic user information</p>
+          <p className="text-[gray]">Contains basic user information</p>
 
-          <div>
-            <Input
-              label="First Name"
-              disabled
-              className="w-full md:w-[40%]"
-              value={account.firstName ? account.firstName : '-'}
-            />
+          <div className="w-full md:w-[40%]">
+            <Input label="First Name" disabled value={account.firstName} />
 
-            <Input
-              label="Last Name"
-              disabled
-              className="w-full md:w-[40%]"
-              value={account.firstName ? account.firstName : '-'}
-            />
+            <Input label="Last Name" disabled value={account.lastName} />
 
-            <Input
-              disabled
-              value={account.email}
-              className="w-full md:w-[40%]"
-              label="Email address"
-            />
+            <Input disabled value={account.email} label="Email address" />
+
+            {/* TODO: Add save button */}
+            {/* <div className="float-right mt-[16px]">
+              <Button
+                title="Save"
+                onAction={() => {
+
+                }}
+              />
+            </div> */}
           </div>
         </div>
       </div>
