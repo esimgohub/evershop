@@ -10,13 +10,6 @@ COPY packages ./packages
 RUN npm install
 RUN npm run build
 
-FROM node:18.16-alpine AS dependency
-WORKDIR /app
-
-COPY package*.json .
-RUN npm install -g npm@9
-RUN npm install
-
 FROM node:18.16-alpine AS production
 ENV NODE_ENV=production
 
@@ -30,6 +23,6 @@ COPY packages ./packages
 COPY package.json .
 COPY translations ./translations
 COPY --from=build /app/.evershop .evershop
-COPY --from=dependency /app/node_modules node_modules
+COPY --from=build /app/node_modules node_modules
 
 CMD ["npm", "run", "start"]
