@@ -2,9 +2,9 @@ FROM node:18.16-alpine
 WORKDIR /app
 RUN npm install -g npm@9
 COPY package*.json .
-# COPY themes ./themes
+COPY themes ./themes
 COPY extensions ./extensions
-# COPY public ./public
+COPY public ./public
 # COPY media ./media
 COPY config* ./config
 COPY translations ./translations
