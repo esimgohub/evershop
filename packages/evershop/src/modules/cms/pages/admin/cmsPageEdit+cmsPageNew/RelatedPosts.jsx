@@ -11,8 +11,7 @@ RelatedPosts.propTypes = {
   cmsPage: PropTypes.shape({
     status: PropTypes.number,
     includeInNave: PropTypes.number,
-    layout: PropTypes.string.isRequired,
-    index: PropTypes.number
+    layout: PropTypes.string.isRequired
   })
 };
 
@@ -30,7 +29,6 @@ export const query = `
     cmsPage(id: getContextValue("cmsPageId", null)) {
       status
       layout
-      index
     }
   }
 `;
