@@ -5,13 +5,13 @@
       "type": "string"
     },
     "first_name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "last_name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "email": {
-      "type": "string"
+      "type": ["string", "null"]
     }
   },
   "required": ["id_token"],
