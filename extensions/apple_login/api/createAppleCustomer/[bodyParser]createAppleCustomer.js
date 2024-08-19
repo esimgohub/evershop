@@ -16,7 +16,7 @@ const {
 } = require('../../services/mapper/createCurrencyResponse');
 
 module.exports = async (request, response, delegate, next) => {
-  const { id_token } = request.body;
+  const { id_token, first_name, last_name, email } = request.body;
 
   const appleUserInfo = await getAppleUserInfo(id_token);
   if (!appleUserInfo) {
@@ -89,15 +89,20 @@ module.exports = async (request, response, delegate, next) => {
     language = defaultLanguage;
     currency = defaultCurrency;
 
-    let email = !appleUserInfo.is_private_email && appleUserInfo.email_verified ? appleUserInfo.email : null;
+    let emailForSave = null;
+    if (email && !email.endsWith('@privaterelay.appleid.com')) {
+      emailForSave = email;
+    } else if (!appleUserInfo.is_private_email && appleUserInfo.email_verified) {
+      emailForSave = appleUserInfo.email;
+    }
 
     customer = await insert('customer')
       .given({
         external_id: appleUserInfo.sub,
-        email: email,
-        first_name: null,
-        last_name: null,
-        full_name: null,
+        email: emailForSave,
+        first_name,
+        last_name,
+        full_name: first_name && last_name ? `${first_name} ${last_name}` : null,
         status: AccountStatus.ENABLED,
         login_source: LoginSource.APPLE,
         language_id: defaultLanguage.id,
