@@ -5,14 +5,20 @@ const {
 const { getSetting } = require('../../../../setting/services/setting');
 
 module.exports = async (request, response, delegate, next) => {
-  setContextValue(request, 'pageInfo', {
-    title: await getSetting('storeName', 'EverShop'),
-    description: await getSetting(
-      'storeDescription',
-      'An e-commerce platform with Node and Postgres'
-    ),
-    url: buildUrl('homepage')
-  });
+  if (!request.isCustomerLoggedIn()) {
+    response.redirect(buildUrl('login'));
+  }
+  else {
+    response.redirect(buildUrl('account'))
+  }
 
-  next();
+  // TODO: Un-comment this when rework BE for web revamp
+  // setContextValue(request, 'pageInfo', {
+  //   title: await getSetting('storeName', 'EverShop'),
+  //   description: await getSetting(
+  //     'storeDescription',
+  //     'An e-commerce platform with Node and Postgres'
+  //   ),
+  //   url: buildUrl('homepage')
+  // });
 };
