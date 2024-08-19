@@ -15,7 +15,7 @@ WORKDIR /app
 
 COPY package*.json .
 RUN npm install -g npm@9
-RUN npm install --omit=dev
+RUN npm install
 
 FROM node:18.16-alpine AS production
 ENV NODE_ENV=production
