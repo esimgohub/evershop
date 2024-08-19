@@ -16,7 +16,7 @@ module.exports = {
       query
         .select(sql('"product".*'))
         .select(sql('"product_description".*'))
-        .select(sql('"product_inventory".*'))
+        // .select(sql('"product_inventory".*'))
         .select(sql('"product_image".*'))
         .select('SUM(order_item.qty)', 'soldQty')
         .select('SUM(order_item.product_id)', 'sum')
@@ -26,7 +26,7 @@ module.exports = {
           'order_item.product_id',
           'product.product_id',
           'product_description.product_description_id',
-          'product_inventory.product_inventory_id',
+          // 'product_inventory.product_inventory_id',
           'product_image.product_image_id'
         )
         .orderBy('soldQty', 'DESC')

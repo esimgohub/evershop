@@ -192,7 +192,7 @@ module.exports = () => {
         .load(pool);
 
         if (!foundCurrency) {
-            console.log("Not found currency with code: " + code);
+            // console.log("Not found currency with code: " + code);
             return;
         }
 
@@ -207,16 +207,18 @@ module.exports = () => {
         .load(pool);
 
         if (!foundCurrency) {
-            console.log("Not found currency with code: " + code);
+            // console.log("Not found currency with code: " + code);
             return;
         }
 
         const priceByRatio = convertFromUSD(parseFloat(rawPrice), foundCurrency.rate, isoCode);
-        
+
         // return formatCurrency(priceByRatio, isoCode, foundCurrency.language);
         return new Intl.NumberFormat(currencyLanguages[isoCode], {
           style: 'currency',
-          currency: isoCode
+          currency: isoCode,
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2
       }).format(priceByRatio)
     });
 };

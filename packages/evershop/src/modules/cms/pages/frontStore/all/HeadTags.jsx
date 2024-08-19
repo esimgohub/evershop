@@ -26,6 +26,7 @@ export default function HeadTags({
       <title>{title}</title>
       <meta name="description" content={description} />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      {/* <link rel="icon" type="image/x-icon" href="/images/favicon.png" /> */}
       {metas.map((meta, index) => (
         <meta key={index} {...meta} />
       ))}

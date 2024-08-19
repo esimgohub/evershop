@@ -1,11 +1,26 @@
 const { select, selectDistinct } = require('@evershop/postgres-query-builder');
-const { PlanType } = require('@evershop/evershop/src/modules/catalog/utils/enums/plan-type');
+const { DataType } = require('@evershop/evershop/src/modules/catalog/utils/enums/data-type');
 const { calculateDataAmountUnit } = require('@evershop/evershop/src/modules/catalog/utils/data-amount');
 const { CategoryType } = require('@evershop/evershop/src/modules/catalog/utils/enums/category-type')
 
 module.exports = {
   Product: {
     metadata: async (product, _, { pool, user }) => {
+      const parentProductAttributeQuery = select().from('product_attribute_value_index');
+      parentProductAttributeQuery
+        .leftJoin('attribute')
+        .on(
+          'attribute.attribute_id',
+          '=',
+          'product_attribute_value_index.attribute_id'
+        );
+      parentProductAttributeQuery.where(
+        'product_attribute_value_index.product_id',
+        '=',
+        product.parentProductId
+      );
+      const parentProductAttributes = await parentProductAttributeQuery.execute(pool);
+
       // Get metadata from attributes
       const productAttributeQuery = select().from('product_attribute_value_index');
       productAttributeQuery
@@ -20,21 +35,42 @@ module.exports = {
         '=',
         product.productId
       );
-      const attributes = await productAttributeQuery.execute(pool);
+      const productVariantAttributes = await productAttributeQuery.execute(pool);
+      
       
       // TODO: I want to extract attribute code name: data-amount and day-amount and multiply it
-      const foundDayAmountAttribute = attributes.find((a) => a.attribute_code === 'day-amount');
-      const dayAmountValue = foundDayAmountAttribute ? parseInt(foundDayAmountAttribute.option_text) : 1;
+      const foundDayAmountAttribute = productVariantAttributes.find((a) => a.attribute_code === 'day-amount');
+      const dayAmountValue = foundDayAmountAttribute ? parseFloat(foundDayAmountAttribute.option_text) : 1;
 
-      const foundPlanTypeAttribute = attributes.find((a) => a.attribute_code === 'plan-type');
+      const foundDataTypeAttribute = parentProductAttributes.find((a) => a.attribute_code === 'data-type');
 
-      const foundDataAmountAttribute = attributes.find((a) => a.attribute_code === 'data-amount');
-      const dataAmountValue = foundDataAmountAttribute ? parseInt(foundDataAmountAttribute.option_text) : 1;
+      let dataAmountValue;
+      const foundDataAmountAttribute = productVariantAttributes.find((a) => a.attribute_code === 'data-amount');
+      if (foundDataAmountAttribute) {
+        const isUnlimitedData = foundDataAmountAttribute.option_text.toLowerCase() === 'unlimited';
+
+        dataAmountValue = isUnlimitedData ? -1 : parseFloat(foundDataAmountAttribute.option_text);
+      }
 
       // NOTE: The Data Amount Unit must be required always.
-      const foundDataAmountUnit = attributes.find((a) => a.attribute_code === 'data-amount-unit');
+      const foundDataAmountUnit = productVariantAttributes.find((a) => a.attribute_code === 'data-amount-unit');
 
-      const totalDataAmount = foundPlanTypeAttribute.option_text === PlanType.DailyData ?  dayAmountValue * dataAmountValue : dataAmountValue;
+      let totalDataAmount;
+      
+      const isUnlimitedData = foundDataAmountAttribute.option_text.toLowerCase() === 'unlimited';
+      if (isUnlimitedData) {
+        totalDataAmount = -1;
+      }
+      else {
+        const isDailyData = foundDataTypeAttribute.option_text === DataType.DailyData;
+        if (isDailyData) {
+          totalDataAmount = dayAmountValue * dataAmountValue;
+        }
+        else {
+          totalDataAmount = dataAmountValue;
+        }
+      }
+      
 
       // Get metadata on categories
       const productCategoryQuery = select().from('product_category');
@@ -49,10 +85,23 @@ module.exports = {
 
       const categories = await productCategoryQuery.execute(pool);
 
+      let totalDataAmountText;
+      if (isUnlimitedData) {
+        totalDataAmountText = "Unlimited";
+      }
+      else {
+        let totalDataAmountValue = totalDataAmount;
+        if (totalDataAmount > 1024) {
+          totalDataAmountValue = totalDataAmount / 1000;
+        }
+
+        totalDataAmountText = `${totalDataAmountValue}${calculateDataAmountUnit(totalDataAmount, foundDataAmountUnit ? foundDataAmountUnit.option_text : 'GB')}`
+      }
+      
 
       return {
-        totalDataAmount: `${totalDataAmount < 10 ? `0${totalDataAmount}` : totalDataAmount} ${calculateDataAmountUnit(totalDataAmount, foundDataAmountUnit ? foundDataAmountUnit.option_text : 'GB')}`,
-        supportedCountries: categories.length !== 0 ? categories.length - 1 : 0
+        totalDataAmount: totalDataAmountText,
+        supportedCountries: categories.length !== 0 ? categories.length - 1 : 0,
       };
     }
   }

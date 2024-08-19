@@ -13,6 +13,7 @@ const { createNewCart } = require('@evershop/evershop/src/modules/checkout/servi
 const { setContextValue } = require('@evershop/evershop/src/modules/graphql/services/contextHelper');
 const { createOrder } = require('../../services/orderCreator');
 const { getSetting } = require('@evershop/evershop/src/modules/setting/services/setting');
+const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 
 // eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
@@ -70,7 +71,7 @@ module.exports = async (request, response, delegate, next) => {
         .and('status', '=', 1)
         .load(pool);
       // Create a new cart for the customer
-      const newCart = await createNewCart(request.locals.sessionID, customer);
+      const newCart = await createNewCart(request.locals.sessionID, request.cookies.isoCode || getConfig('shop.currency', 'USD'), customer || {});
 
       // Add items from the current cart to the new cart with `is_active` set to `false`
       const unPurchasedItems = cart.getUnActiveItems();
@@ -79,7 +80,12 @@ module.exports = async (request, response, delegate, next) => {
         await Promise.all(unPurchasedItems.map(async (item) => {
           const prod = await item.getProduct();
           const qty = await item.getData('qty');
+          const categoryId = await item.getData('category_id');
+          const tripStr = await item.getData('trip');
+
           await newCart.addItem(prod.product_id, qty);
+          await item.updateCategoryId(parseInt(categoryId, 10));
+          await item.cloneTripDateStr(tripStr);
         }));
         await saveCart(newCart);
 

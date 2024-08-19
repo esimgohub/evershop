@@ -6,16 +6,45 @@ import './Button.scss';
 function Button({
   title,
   outline = false,
-  variant = 'primary',
+  variant = 'primary' | 'delete' | 'text' | 'normal',
+  disabled = false,
   onAction,
   url = undefined,
   isLoading = false,
-  type = 'button'
+  type = 'button',
+  buttonClassName = ''
 }) {
   const className = ['button', variant];
   if (outline === true) className.push('outline');
   if (isLoading === true) className.push('loading');
 
+  let backgroundColor;
+  let color;
+  let border;
+
+  switch (variant) {
+    case 'normal': {
+      backgroundColor = '!bg-[white]';
+      color = '!text-[black]';
+      break;
+    }
+    case 'text': {
+      backgroundColor = '!bg-[rgba(255, 0, 0, 0.4)]';
+      color = '!text-[gray]';
+      border = '!border-none';
+      break;
+    }
+    case 'delete': {
+      backgroundColor = '!bg-[#CF3738]';
+      color = '!text-[white]';
+      break;
+    }
+    default: {
+      backgroundColor = '!bg-[#43D3FE]';
+      color = '!text-[white]';
+      break;
+    }
+  }
   const onActionFunc = (e) => {
     e.preventDefault();
     if (isLoading === true) return;
@@ -25,10 +54,15 @@ function Button({
     return (
       <button
         type={type}
+        disabled={disabled}
         onClick={(e) => {
           onActionFunc(e);
         }}
-        className={className.join(' ')}
+        className={`${className.join(
+          ' '
+        )} ${buttonClassName} !rounded-[8px] ${backgroundColor} ${border} ${color} ${
+          disabled && '!bg-[lightgray] opacity-[0.8] cursor-not-allowed'
+        } &:hover:opacity-80`}
       >
         <span>{title}</span>
         {isLoading === true && (
@@ -67,7 +101,7 @@ function Button({
     );
   } else {
     return (
-      <a href={url} className={className.join(' ')}>
+      <a href={url} className={`${color} ${className.join(' ')}`}>
         <span>{title}</span>
       </a>
     );

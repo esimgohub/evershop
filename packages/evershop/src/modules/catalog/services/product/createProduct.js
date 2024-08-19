@@ -208,11 +208,11 @@ async function createProduct(data, context) {
     })(productData, connection);
 
     // Insert product inventory
-    await hookable(insertProductInventory, { ...context, connection, product })(
-      productData,
-      product.insertId,
-      connection
-    );
+    // await hookable(insertProductInventory, { ...context, connection, product })(
+    //   productData,
+    //   product.insertId,
+    //   connection
+    // );
 
     // Insert product attributes
     await hookable(insertProductAttributes, {

@@ -116,6 +116,7 @@ module.exports = async (request, response, delegate, next) => {
         email: facebookUserInfo.email,
         first_name: facebookUserInfo.given_name,
         last_name: facebookUserInfo.family_name,
+        full_name: facebookUserInfo.given_name + facebookUserInfo.family_name,
         avatar_url: facebookUserInfo.picture,
         status: AccountStatus.ENABLED,
         language_id: defaultLanguage.id,
@@ -143,5 +144,6 @@ module.exports = async (request, response, delegate, next) => {
   response.$body = {
     data: customerResponseData
   };
+
   next();
 };

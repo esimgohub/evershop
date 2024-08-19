@@ -103,6 +103,8 @@ module.exports = async (request, response, delegate, next) => {
     request.session.customerID = customer.customer_id;
     request.session.loginSource = LoginSource.MAGIC_LINK;
 
+    console.log("request session", request.session);
+
     response.status(OK);
     response.$body = {
       data: {

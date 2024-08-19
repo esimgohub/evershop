@@ -1,4 +1,4 @@
 {
   "methods": ["GET"],
-  "path": "/account"
+  "path": "/account/my-account"
 }

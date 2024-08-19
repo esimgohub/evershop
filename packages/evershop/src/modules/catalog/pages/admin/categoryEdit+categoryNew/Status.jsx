@@ -30,6 +30,13 @@ export default function Status({ category }) {
           }
         />
       </Card.Session>
+      <Card.Session title="Sort Order">
+        <Field
+          type="text"
+          name="sort_order"
+          value={category?.sortOrder === undefined ? 1 : category.sortOrder}
+        />
+      </Card.Session>
     </Card>
   );
 }
@@ -37,7 +44,8 @@ export default function Status({ category }) {
 Status.propTypes = {
   category: PropTypes.shape({
     status: PropTypes.number,
-    includeInNav: PropTypes.number
+    includeInNav: PropTypes.number,
+    sortOrder: PropTypes.number
   })
 };
 
@@ -47,7 +55,7 @@ Status.defaultProps = {
 
 export const layout = {
   areaId: 'rightSide',
-  sortOrder: 15
+  sortOrder: 16
 };
 
 export const query = `
@@ -55,6 +63,7 @@ export const query = `
     category(id: getContextValue("categoryId", null)) {
       status
       includeInNav
+      sortOrder
     }
   }
 `;

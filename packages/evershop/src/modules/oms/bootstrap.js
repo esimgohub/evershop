@@ -29,15 +29,25 @@ module.exports = () => {
       },
       paymentStatus: {
         pending: {
-          name: 'Pending',
+          name: 'Processing',
           badge: 'default',
-          progress: 'incomplete',
+          progress: 'processing',
           isDefault: true
         },
         paid: {
-          name: 'Paid',
+          name: 'Completed',
           badge: 'success',
-          progress: 'complete'
+          progress: 'completed'
+        },
+        canceled: {
+          name: 'Canceled',
+          badge: 'danger',
+          progress: 'canceled'
+        },
+        failed: {
+          name: 'Failed',
+          badge: 'danger',
+          progress: 'failed'
         }
       }
     },

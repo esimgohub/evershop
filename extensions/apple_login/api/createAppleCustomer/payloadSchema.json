@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "properties": {
+    "id_token": {
+      "type": "string"
+    }
+  },
+  "required": ["id_token"],
+  "additionalProperties": true
+}

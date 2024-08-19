@@ -461,6 +461,12 @@ class OrderBy {
     this._direction = 'DESC';
   }
 
+  addCustomOrderBy(sqlQuery) {
+    this._field = sqlQuery;
+    this._direction = '';
+    return this;
+  }
+
   add(field, direction) {
     this._field = fieldResolve(field);
     this._direction = direction == null ? 'DESC' : direction;
@@ -604,6 +610,11 @@ class SelectQuery extends Query {
 
   orderBy(field, direction = 'ASC') {
     this._orderBy.add(field, direction);
+    return this;
+  }
+
+  orderByCustomQuery(sqlQuery) {
+    this._orderBy.addCustomOrderBy(sqlQuery);
     return this;
   }
 
@@ -778,6 +789,7 @@ class UpdateQuery extends Query {
       FROM information_schema.columns 
       WHERE table_name = '${this._table}'`
     );
+
     let set = [];
     rows.forEach((field) => {
       if (['BY DEFAULT', 'ALWAYS'].includes(field['identity_generation'])) {
@@ -806,6 +818,7 @@ class UpdateQuery extends Query {
     ]
       .filter((e) => e !== '')
       .join(' ');
+
     return sql;
   }
 
@@ -1051,6 +1064,7 @@ module.exports = {
 function select() {
   let select = new SelectQuery();
   let args = [...arguments];
+
   if (args[0] === '*') {
     select.select('*');
     return select;
