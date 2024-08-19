@@ -26,6 +26,7 @@ export default function AccountDetails({ account }) {
 
             <Input disabled value={account.email} label="Email address" />
 
+            {/* TODO: Add save button */}
             {/* <div className="float-right mt-[16px]">
               <Button
                 title="Save"

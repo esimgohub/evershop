@@ -11,6 +11,8 @@ module.exports = async (request, response, delegate, next) => {
   else {
     response.redirect(buildUrl('account'))
   }
+
+  // TODO: Un-comment this when rework BE for web revamp
   // setContextValue(request, 'pageInfo', {
   //   title: await getSetting('storeName', 'EverShop'),
   //   description: await getSetting(
