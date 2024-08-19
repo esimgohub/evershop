@@ -262,7 +262,7 @@ const createPaymentIntent = async (order, customerCountry, pool) => {
         },
         transaction_description: generateTxnDescription(items),
         payment_methods: ['card'],
-        expires_at: calculateExpiry(10)
+        expires_at: calculateExpiry(20)
       };
       const txn = await makeRequest(order.uuid, 'POST', '/v3/checkout', body);
 
