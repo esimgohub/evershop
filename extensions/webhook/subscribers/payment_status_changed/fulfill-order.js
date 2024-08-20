@@ -64,9 +64,9 @@ module.exports = async function sendFulfillOrder(data) {
       language: 'en',
       paymentStatus: order.payment_status,
       orderDetails: orderDetailsPayload,
-      subTotal: order.sub_total_old_price,
-      totalDiscount: order.sub_total_discount_amount,
-      total: order.grand_total
+      subTotal: parseFloat(order.sub_total_old_price),
+      totalDiscount: parseFloat(order.sub_total_discount_amount),
+      total: parseFloat(order.grand_total)
     };
 
     info(`sendFulfillOrder order payload: ${JSON.stringify(orderPayload)}`);
