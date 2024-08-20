@@ -45,6 +45,8 @@ module.exports = {
       };
 
       const socialConfigs = setting.filter(s => s.name.toLowerCase().startsWith("social"));
+
+      console.log("socialConfigs: ", socialConfigs);
       
       const numberOfSocialFields = 3;
       const totalSocial = socialConfigs.length / numberOfSocialFields;
@@ -55,8 +57,10 @@ module.exports = {
         const socialIcon = setting.find(s => s.name === `social${index}IconUrl`);
         const socialUrl = setting.find(s => s.name === `social${index}Url`);
         const socialIndex = setting.find(s => s.name === `social${index}Index`);
+        const socialName = setting.find(s => s.name === `social${index}Name`);
 
         socialResponses.push({
+          name: socialName.value,
           url: socialUrl.value,
           icon: `${homeUrl}${socialIcon.value}`,
           index: socialIndex.value

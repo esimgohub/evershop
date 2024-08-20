@@ -12,10 +12,12 @@ function SocialLink(props) {
 
   console.log('setting: ', setting);
 
-  const facebookRef = useRef();
-  const instagramRef = useRef();
-  const tiktokRef = useRef();
-  const threadRef = useRef();
+  // const facebookRef = useRef();
+  // const instagramRef = useRef();
+  // const tiktokRef = useRef();
+  // const threadRef = useRef();
+
+  const refs = useRef([]);
 
   const { social } = setting;
 
@@ -25,6 +27,10 @@ function SocialLink(props) {
   const [threadIcon, setThreadIcon] = useState(social[3]?.icon);
 
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    refs.current = refs.current.slice(0, sliders.length);
+  }, [sliders]);
 
   const handleFacebookIconChange = (e) => {
     e.persist();
