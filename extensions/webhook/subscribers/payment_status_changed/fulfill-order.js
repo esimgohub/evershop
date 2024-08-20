@@ -46,7 +46,7 @@ module.exports = async function sendFulfillOrder(data) {
       return {
         itemCode: item.product_sku,
         quantity: item.qty,
-        price: parseFloat(item.total),
+        price: parseFloat(item.final_price),
         discount: parseFloat(item.discount_amount)
       };
     });
@@ -60,7 +60,10 @@ module.exports = async function sendFulfillOrder(data) {
       shippingEmail: order.order_email || order.customer_email,
       language: 'en',
       paymentStatus: order.payment_status,
-      orderDetails: orderDetailsPayload
+      orderDetails: orderDetailsPayload,
+      subTotal: order.sub_total_old_price,
+      totalDiscount: order.sub_total_discount_amount,
+      total: order.grand_total
     };
 
     info(`sendFulfillOrder order payload: ${JSON.stringify(orderPayload)}`);
