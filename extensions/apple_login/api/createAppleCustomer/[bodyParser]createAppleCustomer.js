@@ -14,6 +14,7 @@ const {
 const {
   createCurrencyResponse
 } = require('../../services/mapper/createCurrencyResponse');
+const randomStr = require('@evershop/evershop/src/modules/base/services/randomStr');
 
 module.exports = async (request, response, delegate, next) => {
   const { id_token, first_name, last_name, email } = request.body;
@@ -97,8 +98,8 @@ module.exports = async (request, response, delegate, next) => {
       emailForSave = appleUserInfo.email;
     }
 
-    const fName = typeof first_name === 'string' ? first_name.trim() : 'Gohub';
-    const lName = typeof last_name === 'string' ? last_name.trim() : 'Bear';
+    const fName = typeof first_name === 'string' ? first_name.trim() : 'Bear';
+    const lName = typeof last_name === 'string' ? last_name.trim() : randomStr();
 
     customer = await insert('customer')
       .given({
