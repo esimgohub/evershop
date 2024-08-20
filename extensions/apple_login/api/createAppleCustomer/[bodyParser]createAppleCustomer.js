@@ -90,19 +90,23 @@ module.exports = async (request, response, delegate, next) => {
     currency = defaultCurrency;
 
     let emailForSave = null;
-    if (email && !email.endsWith('@privaterelay.appleid.com')) {
+    const privateReplyDomain = '@privaterelay.appleid.com';
+    if (email && !email.endsWith(privateReplyDomain)) {
       emailForSave = email;
-    } else if (!appleUserInfo.is_private_email && appleUserInfo.email_verified) {
+    } else if (!appleUserInfo?.email?.endsWith(privateReplyDomain) && appleUserInfo?.email_verified) {
       emailForSave = appleUserInfo.email;
     }
+
+    const fName = typeof first_name === 'string' ? first_name.trim() : 'Gohub';
+    const lName = typeof last_name === 'string' ? last_name.trim() : 'Bear';
 
     customer = await insert('customer')
       .given({
         external_id: appleUserInfo.sub,
         email: emailForSave,
-        first_name,
-        last_name,
-        full_name: first_name && last_name ? `${first_name} ${last_name}` : null,
+        first_name: fName,
+        last_name: lName,
+        full_name: `${fName} ${lName}`,
         status: AccountStatus.ENABLED,
         login_source: LoginSource.APPLE,
         language_id: defaultLanguage.id,
