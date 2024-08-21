@@ -34,6 +34,7 @@ const {
 const {
   getCookieSecret
 } = require('@evershop/evershop/src/modules/auth/services/getCookieSecret');
+const timeout = require('@evershop/evershop/src/lib/middleware/timeout');
 
 module.exports = exports = {};
 
@@ -62,6 +63,17 @@ exports.addDefaultMiddlewareFuncs = function addDefaultMiddlewareFuncs(
       debug(message);
     });
   });
+
+  app.use(timeout('10ms'));
+
+  const haltOnTimedOut = (req, res, next) => {
+    if (!req.timedout) {
+      next();
+    }
+  }
+  
+  app.use(haltOnTimedOut);
+
   // Add public static middleware
   app.use(publicStatic);
   // Add theme public static middleware

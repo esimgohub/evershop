@@ -85,7 +85,7 @@ routes.forEach((route) => {
 
 module.exports = {
   app,
-  bootstrap: async (server) => {
+  bootstrap: async (server) => {    
     server.listen();
     await once(server, 'listening');
     return server.address().port;

@@ -56,7 +56,10 @@
   },
   "dependencies": {
     "@evershop/evershop": "^1.1.0",
+    "connect-timeout": "^1.9.0",
     "crypto-js": "^4.2.0",
-    "geoip-lite": "^1.4.10"
+    "geoip-lite": "^1.4.10",
+    "on-finished": "^2.4.1",
+    "on-headers": "^1.0.2"
   }
 }
