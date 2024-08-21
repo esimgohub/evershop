@@ -98,7 +98,12 @@ exports.createOrder = async function createOrder(cart) {
 
     const items = cart.getActiveItems();
     const nextCart = { ...cart.exportData() };
-    nextCart.total_qty = items.length;
+    let itemCount = 0;
+    items.forEach((i) => {
+      itemCount += parseInt(i.getData('qty'), 10);
+    });
+
+    nextCart.total_qty = itemCount;
 
     const order = await insert('order')
       .given({

@@ -98,7 +98,6 @@ module.exports = async (request, response, delegate, next) => {
           .execute(connection);
 
         // Emit event to add order placed event
-        await emit('order_placed', { ...order });
         await emit('payment_status_changed', { ...order });
 
         break;
