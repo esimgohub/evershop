@@ -121,7 +121,8 @@ async function updateCustomerData(data, connection) {
       last_name && last_name.trim() !== customer.last_name
         ? last_name
         : customer.last_name,
-    email: updatedEmail
+    email: updatedEmail,
+    is_first_login: false
   };
 
   try {
@@ -132,6 +133,7 @@ async function updateCustomerData(data, connection) {
 
     if (newCustomer.login_source === LoginSource.MAGIC_LINK)
       Object.assign(customer, newCustomer);
+
     return {
       email: newCustomer.email,
       firstName: newCustomer.first_name,
@@ -145,7 +147,8 @@ async function updateCustomerData(data, connection) {
       currency: {
         code: customerCurrency.code,
         name: customerCurrency.name
-      }
+      },
+      isFirstLogin: newCustomer.is_first_login
     };
   } catch (e) {
     if (!e.message.includes('No data was provided')) {
