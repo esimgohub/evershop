@@ -249,8 +249,8 @@ const createPaymentIntent = async (order, customerCountry, pool) => {
 
       const body = {
         reference_id: order.uuid,
-        success_url: `${successUrl}?uuid=${order.uuid}`,
-        cancel_url: `${cancelUrl}?uuid=${order.uuid}`,
+        success_url: `${successUrl}&uuid=${order.uuid}`,
+        cancel_url: `${cancelUrl}&uuid=${order.uuid}`,
         invoice_currency: order.currency,
         amount: smallestUnit.default(formatedGrandTotal, order.currency),
         customer_details: {
