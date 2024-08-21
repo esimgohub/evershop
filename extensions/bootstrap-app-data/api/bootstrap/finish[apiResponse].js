@@ -6,5 +6,6 @@ module.exports = async (request, response, delegate, next) => {
     message: "Uploading"
   });
 
-  await delegate.bootstrapData;
+
+  delegate.bootstrapData;
 };
