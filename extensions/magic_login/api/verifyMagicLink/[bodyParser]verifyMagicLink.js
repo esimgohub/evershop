@@ -22,6 +22,8 @@ const {
 const {
   createCurrencyResponse
 } = require('../../services/currency/createCurrencyResponse');
+const { info } = require('@evershop/evershop/src/lib/log/logger');
+const randomStr = require('@evershop/evershop/src/modules/base/services/randomStr');
 
 module.exports = async (request, response, delegate, next) => {
   const { token } = request.body;
@@ -87,10 +89,16 @@ module.exports = async (request, response, delegate, next) => {
       language = defaultLanguage;
       currency = defaultCurrency;
 
+      const first_name = 'Bear';
+      const last_name = randomStr();
+
       customer = await insert('customer')
         .given({
           email: payload.email,
           status: AccountStatus.ENABLED,
+          first_name,
+          last_name,
+          full_name: `${first_name} ${last_name}`,
           language_id: language.id,
           currency_id: currency.id,
           login_source: LoginSource.MAGIC_LINK
@@ -106,13 +114,16 @@ module.exports = async (request, response, delegate, next) => {
     response.status(OK);
     response.$body = {
       data: {
-        name: customer.full_name,
         email: customer.email,
-        isFirstLogin,
+        firstName: customer.first_name,
+        lastName: customer.last_name,
+        avatarUrl: customer.avatar_url,
+        isFirstLogin: customer.is_first_login,
         language: createLanguageResponse(language),
         currency: createCurrencyResponse(currency)
       }
     };
+
     next();
   } catch (e) {
     if (e instanceof jwt.JsonWebTokenError) {
