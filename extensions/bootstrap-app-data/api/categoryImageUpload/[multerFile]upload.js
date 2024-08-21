@@ -18,6 +18,11 @@ module.exports = async (request, response, delegate, next) => {
       }
     });
   } else {
+    // Instance return data to client.
+    response.status(OK).json({
+      message: "Uploading"
+    });
+
     const files = await uploadFile(request.files, request.params[0] || '');
 
     const connection = await getConnection();
@@ -34,20 +39,19 @@ module.exports = async (request, response, delegate, next) => {
           })
           .where('url_key', '=', code.toUpperCase())
           .execute(connection);
+
+          console.log("processing file: ", code);
       }
 
+      console.log("to commit transaction");
+
       await commit(connection);
+
+      console.log("=== DONE ===");
 
     } catch (e) {
       await rollback(connection);
       throw e;
     }
-    
-    response.status(OK).json({
-      data: {
-        files
-      },
-      message: "Successfully"
-    });
   }
 };

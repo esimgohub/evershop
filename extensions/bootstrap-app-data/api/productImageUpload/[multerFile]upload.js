@@ -19,16 +19,31 @@ module.exports = async (request, response, delegate, next) => {
       }
     });
   } else {
+    response.status(OK).json({
+      // data: {
+      //   files
+      // },
+      message: "Uploading"
+    });
+
     const files = await uploadFile(request.files, request.params[0] || '');
 
     const connection = await getConnection();
     await startTransaction(connection);
 
     try {
+      // Instance return to image
+      
+
+      console.log("to upload ne");
+
       const variableProducts = await select()
           .from('product')
           .where('type', '=', ProductType.variable.value)
           .execute(connection);
+
+      console.log("variableProducts", variableProducts);
+        
 
       const insertingRecords = [];
       for (const product of variableProducts) {
@@ -44,19 +59,16 @@ module.exports = async (request, response, delegate, next) => {
           .given(insertingRecord)
           .execute(connection);
       }
+      console.log("to commit");
+
 
       await commit(connection);
+
+      console.log("Finished upload product image");
 
     } catch (e) {
       await rollback(connection);
       throw e;
     }
-    
-    response.status(OK).json({
-      data: {
-        files
-      },
-      message: "Successfully"
-    });
   }
 };
