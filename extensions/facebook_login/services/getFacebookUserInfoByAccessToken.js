@@ -24,8 +24,8 @@ module.exports.getFacebookUserInfoByAccessToken = async (accessToken) => {
 
     const { id, name, email, picture } = data;
 
-    const lastName = name?.split(' ')[0];
-    const firstName = name?.split(' ')[1];
+    const lastName = name?.split(' ')[1];
+    const firstName = name?.split(' ')[0];
 
     return {
       id,
