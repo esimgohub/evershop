@@ -18,6 +18,8 @@ const randomStr = require('@evershop/evershop/src/modules/base/services/randomSt
 
 module.exports = async (request, response, delegate, next) => {
   const { id_token, first_name, last_name, email } = request.body;
+  let emailForSave1 = null;
+
 
   const appleUserInfo = await getAppleUserInfo(id_token);
   if (!appleUserInfo) {
@@ -30,6 +32,11 @@ module.exports = async (request, response, delegate, next) => {
     });
   }
 
+  if (email) {
+    emailForSave1 = email;
+  } else if (appleUserInfo?.email) {
+    emailForSave1 = appleUserInfo.email;
+  }
   let customerQuery = select('customer.customer_id', 'customer_id')
     .select('customer.status', 'status')
     .select('customer.first_name', 'first_name')
@@ -55,7 +62,7 @@ module.exports = async (request, response, delegate, next) => {
   // The unique identifier for the user in Apple’s system.
   // This value is stable and unique to the user and the app,
   // allowing you to identify the same user across different sessions or devices.
-  customerQuery.where('customer.external_id', '=', appleUserInfo.sub);
+  customerQuery.where('customer.external_id', '=', appleUserInfo?.sub);
 
   let [customer] = await customerQuery.execute(pool);
 
@@ -84,10 +91,8 @@ module.exports = async (request, response, delegate, next) => {
       getDefaultLanguage(),
       getDefaultCurrency()
     ]);
-
     language = defaultLanguage;
     currency = defaultCurrency;
-
     let emailForSave = null;
     const privateReplyDomain = '@privaterelay.appleid.com';
     if (email) {
@@ -95,7 +100,6 @@ module.exports = async (request, response, delegate, next) => {
     } else if (appleUserInfo?.email) {
       emailForSave = appleUserInfo.email;
     }
-
     const fName = typeof first_name === 'string' ? first_name.trim() : 'Bear';
     const lName =
       typeof last_name === 'string' ? last_name.trim() : randomStr();
