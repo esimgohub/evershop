@@ -18,8 +18,6 @@ const randomStr = require('@evershop/evershop/src/modules/base/services/randomSt
 
 module.exports = async (request, response, delegate, next) => {
   const { id_token, first_name, last_name, email } = request.body;
-  let emailForSave1 = null;
-
 
   const appleUserInfo = await getAppleUserInfo(id_token);
   if (!appleUserInfo) {
@@ -30,12 +28,6 @@ module.exports = async (request, response, delegate, next) => {
         message: 'Invalid access token'
       }
     });
-  }
-
-  if (email) {
-    emailForSave1 = email;
-  } else if (appleUserInfo?.email) {
-    emailForSave1 = appleUserInfo.email;
   }
   let customerQuery = select('customer.customer_id', 'customer_id')
     .select('customer.status', 'status')
