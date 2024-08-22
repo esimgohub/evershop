@@ -95,7 +95,7 @@ module.exports = {
       }
     );
 
-    if (response.status !== 200) {
+    if (![200, 201].includes(response.status)) {
       throw new Error(response?.statusText);
     }
 
