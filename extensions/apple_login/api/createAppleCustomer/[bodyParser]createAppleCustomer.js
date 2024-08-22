@@ -90,12 +90,9 @@ module.exports = async (request, response, delegate, next) => {
 
     let emailForSave = null;
     const privateReplyDomain = '@privaterelay.appleid.com';
-    if (email && !email.endsWith(privateReplyDomain)) {
+    if (email) {
       emailForSave = email;
-    } else if (
-      !appleUserInfo?.email?.endsWith(privateReplyDomain) &&
-      appleUserInfo?.email_verified
-    ) {
+    } else if (appleUserInfo?.email) {
       emailForSave = appleUserInfo.email;
     }
 
