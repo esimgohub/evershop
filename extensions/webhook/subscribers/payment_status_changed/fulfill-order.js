@@ -1,12 +1,12 @@
 const { error, info } = require('@evershop/evershop/src/lib/log/logger');
 const { sendFulfillOrder } = require('../../services/order.service');
 
-module.exports = async function (orderId) {
+module.exports = async function (data) {
   try {
-    await sendFulfillOrder(orderId);
+    await sendFulfillOrder(data.orderId);
   } catch (e) {
     error(`Initial attempt failed - orderId: ${ e.message}`);
-    retrySendEmail(orderId, 2);
+    retrySendEmail(data.orderId, 2);
   }
 };
 
