@@ -78,11 +78,12 @@ export default function LoginForm({ sendMagicLink }) {
       {/* Right side */}
       <div className="w-2/5 px-[100px] flex items-center justify-center bg-[#43D3FE]">
         <div className="rounded-lg shadow-lg">
-          <div className="mb-8">
+          <div className="mb-8 space-y-4">
             {/* <!-- Logo --> */}
             <img
               src="/images/gohub-logo.png"
-              classNameName="w-[150px] mb-4"
+              classNameName="mb-6"
+              width={200}
               alt="Gohub Logo"
             />
             {/* <!-- Illustration --> */}
