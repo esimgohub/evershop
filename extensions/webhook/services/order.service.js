@@ -1,4 +1,3 @@
-const { OK } = require('@evershop/evershop/src/lib/util/httpStatus');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const {
   select,
@@ -16,8 +15,7 @@ const axios = require('axios');
 const { orderSource } = require('../constants/order-source');
 
 module.exports = {
-  sendFulfillOrder: async function(data) {
-    const orderId = data.order_id;
+  sendFulfillOrder: async function(orderId) {
     info(`sendFulfillOrder data: ${orderId}`);
 
     const orderQuery = select('odr.order_id')

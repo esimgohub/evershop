@@ -1,12 +1,12 @@
 const { error, info } = require('@evershop/evershop/src/lib/log/logger');
 const { sendFulfillOrder } = require('../../services/order.service');
 
-module.exports = async function (data) {
+module.exports = async function (orderId) {
   try {
-    await sendFulfillOrder(data);
+    await sendFulfillOrder(orderId);
   } catch (e) {
     error(`Initial attempt failed - orderId: ${ e.message}`);
-    retrySendEmail(data, 3);
+    retrySendEmail(orderId, 2);
   }
 };
 
@@ -15,19 +15,19 @@ async function markPaymentAsNotified(orderId) {
 }
 
 // Retry function
-function retrySendEmail(order, retriesLeft) {
+function retrySendEmail(orderId, retriesLeft) {
   setTimeout(async () => {
     try {
-      await sendFulfillOrder(order);
-      await markPaymentAsNotified(order.uuid);
+      await sendFulfillOrder(orderId);
+      await markPaymentAsNotified(orderId);
     } catch (e) {
       error(`Retry failed: ${e.message}`);
       if (retriesLeft > 0) {
         const nextRetriesLeft = retriesLeft - 1;
         info(`Retries left: ${nextRetriesLeft}. Scheduling another retry.`);
-        retrySendEmail(order, nextRetriesLeft);
+        retrySendEmail(orderId, nextRetriesLeft);
       } else {
-        error(`Max retries reached. Giving up on orderId: ${order.uuid}`);
+        error(`Max retries reached. Giving up on orderId: ${orderId}`);
       }
     }
   }, 10 * 60 * 1000); // 10 minutes delay
