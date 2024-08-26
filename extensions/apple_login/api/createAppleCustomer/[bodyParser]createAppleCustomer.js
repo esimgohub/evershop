@@ -14,9 +14,10 @@ const {
 const {
   createCurrencyResponse
 } = require('../../services/mapper/createCurrencyResponse');
+const randomStr = require('@evershop/evershop/src/modules/base/services/randomStr');
 
 module.exports = async (request, response, delegate, next) => {
-  const { id_token } = request.body;
+  const { id_token, first_name, last_name, email } = request.body;
 
   const appleUserInfo = await getAppleUserInfo(id_token);
   if (!appleUserInfo) {
@@ -28,13 +29,13 @@ module.exports = async (request, response, delegate, next) => {
       }
     });
   }
-
   let customerQuery = select('customer.customer_id', 'customer_id')
     .select('customer.status', 'status')
     .select('customer.first_name', 'first_name')
     .select('customer.last_name', 'last_name')
     .select('customer.email', 'email')
     .select('customer.avatar_url', 'avatar_url')
+    .select('customer.is_first_login', 'is_first_login')
     .select('language.code', 'language_code')
     .select('language.name', 'language_name')
     .select('language.icon', 'language_icon')
@@ -53,7 +54,7 @@ module.exports = async (request, response, delegate, next) => {
   // The unique identifier for the user in Apple’s system.
   // This value is stable and unique to the user and the app,
   // allowing you to identify the same user across different sessions or devices.
-  customerQuery.where('customer.external_id', '=', appleUserInfo.sub);
+  customerQuery.where('customer.external_id', '=', appleUserInfo?.sub);
 
   let [customer] = await customerQuery.execute(pool);
 
@@ -77,31 +78,35 @@ module.exports = async (request, response, delegate, next) => {
     name: customer.currency_name
   };
 
-  let isFirstLogin = false;
-
   if (!customer) {
-    isFirstLogin = true;
     const [defaultLanguage, defaultCurrency] = await Promise.all([
       getDefaultLanguage(),
       getDefaultCurrency()
     ]);
-
     language = defaultLanguage;
     currency = defaultCurrency;
-
-    let email = !appleUserInfo.is_private_email && appleUserInfo.email_verified ? appleUserInfo.email : null;
+    let emailForSave = null;
+    if (email) {
+      emailForSave = email;
+    } else if (appleUserInfo?.email) {
+      emailForSave = appleUserInfo.email;
+    }
+    const fName = typeof first_name === 'string' ? first_name.trim() : 'Bear';
+    const lName =
+      typeof last_name === 'string' ? last_name.trim() : randomStr();
 
     customer = await insert('customer')
       .given({
         external_id: appleUserInfo.sub,
-        email: email,
-        first_name: null,
-        last_name: null,
-        full_name: null,
+        email: emailForSave,
+        first_name: fName,
+        last_name: lName,
+        full_name: `${fName} ${lName}`,
         status: AccountStatus.ENABLED,
         login_source: LoginSource.APPLE,
         language_id: defaultLanguage.id,
-        currency_id: defaultCurrency.id
+        currency_id: defaultCurrency.id,
+        is_first_login: true
       })
       .execute(pool);
   }
@@ -111,7 +116,7 @@ module.exports = async (request, response, delegate, next) => {
     firstName: customer.first_name,
     lastName: customer.last_name,
     avatarUrl: customer.avatar_url,
-    isFirstLogin,
+    isFirstLogin: customer.is_first_login,
     language: createLanguageResponse(language),
     currency: createCurrencyResponse(currency)
   };
