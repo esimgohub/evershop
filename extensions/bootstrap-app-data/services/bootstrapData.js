@@ -407,7 +407,7 @@ const bootstrapData = async (data) => {
         weight: 0,
         tax_class: null,
         old_price: row[evershopSheetColumnIndex.product.oldPrice] ?
-          parseInt(row[evershopSheetColumnIndex.product.oldPrice]) :
+          parseFloat(row[evershopSheetColumnIndex.product.oldPrice]) :
           null,
       }
     });
@@ -443,14 +443,14 @@ const bootstrapData = async (data) => {
         type: ProductType.simple.value,
         variant_group_id: foundedVariantGroup.variant_group_id,
         sku: row[evershopSheetColumnIndex.productVariant.variantCode],
-        price: parseInt(row[evershopSheetColumnIndex.productVariant.price]),
+        price: parseFloat(row[evershopSheetColumnIndex.productVariant.price]),
         weight: 0,
         group_id: foundedParentProduct.group_id,
         tax_class: null,
         visibility: row[evershopSheetColumnIndex.productVariant.visibility].toLowerCase() === 'visible' ? true : false,
         status: row[evershopSheetColumnIndex.productVariant.status].toLowerCase() === 'enable' ? true : false,
         old_price: row[evershopSheetColumnIndex.productVariant.oldPrice] ? 
-          parseInt(row[evershopSheetColumnIndex.productVariant.oldPrice]) : 
+          parseFloat(row[evershopSheetColumnIndex.productVariant.oldPrice]) : 
           null,
         parent_product_id: foundedParentProduct.product_id,
         parent_product_uuid: foundedParentProduct.uuid,

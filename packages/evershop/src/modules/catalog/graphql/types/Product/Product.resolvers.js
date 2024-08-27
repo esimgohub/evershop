@@ -72,6 +72,7 @@ module.exports = {
 
       return mappedCategories;
     },
+    
     formattedHTMLAttribute: async (product, _, { pool, homeUrl }) => {
       // Attributes
       const productAttributeQuery = select().from('product_attribute_value_index');
@@ -183,14 +184,20 @@ module.exports = {
 
       const isVariableProduct = foundedProduct.type === ProductType.variable.value;
       if (isVariableProduct) {
-        return camelCase(foundedProduct);
+        return camelCase({
+          ...foundedProduct,
+          description: foundedProduct.description.replaceAll(/\r\n|\n|\r/gm, '<br />'),
+        });
       }
 
       const parentProductQuery = getProductsBaseQuery();
       parentProductQuery.where('product.uuid', '=', foundedProduct.parent_product_uuid);
       const parentProduct = await parentProductQuery.load(pool);
 
-      return camelCase(parentProduct);
+      return camelCase({
+        ...parentProduct,
+        description: parentProduct.description.replaceAll(/\r\n|\n|\r/gm, '<br />'),
+      });
     },
     products: async (_, { filters = [], productFilter }, { user }) => {
       const query = getProductsBaseQuery();

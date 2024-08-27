@@ -4,6 +4,7 @@ const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const { v4: uuidv4 } = require('uuid');
 const dayjs = require('dayjs');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
+const { createAttribute } = require('@evershop/evershop/src/modules/oms/services/getAdditionalOrderInfo');
 const { toPrice } = require('../toPrice');
 const {
   calculateTaxAmount
@@ -91,18 +92,19 @@ module.exports.registerCartItemBaseFields =
         ],
         dependencies: ['product_id']
       },
-      {
-        key: 'category_id',
-        resolvers: [
-          async function resolver() {
-            const product = await this.getProduct();
-            return product.category_id
-              ? parseInt(product.category_id, 10)
-              : null;
-          }
-        ],
-        dependencies: ['product_id']
-      },
+      // {
+      //   key: 'category_id',
+      //   resolvers: [
+      //     async function resolver(category_id) {
+      //     const dummy= category_id
+      //       const product = await this.getProduct();
+      //       return product.category_id
+      //         ? parseInt(product.category_id, 10)
+      //         : null;
+      //     }
+      //   ],
+      //   dependencies: ['product_id']
+      // },
       {
         key: 'product_name',
         resolvers: [
@@ -416,109 +418,8 @@ module.exports.registerCartItemBaseFields =
         resolvers: [
           async function resolver() {
             const product = await this.getProduct();
-            const productAttributeQuery = select().from('product_attribute_value_index');
-            productAttributeQuery
-              .leftJoin('attribute')
-              .on(
-                'attribute.attribute_id',
-                '=',
-                'product_attribute_value_index.attribute_id'
-              );
-            productAttributeQuery.where(
-              'product_attribute_value_index.product_id',
-              '=',
-              product.product_id
-            );
-            // if (!user) {
-            //   query.andWhere('attribute.display_on_frontend', '=', true);
-            // }
-            const productAttributes = await productAttributeQuery.execute(pool);
-
-            // if product is variant
-            const isVariableProduct = product.type === 'variable';
-            if (isVariableProduct) {
-              return productAttributes.reduce((response, attribute) => {
-                response[attribute.attribute_code] = attribute.option_text;
-
-                return response;
-              }, {});
-            }
-
-            const productVariantAttributeQuery = select().from('product_attribute_value_index');
-            productVariantAttributeQuery
-              .leftJoin('attribute')
-              .on(
-                'attribute.attribute_id',
-                '=',
-                'product_attribute_value_index.attribute_id'
-              );
-            productVariantAttributeQuery.where(
-              'product_attribute_value_index.product_id',
-              '=',
-              product.parent_product_id
-            );
-            const productVariantAttributes = await productVariantAttributeQuery.execute(pool);
-
-            const attributes = [...productAttributes, ...productVariantAttributes];
-
-            const responses = attributes.reduce((response, attribute) => {
-              response[attribute.attribute_code] = attribute.option_text;
-
-              return response;
-            }, {});
-
-            const foundDataType = Object.entries(responses).find(([key, value]) => key === 'data-type');
-            if (!foundDataType) {
-              console.log('Data type not found');
-            }
-
-            const foundDayAmount = Object.entries(responses).find(([key, value]) => key === 'day-amount');
-            if (!foundDayAmount) {
-              console.log('Day amount not found');
-            }
-
-            const foundDataAmount = Object.entries(responses).find(([key, value]) => key === 'data-amount');
-            if (!foundDataAmount) {
-              console.log('Data amount not found');
-            }
-
-            responses['data-amount'] = parseInt(foundDataAmount[1], 10);
-            responses['day-amount'] = parseInt(foundDayAmount[1], 10);
-
-            return responses;
-          }
-        ],
-        dependencies: ['product_id']
-      },
-      {
-        key: 'category',
-        resolvers: [
-          async function resolver() {
-            const categoryDescriptionQuery = select().from('category_description');
-
-            const categoryId = await this.getData('category_id');
-            if (categoryId == null) {
-              return {};
-            }
-            categoryDescriptionQuery.where('category_description_id', '=', categoryId);
-            const rows = await categoryDescriptionQuery.execute(pool);
-            if (!rows?.length) {
-              return {};
-            }
-            return rows[0];
-          }
-        ],
-        dependencies: ['category_id']
-      },
-      {
-        key: 'product_old_price',
-        resolvers: [
-          async function resolver() {
-            const product = await this.getProduct();
-            if (this.getData('product_old_price') == null) {
-              return null;
-            }
-            return toPrice(product.old_price);
+            const response = await createAttribute(product, pool);
+            return response;
           }
         ],
         dependencies: ['product_id']
@@ -527,21 +428,23 @@ module.exports.registerCartItemBaseFields =
         key: 'old_price',
         resolvers: [
           async function resolver() {
-            if (this.getData('product_old_price') == null) {
-              return null;
-            }
-            return toPrice(this.getData('product_old_price')); // TODO This price should include the custom option price
+
+            const product = await this.getProduct();
+            return toPrice(product.old_price);
           }
         ],
-        dependencies: ['product_old_price']
+        dependencies: ['product_id']
       },
       {
         key: 'category_id',
         resolvers: [
-          async function resolver() {
+          async function resolver(category_id) {
             const triggeredField = this.getTriggeredField();
             const requestedValue = this.getRequestedValue();
-            return triggeredField === 'category_id' ? requestedValue : this.getData('category_id');
+            if (triggeredField === 'category_id' && requestedValue !== category_id) {
+              return requestedValue;
+            }
+            return category_id;
           }
         ]
       },
@@ -618,10 +521,9 @@ module.exports.registerCartItemBaseFields =
               ...cateObj,
               image: cateObj.image ? `${homeUrl}${cateObj.image}` : null
             };
-            // return rows[0];
           }
         ],
-        dependencies: ['category_id']
+        dependencies: ['product_id','category_id']
       },
       {
         key: 'titleInfo',
@@ -630,38 +532,29 @@ module.exports.registerCartItemBaseFields =
             const attrObj = this.getData('attribute');
             const cateObj = this.getData('category');
 
-            if (!cateObj || !cateObj?.name || !cateObj?.image || !attrObj || !attrObj?.['data-amount'] || !attrObj?.['data-type'] || !attrObj?.['day-amount']) {
-              return {
-                dataAmount: '',
-                dataAmountUnit: '',
-                dataType: '',
-                dayAmount: '',
-                categoryName: '',
-                imgUrl: '',
-                imgAlt: ''
-              };
-
+            if (!cateObj || !attrObj) {
+              return null
             }
-            let dataInfoText;
-            if (attrObj['data-type'] === 'Daily Data') {
-              dataInfoText = `${attrObj['data-amount']} ${attrObj['data-amount-unit']}/day`;
-            } else {
-              const dayAmountText = attrObj['day-amount'] === 1 ? 'day' : 'days';
-              dataInfoText = `${attrObj['data-amount']} ${attrObj['day-amount']}/${attrObj['data-amount-unit']}/${dayAmountText}`;
-            }
-            const title = `${cateObj.name}  ${dataInfoText}`;
             return {
-              dataAmount: attrObj['data-amount'],
-              dataAmountUnit: attrObj['data-amount-unit'],
-              dataType: attrObj['data-type'],
-              dayAmount: attrObj['day-amount'],
-              categoryName: cateObj.name,
-              imgUrl: `${cateObj.image}`,
-              imgAlt: cateObj.name
+              dataAmount: attrObj['data-amount'] != null ? parseFloat(attrObj['data-amount']): null,
+              dataAmountUnit: attrObj['data-amount-unit'] ?? null,
+              dataType: attrObj['data-type'] ?? null,
+              dayAmount: attrObj['day-amount'] != null ? parseFloat(attrObj['day-amount']) : null,
+              categoryName: cateObj.name ?? null,
+              imgUrl: cateObj.image ? `${cateObj.image}` : null,
+              imgAlt: cateObj.name ?? null
             };
           }
         ],
         dependencies: ['category', 'attribute']
+      },
+      {
+        key: 'updated_at',
+        resolvers: [
+          function resolver(value) {
+            return value;
+          }
+        ]
       }
     ];
   };

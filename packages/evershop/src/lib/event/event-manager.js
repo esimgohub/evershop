@@ -16,7 +16,6 @@ const syncEventInterval = 2000;
 const maxEvents = 10;
 let events = [];
 // Get the modules from the arguments
-
 const modules = [...getCoreModules(), ...getEnabledExtensions()];
 const subscribers = loadSubscribers(modules);
 
@@ -71,7 +70,7 @@ async function loadEvents(count) {
   }
 
   if (events.length > 0) {
-    query.and(
+    query.andWhere(
       'uuid',
       'NOT IN',
       events.map((event) => event.uuid)

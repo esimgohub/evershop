@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "order_uuid": {
+      "type": "string"
+    }
+  },
+  "required": ["order_uuid"],
+  "additionalProperties": true,
+  "errorMessage": {
+    "properties": {
+      "order_uuid": "Order uuid is required"
+    }
+  }
+}

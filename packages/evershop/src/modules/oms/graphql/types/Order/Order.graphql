@@ -40,6 +40,13 @@ type OrderItem {
   variantOptions: String
   productCustomOptions: String
   productUrl: String
+  tripText: String
+  titleInfo: JSON
+}
+
+type paymentInfo {
+  type: String
+  details: JSON
 }
 
 """
@@ -66,6 +73,8 @@ type Order implements ShoppingCart {
   discountAmount: Price!
   subTotal: Price!
   subTotalInclTax: Price!
+  subTotalOldPrice: Price
+  subTotalDiscountAmount: Price
   totalQty: Int!
   totalWeight: Weight!
   taxAmount: Price!
@@ -81,6 +90,7 @@ type Order implements ShoppingCart {
   updatedAt: String!
   activities: [Activity]
   shipment: Shipment
+  paymentDetails: paymentInfo
 }
 
 """

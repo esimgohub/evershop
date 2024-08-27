@@ -41,11 +41,11 @@ module.exports = () => {
           resolvers: [
             async function resolver() {
               const coupon = this.getData('coupon');
-              const items = this.getItems();
+              const items = this.getActiveItems();
               if (!coupon) {
                 await Promise.all(
                   items.map(async (item) => {
-                    item.setData('discount_amount', 0);
+                    await item.setData('discount_amount', 0);
                   })
                 );
                 return 0;

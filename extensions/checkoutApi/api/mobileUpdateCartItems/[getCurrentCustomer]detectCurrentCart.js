@@ -15,7 +15,7 @@ module.exports = async (request, response, delegate, next) => {
     setContextValue(request, 'cartId', cart.uuid);
   } else {
     // Get the customer id from the session
-    const customerID = customer?.customerID || null;
+    const customerID = customer?.customer_id || null;
     if (customerID) {
       // Check if any cart is associated with the customer id
       const customerCart = await select()

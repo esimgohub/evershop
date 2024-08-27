@@ -30,8 +30,12 @@ module.exports = {
       const isVariableProduct = product.type === 'variable';
       if (isVariableProduct) {
         return productAttributes.reduce((response, attribute) => {
+          if (attribute.attribute_code === 'link') {
+            response[attribute.attribute_code] = attribute.option_text.replace("esimgohub.com", "gohub.com");
+            return response;
+          }
+
           response[attribute.attribute_code] = attribute.option_text;
-          
           return response;
         }, {});
       }
@@ -74,8 +78,9 @@ module.exports = {
         console.log("Data amount not found");
       }
 
-      responses['data-amount'] = parseFloat(foundDataAmount[1]);
+      responses['data-amount'] = foundDataAmount[1].toLowerCase() === 'unlimited' ? -1 : parseFloat(foundDataAmount[1]);
       responses['day-amount'] = parseFloat(foundDayAmount[1]);
+      responses['link'] = responses['link'].replace("esimgohub.com", "gohub.com");
       
       return responses;
     },

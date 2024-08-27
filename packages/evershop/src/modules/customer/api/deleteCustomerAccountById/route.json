@@ -1,0 +1,5 @@
+{
+  "methods": ["DELETE"],
+  "path": "/v1/customers/:id",
+  "access": "public"
+}

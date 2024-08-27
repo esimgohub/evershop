@@ -1,7 +1,7 @@
 services:
   app:
-    build:
-      dockerfile: ./Dockerfile
+    container_name: gohub-ecommerce
+    image: 533910826927.dkr.ecr.ap-southeast-1.amazonaws.com/gohub-ecommerce:dev-latest
     restart: always
     environment:
       DB_HOST: db
@@ -20,5 +20,5 @@ services:
 
 networks:
   backend-network:
-    name: backend-network
+    name: gohub-backend_default
     external: true

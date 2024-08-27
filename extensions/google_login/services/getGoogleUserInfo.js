@@ -15,7 +15,7 @@ module.exports.getGoogleUserInfo = async (accessToken, idToken) => {
     });
 
     const { data } = response;
-    info('Google user info', data);
+    info(`Google user info ${JSON.stringify(data)}`);
     return data;
   } catch (err) {
     error(`Failed to get google user info ${err.message}`);

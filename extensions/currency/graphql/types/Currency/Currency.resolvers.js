@@ -28,7 +28,7 @@ module.exports = {
   Customer: {
     currency: async (customer, _, { pool }) => {
       const query = getCurrenciesBaseQuery();
-      query.where('currency.id', '=', customer.currencyId);
+      query.where('currency.code', '=', customer.currencyCode);
 
       const result = await query.load(pool);
       return camelCase(result);

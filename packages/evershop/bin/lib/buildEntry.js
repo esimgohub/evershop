@@ -55,6 +55,7 @@ module.exports.buildEntry = async function buildEntry(
               sortOrder: layout.sortOrder,
               component: `---require('${module}')---`
             };
+
           } catch (e) {
             error(`Error parsing layout from ${module}`);
             error(e);
@@ -62,9 +63,31 @@ module.exports.buildEntry = async function buildEntry(
         }
       });
 
-      const isMagicLoginRoute = route.id === 'magicLogin';
-      if (isMagicLoginRoute) {
+      const isDeepLinkRoute = route.id === 'magicLogin' || route.id === 'failedPayment';
+      const isLoginRoute = route.id === 'login';
+      const isMyProfileRoute = route.id === 'account';
+      const isAccountSettingRoute = route.id === 'accountSetting';
+
+
+      if (isDeepLinkRoute || isLoginRoute || isMyProfileRoute || isAccountSettingRoute) {
+        if (isDeepLinkRoute) {
+          console.log("to delete body [deep link]", isDeepLinkRoute);
+        }
+
+        if (isLoginRoute) {
+          console.log("to delete body [login]", isLoginRoute);
+        }
+
+        if (isMyProfileRoute) {
+          console.log("to delete body [my profile]",isMyProfileRoute);
+        }
+
+        if (isAccountSettingRoute) {
+          console.log("to delete body [account setting]", isAccountSettingRoute);
+        }
+
         delete areas['body'];
+        delete areas['content'];
       }
       else {
         delete areas['blank-body'];

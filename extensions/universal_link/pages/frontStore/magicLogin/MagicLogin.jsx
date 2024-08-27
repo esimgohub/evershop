@@ -6,31 +6,29 @@ import Spinner from '@components/common/Spinner';
 const MobileDetect = require('mobile-detect');
 
 function MagicLogin() {
-  // const [isAccessOnMobile, setAccessOnMobileStatus] = useState(null);
-  // const { isMobile: isMobileScreen } = useDevice();
+  const [mobileDetector, setMobileDetector] = useState(null);
+  const { isMobile: isMobileScreen } = useDevice();
 
-  // useEffect(() => {
-  //   if (typeof window !== 'undefined') {
-  //     const md = new MobileDetect(window.navigator.userAgent);
-  //     setAccessOnMobileStatus(md.mobile() || md.tablet());
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const md = new MobileDetect(window.navigator.userAgent);
+      setMobileDetector(md.mobile() || md.tablet());
+    }
+  }, []);
 
-  // if (
-  //   isMobileScreen ||
-  //   !isAccessOnMobile ||
-  //   (isAccessOnMobile && isAccessOnMobile === true)
-  // ) {
-  //   return (
-  //     <div className="fixed top-0 left-0 bottom-0 right-0 flex justify-center">
-  //       <Spinner width={30} height={30} className="absolute-center" />
-  //     </div>
-  //   );
-  // }
+  const renderContent = () => {
+    if (isMobileScreen || (mobileDetector && mobileDetector === true)) {
+      return (
+        <div className="fixed top-0 left-0 bottom-0 right-0 flex justify-center">
+          <Spinner width={30} height={30} className="absolute-center" />
+        </div>
+      );
+    }
 
-  return (
-    <DeepLinkModal title="Nofication" webPageUrl="https://esimgohub.com" />
-  );
+    return <p>Loading...</p>;
+  };
+
+  return renderContent();
 }
 
 export const layout = {

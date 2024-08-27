@@ -6,6 +6,8 @@ const {
 module.exports = (request, response, delegate, next) => {
   // Check if the user is logged in
   const user = request.getCurrentUser();
+  console.log("current userrr: ", user);
+
   if (user) {
     // Redirect to admin dashboard
     response.redirect(buildUrl('dashboard'));

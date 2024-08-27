@@ -12,5 +12,6 @@ type Customer {
 }
 
 extend type Query {
+  baseUrl: String
   currentCustomer: Customer
 }
