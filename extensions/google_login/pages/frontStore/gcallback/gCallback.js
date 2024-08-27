@@ -9,6 +9,8 @@ const {
   LoginSource,
   AccountStatus
 } = require('@evershop/evershop/src/modules/customer/constant');
+const { getDefaultLanguage } = require('../../../services/getDefaultLanguage');
+const { getDefaultCurrency } = require('../../../services/getDefaultCurrency');
 
 /* eslint-disable-next-line no-unused-vars */
 module.exports = async (request, response, delegate, next) => {
@@ -44,6 +46,11 @@ module.exports = async (request, response, delegate, next) => {
     }
 
     if (!customer) {
+      const [defaultLanguage, defaultCurrency] = await Promise.all([
+        getDefaultLanguage(),
+        getDefaultCurrency()
+      ]);
+
       customer = await insert('customer')
         .given({
           email: userInfo.email,
@@ -52,7 +59,9 @@ module.exports = async (request, response, delegate, next) => {
           avatar_url: userInfo.picture,
           status: AccountStatus.ENABLED,
           login_source: LoginSource.GOOGLE,
-          external_id: userInfo.id
+          external_id: userInfo.id,
+          language_id: defaultLanguage.id,
+          currency_id: defaultCurrency.id
         })
         .execute(pool);
     }
