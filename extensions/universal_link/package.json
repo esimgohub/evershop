@@ -1,0 +1,14 @@
+{
+  "name": "deep_link",
+  "version": "1.0.0",
+  "description": "A Deep authentication extension for EverShop.",
+  "keywords": [],
+  "author": "",
+  "license": "",
+  "engines": {
+    "node": ">= 14.0.0"
+  },
+  "dependencies": {
+    "mobile-detect": "1.4.5"
+  }
+}

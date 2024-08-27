@@ -8,7 +8,7 @@ import { get } from '@evershop/evershop/src/lib/util/get';
 export default function MiniCart({ cartUrl, cart }) {
   const miniCart = get(useAppState(), 'cart', cart || {});
 
-  console.log('mini cart: ', miniCart);
+  // console.log('mini cart: ', miniCart);
 
   return (
     <div className="mini-cart-wrapper self-center">

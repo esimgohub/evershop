@@ -9,6 +9,13 @@ const {
 } = require('@evershop/evershop/src/lib/util/httpStatus');
 const { getSetting } = require('../../../setting/services/setting');
 
+const convertFromUSD = (amount, rate, currentIsoCode) => {
+  if (currentIsoCode === "USD") {
+    return amount;
+  }
+  return amount * rate;
+};
+
 // eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, delegate, next) => {
   // eslint-disable-next-line camelcase
@@ -37,9 +44,21 @@ module.exports = async (request, response, delegate, next) => {
     }
 
     const stripe = stripePayment(stripeSecretKey);
+
+    const foundCurrency = await select()
+      .from('currency')
+      .where('code', '=', order.currency)
+      .load(pool);
+
+    if (!foundCurrency) {
+      throw new Error(`Not found currency with code: ${order.currency}`)
+    }
+
+    const formatedGrandTotal = convertFromUSD(parseFloat(order.grand_total), foundCurrency.rate, order.currency);
+
     // Create a PaymentIntent with the order amount and currency
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: smallestUnit.default(order.grand_total, order.currency),
+      amount: smallestUnit.default(formatedGrandTotal, order.currency),
       currency: order.currency,
       metadata: {
         // eslint-disable-next-line camelcase

@@ -226,6 +226,8 @@ export const query = `
       description
       status
       categoryType
+      isPopular
+      sortOrder
       parent {
         categoryId
         uuid

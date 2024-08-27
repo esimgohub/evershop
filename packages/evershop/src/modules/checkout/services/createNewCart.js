@@ -6,18 +6,20 @@ module.exports = exports;
  * This function return a Cart object by the session ID and the customer object
  * Use CartFactory.getCart() instead.
  * @param {string} sid : The session ID
- *  * @param {Object} currency : The currency (ISOCODE)
+ * @param {string} currency : The currency (ISOCODE)
  * @param {Object} customer : The customer object
  * @returns {Promise<Cart>}
  */
 exports.createNewCart = async (sid, currency, customer = {}) => {
   // Extract the customer info
+  // Be carefully with camelCase and snakeCase
+  // TODO: refactor in future to ensure always extract right key
   const {
-    customerId: customer_id,
+    customer_id,
     email: customer_email,
-    groupId: customer_group_id,
-    firstName: customer_first_name,
-    lastName: customer_last_name
+    group_id: customer_group_id,
+    first_name: customer_first_name,
+    last_name: customer_last_name
   } = customer;
   const cart = await create({
     sid,

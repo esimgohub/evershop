@@ -42,18 +42,12 @@ type PaymentConfig {
   cod: CodPaymentConfig
 }
 
-type SocialConfig {
-  facebook: Social
-  instagram: Social
-  thread: Social
-  tiktok: Social
-}
-
 type Config {
   store: StoreConfig
   payment: PaymentConfig
-  social: SocialConfig
+  social: [Social]
   sliders: [Slider]
+  staticPages: [CmsPage]
 }
 
 extend type Query {

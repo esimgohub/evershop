@@ -111,6 +111,12 @@ type CartItem implements ShoppingCartItem {
   productUrl: String!
   errors: [String!]
   isActive: Boolean
+  attribute: JSON
+  category: JSON
+  oldPrice: Price
+  categoryId: Int!
+  tripText: String
+  titleInfo: JSON
 }
 
 """
@@ -136,6 +142,8 @@ type Cart implements ShoppingCart {
   discountAmount: Price!
   subTotal: Price!
   subTotalInclTax: Price!
+  subTotalOldPrice: Price
+  subTotalDiscountAmount: Price
   totalQty: Int!
   totalWeight: Weight!
   taxAmount: Price!

@@ -8,7 +8,7 @@ themes
 npm-debug.log
 /package-log.json
 /media
-/public
+# /public
 .DS_Store
 .log
 coverage

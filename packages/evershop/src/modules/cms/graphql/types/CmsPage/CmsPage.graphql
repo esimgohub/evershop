@@ -6,6 +6,7 @@ type CmsPage {
   uuid: String!
   layout: String!
   status: Int!
+  type: String!
   urlKey: String!
   name: String!
   content: String!
@@ -13,6 +14,7 @@ type CmsPage {
   metaKeywords: String
   metaDescription: String
   url: String!
+  accessUrl: String!
   editUrl: String!
   updateApi: String!
   deleteApi: String!
@@ -32,5 +34,6 @@ extend type Query {
   cmsPage(id: Int): CmsPage
   cmsPages(filters: [FilterInput]): CmsPageCollection
 
-  staticPage(urlKey: String): CmsPage
+  staticPageBySlug(urlKey: String): CmsPage
+  staticPages: [CmsPage]
 }

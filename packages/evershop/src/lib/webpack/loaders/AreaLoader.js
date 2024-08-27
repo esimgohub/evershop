@@ -44,6 +44,23 @@ module.exports = exports = function AreaLoader(c) {
     }
   });
 
+  const isDeepLinkRoute = routeId === 'magicLogin' || routeId === 'failedPayment';
+  const isLoginRoute = routeId === 'login';
+  const isMyProfileRoute = routeId === 'account';
+  const isAccountSettingRoute = routeId === 'accountSetting';
+  
+  console.log("isDeepLinkRoute", isDeepLinkRoute);
+  console.log("isLoginRoute", isLoginRoute);
+  console.log("isMyProfileRoute", isMyProfileRoute);
+  console.log("isAccountSettingRoute", isAccountSettingRoute);
+
+  if (isDeepLinkRoute || isLoginRoute || isMyProfileRoute || isAccountSettingRoute) {
+    delete areas['body'];
+  }
+  else {
+    delete areas['blank-body'];
+  }
+
   const content = `Area.defaultProps.components = ${inspect(areas, { depth: 5 })
     .replace(/"---/g, '')
     .replace(/---"/g, '')} `;

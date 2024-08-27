@@ -52,6 +52,7 @@ module.exports = async function graphql(request, response, delegate, next) {
           context.user = request.locals.user;
           // Add current customer to context
           context.customer = request.locals.customer;
+
           const data = await execute({
             schema,
             contextValue: context,

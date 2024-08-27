@@ -21,5 +21,14 @@ module.exports = {
       const camelCasedLanguages = languages.map((row) => camelCase(row));
       return camelCasedLanguages;
     }
+  },
+  Customer: {
+    language: async (customer, _, { pool }) => {
+      const query = getLanguagesBaseQuery();
+      query.where('language.code', '=', customer.languageCode);
+
+      const result = await query.load(pool);
+      return camelCase(result);
+    }
   }
 };

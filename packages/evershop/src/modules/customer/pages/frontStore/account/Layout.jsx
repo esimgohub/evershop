@@ -3,39 +3,111 @@ import React from 'react';
 import { toast } from 'react-toastify';
 import Area from '@components/common/Area';
 import { _ } from '@evershop/evershop/src/lib/locale/translate';
+import { buildUrl } from '@evershop/evershop/src/lib/router/buildUrl';
+import SettingIcon from '@heroicons/react/outline/CogIcon';
+import UserIcon from '@heroicons/react/outline/UserIcon';
+import Button from '@components/common/form/Button';
+import { useAlertContext } from '@components/common/modal/Alert';
 
 export default function Layout({ logoutUrl }) {
-  const logout = async (e) => {
-    e.preventDefault();
-    const respone = await fetch(logoutUrl, {
-      method: 'GET'
-    });
-    const data = await respone.json();
-    if (data.error) {
-      toast.error(data.error.message);
-    } else {
-      window.location.href = '/';
+  const { openAlert, closeAlert } = useAlertContext();
+
+  const handleConfirmLogout = async () => {
+    try {
+      const response = await fetch(logoutUrl, {
+        method: 'GET'
+      });
+      const data = await response.json();
+      if (data.error) {
+        toast.error(data.error.message);
+      } else {
+        toast.success('Logout successfully');
+
+        window.location.href = '/account/login';
+      }
+    } catch (error) {
+      toast.error(error.message);
     }
   };
+  const logout = async () => {
+    openAlert({
+      heading: `Alert`,
+      content: 'Are you sure you want to logout?',
+      primaryAction: {
+        title: 'Cancel',
+        onAction: closeAlert,
+        variant: 'normal'
+      },
+      secondaryAction: {
+        title: 'Confirm',
+        onAction: handleConfirmLogout,
+        variant: 'primary',
+        isLoading: false
+      }
+    });
+  };
+
   return (
-    <div>
-      <h1 className="text-center">{_('My Account')}</h1>
-      <div className="page-width mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="col-span-1 md:col-span-2">
-          <div className="border-b mb-1 border-textSubdued">
-            <h2>{_('Order History')}</h2>
+    <div className="bg-[#F9FAFB]">
+      <div className="flex h-screen">
+        {/* <!-- Sidebar --> */}
+        <aside className="w-64 py-3 shadow-[lightgray_4px_0px_15px_0px] hidden md:block">
+          <div className="px-[28px] flex flex-col h-full">
+            <div className="flex items-center mb-8">
+              <img
+                src="https://gohub.com/wp-content/uploads/2023/10/logo_blue-1-e1696096183290.webp"
+                alt="Gohub Logo"
+                className="mb-2 w-[180px]"
+              />
+            </div>
+
+            <nav
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                alignContent: 'space-between'
+              }}
+              className="mt-3 flex-1"
+            >
+              <ul className="space-y-[5px]">
+                <li>
+                  <a className="text-[18px] rounded-[8px] py-1 px-2 cursor-not-allowed flex items-center bg-[#43D3FE] text-[#ffffff] font-medium">
+                    <UserIcon
+                      className="mr-1 text-[20px]"
+                      width={20}
+                      height={20}
+                    />
+                    <span className="cursor-not-allowed">My Profile</span>
+                  </a>
+                </li>
+                <li className="cursor-pointer">
+                  <a
+                    href="/account/settings"
+                    className="text-[18px] rounded-[8px] py-1 px-2 flex items-center hover:text-[#ffffff] hover:bg-[#43D3FE] font-medium"
+                  >
+                    <SettingIcon
+                      className="mr-1 text-[20px]"
+                      width={20}
+                      height={20}
+                    />
+                    <span className="cursor-pointer">Account Settings</span>
+                  </a>
+                </li>
+              </ul>
+
+              <Button
+                buttonClassName="!text-[18px] !bg-[transparent] hover:opacity-[0.8] hover:!text-[#43D3FE]"
+                title="Logout"
+                variant="text"
+                onAction={logout}
+              />
+            </nav>
           </div>
-          <Area id="accountPageLeft" noOuter />
-        </div>
-        <div className="col-span-1">
-          <div className="border-b mb-1 flex justify-between items-center  border-textSubdued">
-            <h2>{_('Account Details')}</h2>
-            <a className="text-interactive" href="#" onClick={(e) => logout(e)}>
-              {_('Logout')}
-            </a>
-          </div>
-          <Area id="accountPageRight" noOuter />
-        </div>
+        </aside>
+
+        {/* <!-- My Account Content --> */}
+        <Area id="my-account" noOuter />
       </div>
     </div>
   );
@@ -46,7 +118,7 @@ Layout.propTypes = {
 };
 
 export const layout = {
-  areaId: 'content',
+  areaId: 'blank-layout-content',
   sortOrder: 10
 };
 

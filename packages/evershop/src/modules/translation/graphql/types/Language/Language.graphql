@@ -1,8 +1,12 @@
 type Language {
   id: ID!
   code: String!
-  name: Int
+  name: String
   icon: String
+}
+
+extend type Customer {
+  language: Language!
 }
 
 extend type Query {

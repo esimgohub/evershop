@@ -60,7 +60,7 @@ export const query = `
       collectionId
       name
       products (filters: [{key: "limit", operation: eq, value: "4"}]) {
-        items {
+        adminItems {
           productId
           name
           sku

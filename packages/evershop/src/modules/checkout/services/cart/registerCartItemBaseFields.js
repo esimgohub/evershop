@@ -2,6 +2,9 @@ const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { select } = require('@evershop/postgres-query-builder');
 const { buildUrl } = require('@evershop/evershop/src/lib/router/buildUrl');
 const { v4: uuidv4 } = require('uuid');
+const dayjs = require('dayjs');
+const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
+const { createAttribute } = require('@evershop/evershop/src/modules/oms/services/getAdditionalOrderInfo');
 const { toPrice } = require('../toPrice');
 const {
   calculateTaxAmount
@@ -89,18 +92,19 @@ module.exports.registerCartItemBaseFields =
         ],
         dependencies: ['product_id']
       },
-      {
-        key: 'category_id',
-        resolvers: [
-          async function resolver() {
-            const product = await this.getProduct();
-            return product.category_id
-              ? parseInt(product.category_id, 10)
-              : null;
-          }
-        ],
-        dependencies: ['product_id']
-      },
+      // {
+      //   key: 'category_id',
+      //   resolvers: [
+      //     async function resolver(category_id) {
+      //     const dummy= category_id
+      //       const product = await this.getProduct();
+      //       return product.category_id
+      //         ? parseInt(product.category_id, 10)
+      //         : null;
+      //     }
+      //   ],
+      //   dependencies: ['product_id']
+      // },
       {
         key: 'product_name',
         resolvers: [
@@ -182,10 +186,15 @@ module.exports.registerCartItemBaseFields =
         key: 'final_price',
         resolvers: [
           async function resolver() {
-            return toPrice(this.getData('product_price')); // TODO This price should include the custom option price
+            const product = await this.getProduct();
+            return toPrice(product.price);
+
+            // return toPrice(productPrice.price); // TODO This price should include the custom option price
+            // const product = await this.getProduct();
+            // return toPrice(product.price);
           }
         ],
-        dependencies: ['product_price']
+        dependencies: ['product_id']
       },
       {
         key: 'final_price_incl_tax',
@@ -403,6 +412,149 @@ module.exports.registerCartItemBaseFields =
           }
         ],
         dependencies: ['cart_item_id', 'uuid']
+      },
+      {
+        key: 'attribute',
+        resolvers: [
+          async function resolver() {
+            const product = await this.getProduct();
+            const response = await createAttribute(product, pool);
+            return response;
+          }
+        ],
+        dependencies: ['product_id']
+      },
+      {
+        key: 'old_price',
+        resolvers: [
+          async function resolver() {
+
+            const product = await this.getProduct();
+            return toPrice(product.old_price);
+          }
+        ],
+        dependencies: ['product_id']
+      },
+      {
+        key: 'category_id',
+        resolvers: [
+          async function resolver(category_id) {
+            const triggeredField = this.getTriggeredField();
+            const requestedValue = this.getRequestedValue();
+            if (triggeredField === 'category_id' && requestedValue !== category_id) {
+              return requestedValue;
+            }
+            return category_id;
+          }
+        ]
+      },
+      {
+        key: 'trip',
+        resolvers: [
+          async function resolver() {
+            const triggeredField = this.getTriggeredField();
+            const requestedValue = this.getRequestedValue();
+            return triggeredField === 'trip' ? requestedValue : this.getData('trip');
+          }
+        ]
+      },
+      {
+        key: 'trip_text',
+        resolvers: [
+          async function resolver() {
+            function formatDateComponent(value) {
+              return String(value).padStart(2, '0');
+            }
+
+            function convertTimestampToTripString(fromDate, toDate) {
+              // Create dayjs objects from the timestamps
+              const fromDateObj = dayjs(fromDate);
+              const toDateObj = dayjs(toDate);
+
+              // Get day, month, and year components for both dates
+              const fromDay = formatDateComponent(fromDateObj.date());
+
+              const toDay = formatDateComponent(toDateObj.date());
+              const toMonth = formatDateComponent(toDateObj.month() + 1);
+              const toYear = toDateObj.year();
+
+
+              // Calculate the number of days between fromDate and toDate
+              const diffDays = toDateObj.diff(fromDateObj, 'day') + 1;
+
+              // Determine whether to use "day" or "days"
+              const dayText = diffDays === 1 ? 'day' : 'days';
+
+              // Format the trip string
+              return `Trip: ${fromDay}-${toDay}/${toMonth}/${toYear} (${diffDays} ${dayText})`;
+            }
+
+            const trip = this.getData('trip');
+            if (!trip || typeof trip !== 'string' || trip.split(',').length < 2) {
+              return '';
+            }
+            const tripArr = trip.split(',');
+            return convertTimestampToTripString(Number(tripArr[0]), Number(tripArr[1]));
+          }
+        ],
+        dependencies: ['trip']
+      },
+      {
+        key: 'category',
+        resolvers: [
+          async function resolver() {
+            const homeUrl = getConfig('shop.homeUrl', 'http://localhost:3000');
+
+            const categoryDescriptionQuery = select().from('category_description');
+
+            const categoryId = await this.getData('category_id');
+            if (categoryId == null) {
+              return {};
+            }
+            categoryDescriptionQuery.where('category_description_id', '=', categoryId);
+            const rows = await categoryDescriptionQuery.execute(pool);
+            if (!rows?.length) {
+              return {};
+            }
+            const cateObj = { ...rows[0] };
+            return {
+              ...cateObj,
+              image: cateObj.image ? `${homeUrl}${cateObj.image}` : null
+            };
+          }
+        ],
+        dependencies: ['product_id','category_id']
+      },
+      {
+        key: 'titleInfo',
+        resolvers: [
+          async function resolver() {
+            const attrObj = this.getData('attribute');
+            const cateObj = this.getData('category');
+
+            if (!cateObj || !attrObj) {
+              return null
+            }
+            return {
+              dataAmount: attrObj['data-amount'] != null ? parseFloat(attrObj['data-amount']): null,
+              dataAmountUnit: attrObj['data-amount-unit'] ?? null,
+              dataType: attrObj['data-type'] ?? null,
+              dayAmount: attrObj['day-amount'] != null ? parseFloat(attrObj['day-amount']) : null,
+              categoryName: cateObj.name ?? null,
+              imgUrl: cateObj.image ? `${cateObj.image}` : null,
+              imgAlt: cateObj.name ?? null
+            };
+          }
+        ],
+        dependencies: ['category', 'attribute']
+      },
+      {
+        key: 'updated_at',
+        resolvers: [
+          function resolver(value) {
+            return value;
+          }
+        ]
       }
     ];
   };

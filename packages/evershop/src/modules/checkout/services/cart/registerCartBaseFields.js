@@ -72,7 +72,7 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
       resolvers: [
         async function resolver() {
           let count = 0;
-          const items = this.getActiveItems();
+          const items = this.getItems();
           items.forEach((i) => {
             count += parseInt(i.getData('qty'), 10);
           });
@@ -123,6 +123,37 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
         }
       ],
       dependencies: ['items']
+    },
+    {
+      key: 'sub_total_old_price',
+      resolvers: [
+        async function resolver() {
+          let total = 0;
+          const items = this.getActiveItems();
+          items.forEach((i) => {
+            const oldPrice = Number(i.getData('old_price'));
+            const qty = Number(i.getData('qty'));
+            if (oldPrice > 0) {
+              total += oldPrice * qty;
+            } else if (!oldPrice) {
+              total += Number(i.getData('final_price')) * qty;
+            }
+          });
+          return toPrice(total);
+        }
+      ],
+      dependencies: ['items']
+    },
+    {
+      key: 'sub_total_discount_amount',
+      resolvers: [
+        async function resolver() {
+          return toPrice(
+            this.getData('sub_total_old_price') - this.getData('sub_total')
+          );
+        }
+      ],
+      dependencies: ['sub_total_old_price', 'sub_total']
     },
     {
       key: 'sub_total_incl_tax',

@@ -36,6 +36,7 @@ module.exports = async (request, response, delegate, next) => {
     .select('customer.last_name', 'last_name')
     .select('customer.email', 'email')
     .select('customer.avatar_url', 'avatar_url')
+    .select('customer.is_first_login', 'is_first_login')
     .select('language.code', 'language_code')
     .select('language.name', 'language_name')
     .select('language.icon', 'language_icon')
@@ -77,10 +78,7 @@ module.exports = async (request, response, delegate, next) => {
     name: customer.currency_name
   };
 
-  let isFirstLogin = false;
-
   if (!customer) {
-    isFirstLogin = true;
     const [defaultLanguage, defaultCurrency] = await Promise.all([
       getDefaultLanguage(),
       getDefaultCurrency()
@@ -95,11 +93,13 @@ module.exports = async (request, response, delegate, next) => {
         email: googleUserInfo.email,
         first_name: googleUserInfo.given_name,
         last_name: googleUserInfo.family_name,
+        full_name: googleUserInfo.given_name + googleUserInfo.family_name,
         avatar_url: googleUserInfo.picture,
         status: AccountStatus.ENABLED,
         login_source: LoginSource.GOOGLE,
         language_id: defaultLanguage.id,
-        currency_id: defaultCurrency.id
+        currency_id: defaultCurrency.id,
+        is_first_login: true
       })
       .execute(pool);
   }
@@ -109,7 +109,7 @@ module.exports = async (request, response, delegate, next) => {
     firstName: customer.first_name,
     lastName: customer.last_name,
     avatarUrl: customer.avatar_url,
-    isFirstLogin,
+    isFirstLogin: customer.is_first_login,
     language: createLanguageResponse(language),
     currency: createCurrencyResponse(currency)
   };
@@ -123,5 +123,6 @@ module.exports = async (request, response, delegate, next) => {
   response.$body = {
     data: customerResponseData
   };
+
   next();
 };

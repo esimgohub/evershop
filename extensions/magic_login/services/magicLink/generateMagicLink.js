@@ -7,6 +7,9 @@ module.exports.generateMagicLink = async (email) => {
   try {
     const token = await generateToken(email);
     const homeUrl = getConfig('shop.homeUrl', 'http://localhost:3000');
+
+    console.log("send magic link url: ", homeUrl);
+
     const magicLink = `${homeUrl}/links/magic-login?token=${token}`;
 
     return magicLink;
