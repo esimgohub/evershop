@@ -78,8 +78,6 @@ module.exports = async (request, response, delegate, next) => {
       if (e) {
         error(e);
         response.redirect(failureUrl);
-      } else {
-        response.redirect(successUrl);
       }
     });
 
