@@ -58,7 +58,6 @@ module.exports = async (request, response, delegate, next) => {
     .select('customer.last_name', 'last_name')
     .select('customer.email', 'email')
     .select('customer.avatar_url', 'avatar_url')
-    .select('customer.is_first_login', 'is_first_login')
     .select('language.code', 'language_code')
     .select('language.name', 'language_name')
     .select('language.icon', 'language_icon')
@@ -98,7 +97,10 @@ module.exports = async (request, response, delegate, next) => {
     name: customer.currency_name
   };
 
+  let isFirstLogin = false;
+
   if (!customer) {
+    isFirstLogin = true;
     const [defaultLanguage, defaultCurrency] = await Promise.all([
       getDefaultLanguage(),
       getDefaultCurrency()
@@ -118,8 +120,7 @@ module.exports = async (request, response, delegate, next) => {
         avatar_url: facebookUserInfo.picture,
         status: AccountStatus.ENABLED,
         language_id: defaultLanguage.id,
-        currency_id: defaultCurrency.id,
-        is_first_login: true
+        currency_id: defaultCurrency.id
       })
       .execute(pool);
   }
@@ -129,7 +130,7 @@ module.exports = async (request, response, delegate, next) => {
     firstName: customer.first_name,
     lastName: customer.last_name,
     avatarUrl: customer.avatar_url,
-    isFirstLogin: customer.is_first_login,
+    isFirstLogin,
     language: createLanguageResponse(language),
     currency: createCurrencyResponse(currency)
   };

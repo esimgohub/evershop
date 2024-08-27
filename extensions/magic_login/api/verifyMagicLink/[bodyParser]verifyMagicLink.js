@@ -35,7 +35,6 @@ module.exports = async (request, response, delegate, next) => {
       .select('customer.last_name', 'last_name')
       .select('customer.email', 'email')
       .select('customer.avatar_url', 'avatar_url')
-      .select('customer.is_first_login', 'is_first_login')
       .select('language.code', 'language_code')
       .select('language.name', 'language_name')
       .select('language.icon', 'language_icon')
@@ -75,7 +74,11 @@ module.exports = async (request, response, delegate, next) => {
       name: customer.currency_name
     };
 
+    let isFirstLogin = false;
+
     if (!customer) {
+      isFirstLogin = true;
+
       const [defaultLanguage, defaultCurrency] = await Promise.all([
         getDefaultLanguage(),
         getDefaultCurrency()
@@ -90,8 +93,7 @@ module.exports = async (request, response, delegate, next) => {
           status: AccountStatus.ENABLED,
           language_id: language.id,
           currency_id: currency.id,
-          login_source: LoginSource.MAGIC_LINK,
-          is_first_login: true
+          login_source: LoginSource.MAGIC_LINK
         })
         .execute(pool);
       delegate.createCustomer = customer;
@@ -101,12 +103,14 @@ module.exports = async (request, response, delegate, next) => {
     request.session.customerID = customer.customer_id;
     request.session.loginSource = LoginSource.MAGIC_LINK;
 
+    console.log("request session", request.session);
+
     response.status(OK);
     response.$body = {
       data: {
         name: customer.full_name,
         email: customer.email,
-        isFirstLogin: customer.is_first_login,
+        isFirstLogin,
         language: createLanguageResponse(language),
         currency: createCurrencyResponse(currency)
       }
