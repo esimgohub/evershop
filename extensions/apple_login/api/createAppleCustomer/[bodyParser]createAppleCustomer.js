@@ -14,9 +14,10 @@ const {
 const {
   createCurrencyResponse
 } = require('../../services/mapper/createCurrencyResponse');
+const randomStr = require('@evershop/evershop/src/modules/base/services/randomStr');
 
 module.exports = async (request, response, delegate, next) => {
-  const { id_token } = request.body;
+  const { id_token, first_name, last_name, email } = request.body;
 
   const appleUserInfo = await getAppleUserInfo(id_token);
   if (!appleUserInfo) {
@@ -28,7 +29,6 @@ module.exports = async (request, response, delegate, next) => {
       }
     });
   }
-
   let customerQuery = select('customer.customer_id', 'customer_id')
     .select('customer.status', 'status')
     .select('customer.first_name', 'first_name')
@@ -54,7 +54,7 @@ module.exports = async (request, response, delegate, next) => {
   // The unique identifier for the user in Apple’s system.
   // This value is stable and unique to the user and the app,
   // allowing you to identify the same user across different sessions or devices.
-  customerQuery.where('customer.external_id', '=', appleUserInfo.sub);
+  customerQuery.where('customer.external_id', '=', appleUserInfo?.sub);
 
   let [customer] = await customerQuery.execute(pool);
 
@@ -83,31 +83,26 @@ module.exports = async (request, response, delegate, next) => {
       getDefaultLanguage(),
       getDefaultCurrency()
     ]);
-
     language = defaultLanguage;
     currency = defaultCurrency;
-
     let emailForSave = null;
     const privateReplyDomain = '@privaterelay.appleid.com';
-    if (email && !email.endsWith(privateReplyDomain)) {
+    if (email) {
       emailForSave = email;
-    } else if (
-      !appleUserInfo?.email?.endsWith(privateReplyDomain) &&
-      appleUserInfo?.email_verified
-    ) {
+    } else if (appleUserInfo?.email) {
       emailForSave = appleUserInfo.email;
     }
-
-    const fName = typeof first_name === 'string' ? first_name.trim() : 'Gohub';
-    const lName = typeof last_name === 'string' ? last_name.trim() : 'Bear';
+    const fName = typeof first_name === 'string' ? first_name.trim() : 'Bear';
+    const lName =
+      typeof last_name === 'string' ? last_name.trim() : randomStr();
 
     customer = await insert('customer')
       .given({
         external_id: appleUserInfo.sub,
-        email: email,
-        first_name: null,
-        last_name: null,
-        full_name: null,
+        email: emailForSave,
+        first_name: fName,
+        last_name: lName,
+        full_name: `${fName} ${lName}`,
         status: AccountStatus.ENABLED,
         login_source: LoginSource.APPLE,
         language_id: defaultLanguage.id,

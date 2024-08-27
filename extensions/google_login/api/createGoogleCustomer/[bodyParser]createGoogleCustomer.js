@@ -14,6 +14,7 @@ const {
 const {
   createCurrencyResponse
 } = require('../../services/mapper/createCurrencyResponse');
+const { info } = require('@evershop/evershop/src/lib/log/logger');
 
 module.exports = async (request, response, delegate, next) => {
   const { accessToken } = request.body;
@@ -54,6 +55,8 @@ module.exports = async (request, response, delegate, next) => {
   customerQuery.where('customer.external_id', '=', googleUserInfo.id);
 
   let [customer] = await customerQuery.execute(pool);
+
+  info(`createGoogleCustomer.executeQuery: ${JSON.stringify(customer)}`);
 
   if (customer && customer.status !== AccountStatus.ENABLED) {
     response.status(400);

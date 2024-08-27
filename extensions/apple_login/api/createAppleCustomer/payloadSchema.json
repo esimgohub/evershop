@@ -3,6 +3,15 @@
   "properties": {
     "id_token": {
       "type": "string"
+    },
+    "first_name": {
+      "type": ["string", "null"]
+    },
+    "last_name": {
+      "type": ["string", "null"]
+    },
+    "email": {
+      "type": ["string", "null"]
     }
   },
   "required": ["id_token"],
