@@ -35,6 +35,7 @@ module.exports = async (request, response, delegate, next) => {
     .select('customer.last_name', 'last_name')
     .select('customer.email', 'email')
     .select('customer.avatar_url', 'avatar_url')
+    .select('customer.is_first_login', 'is_first_login')
     .select('language.code', 'language_code')
     .select('language.name', 'language_name')
     .select('language.icon', 'language_icon')
@@ -77,10 +78,7 @@ module.exports = async (request, response, delegate, next) => {
     name: customer.currency_name
   };
 
-  let isFirstLogin = false;
-
   if (!customer) {
-    isFirstLogin = true;
     const [defaultLanguage, defaultCurrency] = await Promise.all([
       getDefaultLanguage(),
       getDefaultCurrency()
@@ -89,7 +87,19 @@ module.exports = async (request, response, delegate, next) => {
     language = defaultLanguage;
     currency = defaultCurrency;
 
-    let email = !appleUserInfo.is_private_email && appleUserInfo.email_verified ? appleUserInfo.email : null;
+    let emailForSave = null;
+    const privateReplyDomain = '@privaterelay.appleid.com';
+    if (email && !email.endsWith(privateReplyDomain)) {
+      emailForSave = email;
+    } else if (
+      !appleUserInfo?.email?.endsWith(privateReplyDomain) &&
+      appleUserInfo?.email_verified
+    ) {
+      emailForSave = appleUserInfo.email;
+    }
+
+    const fName = typeof first_name === 'string' ? first_name.trim() : 'Gohub';
+    const lName = typeof last_name === 'string' ? last_name.trim() : 'Bear';
 
     customer = await insert('customer')
       .given({
@@ -101,7 +111,8 @@ module.exports = async (request, response, delegate, next) => {
         status: AccountStatus.ENABLED,
         login_source: LoginSource.APPLE,
         language_id: defaultLanguage.id,
-        currency_id: defaultCurrency.id
+        currency_id: defaultCurrency.id,
+        is_first_login: true
       })
       .execute(pool);
   }
@@ -111,7 +122,7 @@ module.exports = async (request, response, delegate, next) => {
     firstName: customer.first_name,
     lastName: customer.last_name,
     avatarUrl: customer.avatar_url,
-    isFirstLogin,
+    isFirstLogin: customer.is_first_login,
     language: createLanguageResponse(language),
     currency: createCurrencyResponse(currency)
   };
