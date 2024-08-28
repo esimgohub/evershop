@@ -2,6 +2,9 @@ type Social {
   url: String
   icon: String
   index: Int
+  name: String
+  sortOrder: Int
+  visibility: Boolean
 }
 
 extend type Setting {

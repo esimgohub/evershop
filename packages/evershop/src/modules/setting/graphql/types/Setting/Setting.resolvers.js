@@ -46,42 +46,46 @@ module.exports = {
 
       const socialConfigs = setting.filter(s => s.name.toLowerCase().startsWith("social"));
       
-      const numberOfSocialFields = 3;
-      const totalSocial = socialConfigs.length / numberOfSocialFields;
+      const socialIndexes = socialConfigs.filter(s => s.name.toLowerCase().includes('social') && s.name.toLowerCase().includes(`index`));
 
       const socialResponses = [];
+      for (const socialIndex of socialIndexes) {
+        const matchedSocialItems = socialConfigs.filter(s => s.name.toLowerCase().includes(`social${socialIndex.value}`));
 
-      for (let index = 1; index <= totalSocial; ++index) {
-        const socialIcon = setting.find(s => s.name === `social${index}IconUrl`);
-        const socialUrl = setting.find(s => s.name === `social${index}Url`);
-        const socialIndex = setting.find(s => s.name === `social${index}Index`);
+        const socialIcon = matchedSocialItems.find(s => s.name === `social${socialIndex.value}IconUrl`);
+        const socialUrl = matchedSocialItems.find(s => s.name === `social${socialIndex.value}Url`);
+        const socialVisibility = matchedSocialItems.find(s => s.name === `social${socialIndex.value}Visibility`);
+        const socialSortOrder = matchedSocialItems.find(s => s.name === `social${socialIndex.value}SortOrder`);
+        const socialName = matchedSocialItems.find(s => s.name === `social${socialIndex.value}Name`);
+
 
         socialResponses.push({
           url: socialUrl.value,
           icon: `${homeUrl}${socialIcon.value}`,
-          index: socialIndex.value
+          index: socialIndex.value,
+          visibility: parseInt(socialVisibility.value) === 1,
+          sortOrder: socialSortOrder.value,
+          name: socialName.value
         });
       }
       
-      socialResponses.sort((s1, s2) => s1.index - s2.index);
+      socialResponses.sort((s1, s2) => s1.sortOrder - s2.sortOrder);
 
       const sliderSettings = setting
         .filter((s) => s.name.toLowerCase().startsWith('1sslideritem'));
-
-      const numberOfSliderFields = 8;
-      const totalSlider = sliderSettings.length / numberOfSliderFields;
       
       const sliders = [];
-      for (let index = 1; index <= totalSlider; ++index) {
-        const matchedSliders = sliderSettings.filter((s) => s.name.toLowerCase().includes(`1sslideritem${index}`));
+      const sliderIndexes = sliderSettings.filter((s) => s.name.toLowerCase().includes('1sslideritem') && s.name.toLowerCase().includes(`index`));
+      for (const sliderIndex of sliderIndexes) {
+        const matchedSliders = sliderSettings.filter((s) => s.name.toLowerCase().includes(`1sslideritem${sliderIndex.value}`));
 
-        const sliderSortOrder = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}sortorder`));
-        const sliderVisibility = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}visibility`));
-        const sliderImageUrl = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}imageurl`));
-        const sliderUrl = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}url`));
-        const sliderGroup = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}group`));
-        const sliderTitle = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}title`));
-        const sliderDescription = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}description`));
+        const sliderSortOrder = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${sliderIndex.value}sortorder`));
+        const sliderVisibility = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${sliderIndex.value}visibility`));
+        const sliderImageUrl = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${sliderIndex.value}imageurl`));
+        const sliderUrl = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${sliderIndex.value}url`));
+        const sliderGroup = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${sliderIndex.value}group`));
+        const sliderTitle = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${sliderIndex.value}title`));
+        const sliderDescription = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${sliderIndex.value}description`));
 
         sliders.push({
           index: parseInt(sliderSortOrder.value),
@@ -93,6 +97,9 @@ module.exports = {
           description: decode(sliderDescription.value) ?? ''
         })
       }
+
+      sliders.sort((s1, s2) => s1.index - s2.index);
+
       // CMS pages
       const query = getCmsPagesBaseQuery();
     
@@ -108,7 +115,7 @@ module.exports = {
       return {
         store,
         payment,
-        social: socialResponses,
+        social: socialResponses.filter((s) => s.visibility === true),
         sliders: sliders.filter((s) => s.visibility === true),
         staticPages
       }

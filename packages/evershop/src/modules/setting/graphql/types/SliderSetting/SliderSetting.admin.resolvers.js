@@ -7,22 +7,19 @@ module.exports = {
 
       const sliders = setting
         .filter((s) => s.name.toLowerCase().startsWith('1sslideritem'));
-
-      const numberOfSliderFields = 8;
-      const totalSlider = sliders.length / numberOfSliderFields;
       
       const results = [];
-      for (let index = 1; index <= totalSlider; ++index) {
-        const matchedSliders = sliders.filter((s) => s.name.toLowerCase().includes(`1sslideritem${index}`));
+      const sliderIndexes = sliders.filter((s) => s.name.toLowerCase().includes('1sslideritem') && s.name.toLowerCase().includes(`index`));
+      for (const sliderIndex of sliderIndexes) {
+        const matchedSliderItems = sliders.filter((s) => s.name.toLowerCase().includes(`1sslideritem${sliderIndex.value}`));
 
-        const sliderSortOrder = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}sortorder`));
-        const sliderVisibility = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}visibility`));
-        const sliderIndex = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}index`));
-        const sliderImageUrl = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}imageurl`));
-        const sliderUrl = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}url`));
-        const sliderGroup = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}group`));
-        const sliderTitle = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}title`));
-        const sliderDescription = matchedSliders.find((s) => s.name.toLowerCase().includes(`1sslideritem${index}description`));
+        const sliderSortOrder = matchedSliderItems.find((s) => s.name.toLowerCase().includes(`1sslideritem${sliderIndex.value}sortorder`));
+        const sliderVisibility = matchedSliderItems.find((s) => s.name.toLowerCase().includes(`1sslideritem${sliderIndex.value}visibility`));
+        const sliderImageUrl = matchedSliderItems.find((s) => s.name.toLowerCase().includes(`1sslideritem${sliderIndex.value}imageurl`));
+        const sliderUrl = matchedSliderItems.find((s) => s.name.toLowerCase().includes(`1sslideritem${sliderIndex.value}url`));
+        const sliderGroup = matchedSliderItems.find((s) => s.name.toLowerCase().includes(`1sslideritem${sliderIndex.value}group`));
+        const sliderTitle = matchedSliderItems.find((s) => s.name.toLowerCase().includes(`1sslideritem${sliderIndex.value}title`));
+        const sliderDescription = matchedSliderItems.find((s) => s.name.toLowerCase().includes(`1sslideritem${sliderIndex.value}description`));
 
         results.push({
           sortOrder: parseInt(sliderSortOrder.value),
@@ -35,6 +32,9 @@ module.exports = {
           description: sliderDescription.value ?? ''
         });
       }
+
+
+      console.log("sliders", results);
 
       results.sort((a, b) => a.index - b.index);
 
