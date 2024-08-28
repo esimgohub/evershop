@@ -1,33 +1,37 @@
 import PropTypes from 'prop-types';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Field } from '@components/common/form/Field';
 import { Card } from '@components/admin/cms/Card';
 import { toast } from 'react-toastify';
 import { Form } from '@components/common/form/Form';
 import SettingMenu from '@components/admin/setting/SettingMenu';
 import Button from '@components/common/form/Button';
-
-function SocialLink(props) {
+function SocialLinkSettingV2(props) {
   const { setting, imageUploadUrl } = props;
-
-  console.log('setting: ', setting);
-
-  const facebookRef = useRef();
-  const instagramRef = useRef();
-  const tiktokRef = useRef();
-  const threadRef = useRef();
-
   const { social } = setting;
 
-  const [facebookIcon, setFacebookIcon] = useState(social[0]?.icon);
-  const [instagramIcon, setInstagramIcon] = useState(social[1]?.icon);
-  const [tiktokIcon, setTiktokIcon] = useState(social[2]?.icon);
-  const [threadIcon, setThreadIcon] = useState(social[3]?.icon);
+  const refs = useRef([]);
+
+  const [socialLinks, setSocialLinks] = useState(
+    social && social.length !== 0
+      ? social
+      : [
+          {
+            index: 1,
+            name: '',
+            sortOrder: 1,
+            url: '',
+            visibility: true,
+            icon: ''
+          }
+        ]
+  );
 
   const [loading, setLoading] = useState(false);
 
-  const handleFacebookIconChange = (e) => {
+  const handleSocialImageChange = (e, index) => {
     e.persist();
+
     const formData = new FormData();
     for (let i = 0; i < e.target.files.length; i += 1) {
       formData.append('images', e.target.files[i]);
@@ -58,7 +62,18 @@ function SocialLink(props) {
       })
       .then((response) => {
         if (!response.error) {
-          setFacebookIcon(response.data.files[0].url);
+          const editedSocialLinks = socialLinks.map((socialLink) => {
+            if (socialLink?.index !== index) {
+              return socialLink;
+            }
+
+            return {
+              ...socialLink,
+              icon: response.data.files[0]?.url
+            };
+          });
+
+          setSocialLinks(editedSocialLinks);
         } else {
           toast.error(get(response, 'error.message', 'Failed!'));
         }
@@ -72,548 +87,256 @@ function SocialLink(props) {
       });
   };
 
-  const handleInstagramIconChange = (e) => {
-    e.persist();
-    const formData = new FormData();
-    for (let i = 0; i < e.target.files.length; i += 1) {
-      formData.append('images', e.target.files[i]);
-    }
-    setLoading(true);
-    fetch(
-      `${imageUploadUrl}/social/${
-        Math.floor(Math.random() * (9999 - 1000)) + 1000
-      }/${Math.floor(Math.random() * (9999 - 1000)) + 1000}`,
-      {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      }
-    )
-      .then((response) => {
-        if (
-          !response.headers.get('content-type') ||
-          !response.headers.get('content-type').includes('application/json')
-        ) {
-          throw new TypeError('Something wrong. Please try again');
-        }
+  const handleRemoveSocialLink = (index) => {
+    setSocialLinks(
+      socialLinks.filter((socialLink) => socialLink?.index !== index)
+    );
 
-        return response.json();
-      })
-      .then((response) => {
-        if (!response.error) {
-          setInstagramIcon(response.data.files[0].url);
-        } else {
-          toast.error(get(response, 'error.message', 'Failed!'));
-        }
-      })
-      .catch((error) => {
-        toast.error(error.message);
-      })
-      .finally(() => {
-        e.target.value = null;
-        setLoading(false);
-      });
+    toast.success('Removed');
   };
 
-  const handleTiktokIconChange = (e) => {
-    e.persist();
-    const formData = new FormData();
-    for (let i = 0; i < e.target.files.length; i += 1) {
-      formData.append('images', e.target.files[i]);
-    }
-    setLoading(true);
-    fetch(
-      `${imageUploadUrl}/social/${
-        Math.floor(Math.random() * (9999 - 1000)) + 1000
-      }/${Math.floor(Math.random() * (9999 - 1000)) + 1000}`,
-      {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      }
-    )
-      .then((response) => {
-        if (
-          !response.headers.get('content-type') ||
-          !response.headers.get('content-type').includes('application/json')
-        ) {
-          throw new TypeError('Something wrong. Please try again');
-        }
+  useEffect(() => {
+    refs.current = refs.current.slice(0, socialLinks.length);
+  }, [socialLinks]);
 
-        return response.json();
-      })
-      .then((response) => {
-        if (!response.error) {
-          setTiktokIcon(response.data.files[0].url);
-        } else {
-          toast.error(get(response, 'error.message', 'Failed!'));
-        }
-      })
-      .catch((error) => {
-        toast.error(error.message);
-      })
-      .finally(() => {
-        e.target.value = null;
-        setLoading(false);
-      });
-  };
+  const renderSocialCards = () => {
+    return (
+      <>
+        {socialLinks?.map((socialLink, index) => {
+          return (
+            <div key={socialLink?.index} style={{ marginBottom: '16px' }}>
+              <Card
+                key={socialLink?.index}
+                title={
+                  <div className="flex justify-between items-center">
+                    <h3>{`Social ${index + 1}`}</h3>
 
-  const handleThreadIconChange = (e) => {
-    e.persist();
-    const formData = new FormData();
-    for (let i = 0; i < e.target.files.length; i += 1) {
-      formData.append('images', e.target.files[i]);
-    }
-    setLoading(true);
-    fetch(
-      `${imageUploadUrl}/social/${
-        Math.floor(Math.random() * (9999 - 1000)) + 1000
-      }/${Math.floor(Math.random() * (9999 - 1000)) + 1000}`,
-      {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      }
-    )
-      .then((response) => {
-        if (
-          !response.headers.get('content-type') ||
-          !response.headers.get('content-type').includes('application/json')
-        ) {
-          throw new TypeError('Something wrong. Please try again');
-        }
-
-        return response.json();
-      })
-      .then((response) => {
-        if (!response.error) {
-          setThreadIcon(response.data.files[0].url);
-        } else {
-          toast.error(get(response, 'error.message', 'Failed!'));
-        }
-      })
-      .catch((error) => {
-        toast.error(error.message);
-      })
-      .finally(() => {
-        e.target.value = null;
-        setLoading(false);
-      });
-  };
-
-  return (
-    <>
-      <Card
-        title="Social 1"
-        className="mb-2"
-        actions={
-          facebookIcon
-            ? [
-                { name: 'Change', onAction: () => facebookRef.current.click() },
-                {
-                  name: 'Remove',
-                  variant: 'critical',
-                  onAction: () => {
-                    setFacebookIcon(undefined);
-                  }
-                }
-              ]
-            : []
-        }
-      >
-        <Card.Session>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-1 items-center flex">
-              <h4>Url</h4>
-            </div>
-            <div className="col-span-2">
-              <Field
-                type="text"
-                name="facebookUrl"
-                placeholder="Facebook"
-                value={social[0].url}
-              />
-            </div>
-          </div>
-        </Card.Session>
-
-        <Card.Session>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-1 items-center flex" />
-            <div className="col-span-2">
-              {!facebookIcon ? (
-                <label
-                  htmlFor="facebookIconUpload"
-                  className="flex flex-col justify-center image-uploader"
-                >
-                  <div className="uploader-icon flex justify-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-3 w-3"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
-                        clipRule="evenodd"
+                    {socialLinks && (
+                      <Button
+                        variant="delete"
+                        title="Delete"
+                        onAction={() =>
+                          handleRemoveSocialLink(socialLink?.index)
+                        }
                       />
-                    </svg>
+                    )}
                   </div>
-                  <div className="flex justify-center">
-                    <Button
-                      title="Add image"
-                      variant="default"
-                      onAction={() => facebookRef.current.click()}
-                    />
-                  </div>
-                  <div className="flex justify-center mt-1">
-                    <span style={{ color: '#6d7175', fontSize: '1.2rem' }}>
-                      click to upload an image
-                    </span>
-                  </div>
-                </label>
-              ) : (
-                <div className="category-image">
-                  <img src={facebookIcon} alt={' '} />
-                </div>
-              )}
-
-              {loading === true && (
-                <div className="category__image__loading flex justify-center">
-                  <div className="self-center">
-                    <svg
-                      style={{ display: 'block', shapeRendering: 'auto' }}
-                      viewBox="0 0 100 100"
-                      preserveAspectRatio="xMidYMid"
-                    >
-                      <circle
-                        cx="50"
-                        cy="50"
-                        fill="none"
-                        stroke="var(--primary)"
-                        strokeWidth="10"
-                        r="43"
-                        strokeDasharray="202.63272615654165 69.54424205218055"
-                      >
-                        <animateTransform
-                          attributeName="transform"
-                          type="rotate"
-                          repeatCount="indefinite"
-                          dur="1s"
-                          values="0 50 50;360 50 50"
-                          keyTimes="0;1"
-                        />
-                      </circle>
-                    </svg>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </Card.Session>
-
-        <div className="invisible" style={{ width: '1px', height: '1px' }}>
-          <input
-            id="social1IconUpload"
-            type="file"
-            onChange={handleFacebookIconChange}
-            ref={facebookRef}
-          />
-        </div>
-
-        <Field type="hidden" name="social1IconUrl" value={facebookIcon || ''} />
-      </Card>
-
-      <Card
-        title="Instagram"
-        className="mb-2!"
-        actions={
-          instagramIcon
-            ? [
-                {
-                  name: 'Change',
-                  onAction: () => instagramRef.current.click()
-                },
-                {
-                  name: 'Remove',
-                  variant: 'critical',
-                  onAction: () => {
-                    setInstagramIcon(undefined);
-                  }
                 }
-              ]
-            : []
-        }
-      >
-        <Card.Session>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-1 items-center flex">
-              <h4>Instagram</h4>
-            </div>
-            <div className="col-span-2">
-              <Field
-                type="text"
-                name="instagramUrl"
-                placeholder="Instagram"
-                value={social[2]?.url}
-              />
-            </div>
-          </div>
-        </Card.Session>
-
-        <Card.Session>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-1 items-center flex" />
-            <div className="col-span-2">
-              {!instagramIcon ? (
-                <label
-                  htmlFor="instagramIconUpload"
-                  className="flex flex-col justify-center image-uploader"
-                >
-                  <div className="uploader-icon flex justify-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-3 w-3"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
-                        clipRule="evenodd"
+                className="mb-2"
+                actions={[]}
+              >
+                <Card.Session>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="col-span-1 items-center flex">
+                      <h4>Name</h4>
+                    </div>
+                    <div className="col-span-2">
+                      <Field
+                        type="text"
+                        name={`social${socialLink?.index}Name`}
+                        placeholder="Example: Facebook | Instagram | Twitter"
+                        value={socialLink?.name}
                       />
-                    </svg>
+                    </div>
                   </div>
-                  <div className="flex justify-center">
-                    <Button
-                      title="Add image"
-                      variant="default"
-                      onAction={() => instagramRef.current.click()}
-                    />
+                </Card.Session>
+
+                <Card.Session>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="col-span-1 items-center flex">
+                      <h4>URL</h4>
+                    </div>
+                    <div className="col-span-2">
+                      <Field
+                        type="text"
+                        name={`social${socialLink?.index}Url`}
+                        placeholder="Example: https://abc.com"
+                        value={socialLink?.url}
+                      />
+                    </div>
                   </div>
-                  <div className="flex justify-center mt-1">
-                    <span style={{ color: '#6d7175', fontSize: '1.2rem' }}>
-                      click to upload an image
-                    </span>
+                </Card.Session>
+
+                <Card.Session>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="col-span-1 items-center flex">
+                      <h4>Sort Order</h4>
+                    </div>
+                    <div className="col-span-2">
+                      <Field
+                        type="text"
+                        name={`social${socialLink?.index}SortOrder`}
+                        validationRules={['notEmpty']}
+                        placeholder="Example: 1"
+                        value={socialLink?.sortOrder}
+                      />
+                    </div>
                   </div>
-                </label>
-              ) : (
-                <div className="category-image">
-                  <img src={instagramIcon} alt={' '} />
+                </Card.Session>
+
+                <Card.Session>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="col-span-1 items-center flex">
+                      <h4>Visibility</h4>
+                    </div>
+                    <div className="col-span-2">
+                      <Field
+                        name={`social${socialLink?.index}Visibility`}
+                        value={socialLink?.visibility}
+                        type="toggle"
+                        validationRules={['notEmpty']}
+                      />
+                    </div>
+                  </div>
+                </Card.Session>
+
+                <Card.Session
+                  title="Image"
+                  actions={
+                    socialLink?.icon
+                      ? [
+                          {
+                            name: 'Change',
+                            onAction: () => refs.current[index].click()
+                          }
+                        ]
+                      : []
+                  }
+                >
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="col-span-1 items-center flex" />
+                    <div className="col-span-2">
+                      {!socialLink?.icon ? (
+                        <label
+                          htmlFor={`social${socialLink?.index}Upload`}
+                          className="flex flex-col justify-center image-uploader"
+                        >
+                          <div className="uploader-icon flex justify-center">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-3 w-3"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </div>
+                          <div className="flex justify-center">
+                            <Button
+                              title="Add image"
+                              variant="default"
+                              onAction={() => refs.current[index].click()}
+                            />
+                          </div>
+                          <div className="flex justify-center mt-1">
+                            <span
+                              style={{ color: '#6d7175', fontSize: '1.2rem' }}
+                            >
+                              click to upload an image
+                            </span>
+                          </div>
+                        </label>
+                      ) : (
+                        <div>
+                          <img src={socialLink?.icon} alt={'Social Icon'} />
+                        </div>
+                      )}
+                      {loading === true && (
+                        <div className="category__image__loading flex justify-center">
+                          <div className="self-center">
+                            <svg
+                              style={{
+                                display: 'block',
+                                shapeRendering: 'auto'
+                              }}
+                              viewBox="0 0 100 100"
+                              preserveAspectRatio="xMidYMid"
+                            >
+                              <circle
+                                cx="50"
+                                cy="50"
+                                fill="none"
+                                stroke="var(--primary)"
+                                strokeWidth="10"
+                                r="43"
+                                strokeDasharray="202.63272615654165 69.54424205218055"
+                              >
+                                <animateTransform
+                                  attributeName="transform"
+                                  type="rotate"
+                                  repeatCount="indefinite"
+                                  dur="1s"
+                                  values="0 50 50;360 50 50"
+                                  keyTimes="0;1"
+                                />
+                              </circle>
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card.Session>
+
+                <div
+                  className="invisible"
+                  style={{ width: '1px', height: '1px' }}
+                >
+                  <input
+                    id={`social${socialLink?.index}Upload`}
+                    type="file"
+                    onChange={(e) =>
+                      handleSocialImageChange(e, socialLink.index)
+                    }
+                    ref={(el) => (refs.current[index] = el)}
+                  />
                 </div>
-              )}
+
+                <Field
+                  type="hidden"
+                  name={`social${socialLink?.index}IconUrl`}
+                  value={socialLink?.icon || ''}
+                  validationRules={['notEmpty']}
+                />
+
+                <Field
+                  type="hidden"
+                  name={`social${socialLink?.index}Index`}
+                  value={socialLink?.index}
+                  validationRules={['notEmpty']}
+                />
+              </Card>
             </div>
-          </div>
-        </Card.Session>
+          );
+        })}
 
-        <div className="invisible" style={{ width: '1px', height: '1px' }}>
-          <input
-            id="social2IconUpload"
-            type="file"
-            onChange={handleInstagramIconChange}
-            ref={instagramRef}
-          />
-        </div>
-
-        <Field
-          type="hidden"
-          name="social2IconUrl"
-          value={instagramIcon || ''}
+        <Button
+          title="Add Social"
+          onAction={() => {
+            setSocialLinks([
+              ...socialLinks,
+              {
+                index: Math.max(...socialLinks.map((s) => s?.index)) + 1,
+                sortOrder: Math.max(...socialLinks.map((s) => s?.index)) + 1,
+                title: '',
+                visibility: true,
+                url: '',
+                icon: ''
+              }
+            ]);
+          }}
         />
-      </Card>
+      </>
+    );
+  };
 
-      <Card
-        title="Tiktok"
-        className="mb-2"
-        actions={
-          tiktokIcon
-            ? [
-                { name: 'Change', onAction: () => tiktokRef.current.click() },
-                {
-                  name: 'Remove',
-                  variant: 'critical',
-                  onAction: () => {
-                    setTiktokIcon(undefined);
-                  }
-                }
-              ]
-            : []
-        }
-      >
-        <Card.Session>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-1 items-center flex">
-              <h4>Tiktok</h4>
-            </div>
-            <div className="col-span-2">
-              <Field
-                type="text"
-                name="social3Url"
-                placeholder="Tiktok"
-                value={social[3].url}
-              />
-            </div>
-          </div>
-        </Card.Session>
-
-        <Card.Session>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-1 items-center flex" />
-            <div className="col-span-2">
-              {!tiktokIcon ? (
-                <label
-                  htmlFor="social3IconUpload"
-                  className="flex flex-col justify-center image-uploader"
-                >
-                  <div className="uploader-icon flex justify-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-3 w-3"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex justify-center">
-                    <Button
-                      title="Add image"
-                      variant="default"
-                      onAction={() => tiktokRef.current.click()}
-                    />
-                  </div>
-                  <div className="flex justify-center mt-1">
-                    <span style={{ color: '#6d7175', fontSize: '1.2rem' }}>
-                      click to upload an image
-                    </span>
-                  </div>
-                </label>
-              ) : (
-                <div className="category-image">
-                  <img src={tiktokIcon} alt={' '} />
-                </div>
-              )}
-            </div>
-          </div>
-        </Card.Session>
-
-        <div className="invisible" style={{ width: '1px', height: '1px' }}>
-          <input
-            id="social3IconUpload"
-            type="file"
-            onChange={handleTiktokIconChange}
-            ref={tiktokRef}
-          />
-        </div>
-
-        <Field type="hidden" name="social3IconUrl" value={tiktokIcon || ''} />
-      </Card>
-
-      <Card
-        title="Thread"
-        className="mb-2"
-        actions={
-          threadIcon
-            ? [
-                { name: 'Change', onAction: () => threadRef.current.click() },
-                {
-                  name: 'Remove',
-                  variant: 'critical',
-                  onAction: () => {
-                    setThreadIcon(undefined);
-                  }
-                }
-              ]
-            : []
-        }
-      >
-        <div className="invisible" style={{ width: '1px', height: '1px' }}>
-          <input
-            id="social4IconUpload"
-            type="file"
-            onChange={handleThreadIconChange}
-            ref={threadRef}
-          />
-        </div>
-
-        <Field type="hidden" name="social4IconUrl" value={threadIcon || ''} />
-
-        <Card.Session>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-1 items-center flex">
-              <h4>Thread</h4>
-            </div>
-            <div className="col-span-2">
-              <Field
-                type="text"
-                name="social4Url"
-                placeholder="Thread"
-                value={social[3].url}
-              />
-            </div>
-          </div>
-        </Card.Session>
-
-        <Card.Session>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-1 items-center flex" />
-            <div className="col-span-2">
-              {!threadIcon ? (
-                <label
-                  htmlFor="threadIconUpload"
-                  className="flex flex-col justify-center image-uploader"
-                >
-                  <div className="uploader-icon flex justify-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-3 w-3"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex justify-center">
-                    <Button
-                      title="Add image"
-                      variant="default"
-                      onAction={() => threadRef.current.click()}
-                    />
-                  </div>
-                  <div className="flex justify-center mt-1">
-                    <span style={{ color: '#6d7175', fontSize: '1.2rem' }}>
-                      click to upload an image
-                    </span>
-                  </div>
-                </label>
-              ) : (
-                <div className="category-image">
-                  <img src={threadIcon} alt={' '} />
-                </div>
-              )}
-            </div>
-          </div>
-        </Card.Session>
-      </Card>
-    </>
-  );
+  return renderSocialCards();
 }
-export default function SocialLinkSetting(props) {
+export default function SocialLinkSettingsV2(props) {
   const { saveSettingApi, imageUploadUrl, setting } = props;
 
   return (
@@ -624,7 +347,7 @@ export default function SocialLinkSetting(props) {
         </div>
         <div className="col-span-4">
           <Form
-            id="socialLinkSettingForm"
+            id="social-setting-form"
             method="POST"
             action={saveSettingApi}
             onSuccess={(response) => {
@@ -635,7 +358,10 @@ export default function SocialLinkSetting(props) {
               }
             }}
           >
-            <SocialLink setting={setting} imageUploadUrl={imageUploadUrl} />
+            <SocialLinkSettingV2
+              setting={setting}
+              imageUploadUrl={imageUploadUrl}
+            />
           </Form>
         </div>
       </div>
@@ -643,13 +369,13 @@ export default function SocialLinkSetting(props) {
   );
 }
 
-SocialLinkSetting.propTypes = {
+SocialLinkSettingsV2.propTypes = {
   saveSettingApi: PropTypes.string.isRequired
 };
 
 export const layout = {
   areaId: 'content',
-  sortOrder: 12
+  sortOrder: 14
 };
 
 export const query = `
@@ -659,7 +385,10 @@ export const query = `
       social {
         url
         index
+        name
         icon
+        sortOrder
+        visibility
       }
     }
     imageUploadUrl: url(routeId: "imageUpload", params: [{key: "0", value: ""}])

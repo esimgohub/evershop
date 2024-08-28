@@ -6,18 +6,8 @@ import { toast } from 'react-toastify';
 import { Form } from '@components/common/form/Form';
 import SettingMenu from '@components/admin/setting/SettingMenu';
 import Button from '@components/common/form/Button';
-import CkeditorField from '@components/common/form/fields/Ckeditor';
-const { unescape } = require('lodash');
-
 function SliderSetting(props) {
-  const {
-    sliders: slidersSetting,
-    imageUploadUrl,
-    browserApi,
-    deleteApi,
-    uploadApi,
-    folderCreateApi
-  } = props;
+  const { sliders: slidersSetting, imageUploadUrl } = props;
 
   const refs = useRef([]);
 
@@ -102,6 +92,12 @@ function SliderSetting(props) {
     refs.current = refs.current.slice(0, sliders.length);
   }, [sliders]);
 
+  const handleRemoveSlider = (index) => {
+    setSliders(sliders.filter((slider) => slider?.index !== index));
+
+    toast.success('Removed');
+  };
+
   const renderSliderCards = () => {
     console.log('sliders render: ', sliders);
 
@@ -112,7 +108,19 @@ function SliderSetting(props) {
             <div key={slider?.index} style={{ marginBottom: '16px' }}>
               <Card
                 key={slider?.index}
-                title={`Slider ${slider?.index}`}
+                title={
+                  <div className="flex justify-between items-center">
+                    <h3>{`Slider ${index + 1}`}</h3>
+
+                    {sliders.length > 1 && (
+                      <Button
+                        variant="delete"
+                        title="Delete"
+                        onAction={() => handleRemoveSlider(slider?.index)}
+                      />
+                    )}
+                  </div>
+                }
                 className="mb-2"
                 actions={[]}
               >
@@ -377,8 +385,8 @@ function SliderSetting(props) {
             setSliders([
               ...sliders,
               {
-                index: sliders.length + 1,
-                sortOrder: sliders.length + 1,
+                index: Math.max(...sliders.map((s) => s?.index)) + 1,
+                sortOrder: Math.max(...sliders.map((s) => s?.index)) + 1,
                 url: '',
                 visibility: true,
                 imageUrl: null,
