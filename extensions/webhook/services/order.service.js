@@ -15,7 +15,7 @@ const axios = require('axios');
 const { orderSource } = require('../constants/order-source');
 
 module.exports = {
-  sendFulfillOrder: async function(orderId) {
+  sendFulfillOrder: async function (orderId) {
     info(`sendFulfillOrder data: ${orderId}`);
 
     const orderQuery = select('odr.order_id')
@@ -67,7 +67,7 @@ module.exports = {
       source: orderSource.b2b,
       shippingFirstName: order.customer_first_name,
       shippingLastName: order.customer_last_name,
-      shippingPhone: order.shipping_address?.telephone || '0866440022',
+      shippingPhone: order.shipping_address?.telephone || '',
       shippingEmail: order.order_email || order.customer_email,
       language: 'en',
       paymentStatus: order.payment_status,
@@ -98,9 +98,7 @@ module.exports = {
     }
 
     const { data: responseData } = response;
-    info(
-      `sendFulfillOrder axios response data: ${responseData} `
-    );
+    info(`sendFulfillOrder axios response data: ${responseData} `);
 
     await update('order')
       .given({ fulfillment_status: 'Processing' })
