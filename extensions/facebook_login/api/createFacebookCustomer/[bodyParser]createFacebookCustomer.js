@@ -106,6 +106,28 @@ module.exports = async (request, response, delegate, next) => {
       getDefaultCurrency()
     ]);
 
+    let insertingEmail = facebookUserInfo?.email;
+    if (facebookUserInfo?.email) {
+      let existingCustomerWithEmailQuery = select(
+        'customer.customer_id',
+        'customer_id'
+      )
+        .select('customer.email', 'email')
+        .from('customer');
+
+      existingCustomerWithEmailQuery.where(
+        'customer.email',
+        '=',
+        facebookUserInfo.email
+      );
+
+      const [existingCustomerWithEmail] =
+        await existingCustomerWithEmailQuery.execute(pool);
+      if (existingCustomerWithEmail) {
+        insertingEmail = null;
+      }
+    }
+
     language = defaultLanguage;
     currency = defaultCurrency;
 
@@ -113,6 +135,7 @@ module.exports = async (request, response, delegate, next) => {
       .given({
         external_id: facebookUserInfo.id || userId,
         login_source: LoginSource.FACEBOOK,
+        email: insertingEmail,
         first_name: facebookUserInfo.given_name,
         last_name: facebookUserInfo.family_name,
         full_name: facebookUserInfo.given_name + facebookUserInfo.family_name,
