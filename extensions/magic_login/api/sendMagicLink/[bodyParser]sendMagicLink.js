@@ -3,7 +3,9 @@ const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { select } = require('@evershop/postgres-query-builder');
 const { sendMagicLink } = require('../../services/magicLink/sendMagicLink');
 const { info } = require('@evershop/evershop/src/lib/log/logger');
-const { AccountStatus } = require('@evershop/evershop/src/modules/customer/constant'); 
+const {
+  LoginSource
+} = require('@evershop/evershop/src/modules/customer/constant');
 
 module.exports = async (request, response, delegate, next) => {
   info(`Send Magic Link Controller ${JSON.stringify(request.body)}`);
@@ -12,14 +14,15 @@ module.exports = async (request, response, delegate, next) => {
   let customer = await select()
     .from('customer')
     .where('email', '=', email)
+    .andWhere('login_source', '!=', LoginSource.MAGIC_LINK)
     .load(pool);
 
-  if (customer && customer.status !== AccountStatus.ENABLED) {
+  if (customer) {
     response.status(400);
     return response.json({
       error: {
         status: 400,
-        message: 'This account is disabled'
+        message: 'This email is already registered'
       }
     });
   }
