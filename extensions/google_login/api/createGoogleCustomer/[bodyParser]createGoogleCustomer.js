@@ -52,7 +52,9 @@ module.exports = async (request, response, delegate, next) => {
     .leftJoin('currency', 'currency')
     .on('customer.currency_id', '=', 'currency.id');
 
-  customerQuery.where('customer.external_id', '=', googleUserInfo.id);
+  customerQuery
+    .where('customer.external_id', '=', googleUserInfo.id)
+    .andWhere('customer.login_source', '=', LoginSource.GOOGLE);
 
   let [customer] = await customerQuery.execute(pool);
 

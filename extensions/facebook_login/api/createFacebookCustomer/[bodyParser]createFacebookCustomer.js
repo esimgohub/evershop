@@ -74,7 +74,9 @@ module.exports = async (request, response, delegate, next) => {
     .leftJoin('currency')
     .on('customer.currency_id', '=', 'currency.id');
 
-  customerQuery.where('customer.external_id', '=', facebookUserId);
+  customerQuery
+    .where('customer.external_id', '=', facebookUserId)
+    .andWhere('customer.login_source', '=', LoginSource.FACEBOOK);
 
   let [customer] = await customerQuery.execute(pool);
 
@@ -111,7 +113,6 @@ module.exports = async (request, response, delegate, next) => {
       .given({
         external_id: facebookUserInfo.id || userId,
         login_source: LoginSource.FACEBOOK,
-        email: facebookUserInfo.email,
         first_name: facebookUserInfo.given_name,
         last_name: facebookUserInfo.family_name,
         full_name: facebookUserInfo.given_name + facebookUserInfo.family_name,
