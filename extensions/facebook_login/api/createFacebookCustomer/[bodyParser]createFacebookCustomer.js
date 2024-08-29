@@ -113,6 +113,7 @@ module.exports = async (request, response, delegate, next) => {
         'customer_id'
       )
         .select('customer.email', 'email')
+        .select('customer.status', 'status')
         .from('customer');
 
       existingCustomerWithEmailQuery.where(
@@ -123,7 +124,10 @@ module.exports = async (request, response, delegate, next) => {
 
       const [existingCustomerWithEmail] =
         await existingCustomerWithEmailQuery.execute(pool);
-      if (existingCustomerWithEmail) {
+      if (
+        existingCustomerWithEmail &&
+        existingCustomerWithEmail?.status === AccountStatus.ENABLED
+      ) {
         insertingEmail = null;
       }
     }

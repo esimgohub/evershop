@@ -4,7 +4,7 @@ module.exports = exports = async (connection) => {
   await execute(
     connection,
     `ALTER TABLE customer
-     DROP CONSTRAINT "EMAIL_EXTERNALID_UNIQUE";
+     DROP CONSTRAINT IF EXISTS "EMAIL_EXTERNALID_UNIQUE";
     `
   );
 
