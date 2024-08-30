@@ -54,7 +54,9 @@ module.exports = async (request, response, delegate, next) => {
   // The unique identifier for the user in Apple’s system.
   // This value is stable and unique to the user and the app,
   // allowing you to identify the same user across different sessions or devices.
-  customerQuery.where('customer.external_id', '=', appleUserInfo?.sub);
+  customerQuery
+    .where('customer.external_id', '=', appleUserInfo?.sub)
+    .andWhere('customer.login_source', '=', LoginSource.APPLE);
 
   let [customer] = await customerQuery.execute(pool);
 
@@ -83,15 +85,34 @@ module.exports = async (request, response, delegate, next) => {
       getDefaultLanguage(),
       getDefaultCurrency()
     ]);
+
     language = defaultLanguage;
     currency = defaultCurrency;
+
     let emailForSave = null;
     const privateReplyDomain = '@privaterelay.appleid.com';
+
     if (email) {
       emailForSave = email;
     } else if (appleUserInfo?.email) {
       emailForSave = appleUserInfo.email;
     }
+
+    if (emailForSave) {
+      let existingCustomerWithEmailQuery = select().from('customer');
+
+      existingCustomerWithEmailQuery
+        .where('customer.email', '=', emailForSave)
+        .andWhere('customer.status', '=', AccountStatus.ENABLED);
+
+      const [existingCustomerWithEmail] =
+        await existingCustomerWithEmailQuery.execute(pool);
+
+      if (existingCustomerWithEmail) {
+        emailForSave = null;
+      }
+    }
+
     const fName = typeof first_name === 'string' ? first_name.trim() : 'Bear';
     const lName =
       typeof last_name === 'string' ? last_name.trim() : randomStr();

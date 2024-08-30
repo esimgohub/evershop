@@ -107,6 +107,7 @@ module.exports = async (request, response, delegate, next) => {
     ]);
 
     let insertingEmail = facebookUserInfo?.email;
+
     if (facebookUserInfo?.email) {
       let existingCustomerWithEmailQuery = select(
         'customer.customer_id',
@@ -116,18 +117,14 @@ module.exports = async (request, response, delegate, next) => {
         .select('customer.status', 'status')
         .from('customer');
 
-      existingCustomerWithEmailQuery.where(
-        'customer.email',
-        '=',
-        facebookUserInfo.email
-      );
+      existingCustomerWithEmailQuery
+        .where('customer.email', '=', facebookUserInfo.email)
+        .andWhere('customer.status', '=', AccountStatus.ENABLED);
 
       const [existingCustomerWithEmail] =
         await existingCustomerWithEmailQuery.execute(pool);
-      if (
-        existingCustomerWithEmail &&
-        existingCustomerWithEmail?.status === AccountStatus.ENABLED
-      ) {
+
+      if (existingCustomerWithEmail) {
         insertingEmail = null;
       }
     }

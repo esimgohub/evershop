@@ -53,16 +53,18 @@ module.exports = async (request, response, delegate, next) => {
       .leftJoin('currency', 'currency')
       .on('customer.currency_id', '=', 'currency.id');
 
-    customerQuery.where('customer.email', '=', payload.email);
+    customerQuery
+      .where('customer.email', '=', payload.email)
+      .andWhere('customer.status', '=', AccountStatus.ENABLED);
 
     let customer = await customerQuery.load(pool);
 
-    if (customer && customer.status !== AccountStatus.ENABLED) {
+    if (customer && customer.login_source !== LoginSource.MAGIC_LINK) {
       response.status(400);
       return response.json({
         error: {
           status: 400,
-          message: 'This account is disabled'
+          message: 'This email is already registered'
         }
       });
     }

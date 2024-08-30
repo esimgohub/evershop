@@ -4,7 +4,8 @@ const { select } = require('@evershop/postgres-query-builder');
 const { sendMagicLink } = require('../../services/magicLink/sendMagicLink');
 const { info } = require('@evershop/evershop/src/lib/log/logger');
 const {
-  LoginSource
+  LoginSource,
+  AccountStatus
 } = require('@evershop/evershop/src/modules/customer/constant');
 
 module.exports = async (request, response, delegate, next) => {
@@ -15,6 +16,7 @@ module.exports = async (request, response, delegate, next) => {
     .from('customer')
     .where('email', '=', email)
     .andWhere('login_source', '!=', LoginSource.MAGIC_LINK)
+    .andWhere('status', '=', AccountStatus.ENABLED)
     .load(pool);
 
   if (customer) {
