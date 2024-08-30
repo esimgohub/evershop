@@ -54,21 +54,20 @@ module.exports = async (request, response, delegate, next) => {
 
   customerQuery
     .where('customer.external_id', '=', googleUserInfo.id)
-    .andWhere('customer.login_source', '=', LoginSource.GOOGLE);
+    .andWhere('customer.login_source', '=', LoginSource.GOOGLE)
+    .andWhere('customer.status', '=', AccountStatus.ENABLED);
 
-  let [customer] = await customerQuery.execute(pool);
+  const emailExistenceQuery = select('customer.customer_id', 'customer_id')
+    .from('customer')
+    .where('customer.email', '=', googleUserInfo.email)
+    .andWhere('customer.status', '=', AccountStatus.ENABLED);
+
+  let [customer, existingCustomer] = await Promise.all([
+    customerQuery.load(pool),
+    emailExistenceQuery.load(pool)
+  ]);
 
   info(`createGoogleCustomer.executeQuery: ${JSON.stringify(customer)}`);
-
-  if (customer && customer.status !== AccountStatus.ENABLED) {
-    response.status(400);
-    return response.json({
-      error: {
-        status: 400,
-        message: 'This account is disabled'
-      }
-    });
-  }
 
   let language = customer && {
     code: customer.language_code,
@@ -85,6 +84,16 @@ module.exports = async (request, response, delegate, next) => {
       getDefaultLanguage(),
       getDefaultCurrency()
     ]);
+
+    if (existingCustomer) {
+      response.status(400);
+      return response.json({
+        error: {
+          status: 400,
+          message: 'This email is already registered'
+        }
+      });
+    }
 
     language = defaultLanguage;
     currency = defaultCurrency;
