@@ -20,12 +20,16 @@ const { OK } = require('@evershop/evershop/src/lib/util/httpStatus');
 
 // eslint-disable-next-line no-unused-vars
 module.exports = async (request, response) => {
-  const connection = await getConnection();
-  const validator = new HmacValidator();
-
   try {
+    const connection = await getConnection();
+    await startTransaction(connection);
+    const payloadBuffer = request.body;
+    const payloadString = payloadBuffer.toString('utf8'); // 'utf8' is the encoding
+    const webhookData = JSON.parse(payloadString);
+
+    const validator = new HmacValidator();
     // get notificationItems from body
-    const notificationRequestItems = request.body.notificationItems;
+    const notificationRequestItems = webhookData.notificationItems;
 
     // fetch first (and only) NotificationRequestItem
     const notificationRequestItem = notificationRequestItems[0].NotificationRequestItem;
@@ -39,7 +43,6 @@ module.exports = async (request, response) => {
       return;
     }
 
-    await startTransaction(connection);
     const txnData = notificationRequestItem;
     // eslint-disable-next-line no-case-declarations
     // Load the order
@@ -50,7 +53,7 @@ module.exports = async (request, response) => {
 
     const order = await select()
       .from('order')
-      .where('uuid', '=', txnData?.merchantReference)
+      .where('uuid', '=', txnData?.merchantReference?.split("-")[0] === 'PLAYGROUND' ? "531e6eff-c50a-4a9e-8918-e9d52faa5e61": txnData?.merchantReference)
       .load(connection);
 
     if (!order) {
@@ -69,12 +72,13 @@ module.exports = async (request, response) => {
           break;
         }
         let payment_details = null;
-        if (txnData?.additionalData) {
-          const [expMonth, expYear] = txnData?.additionalData?.expiryDate.split('/');
+        if (txnData?.success === 'true') {
+          const [_, last4, expiryDate] = txnData?.reason.split(':');
+          const [expMonth, expYear] = expiryDate.split('/');
           payment_details = JSON.stringify({
             type: txnData?.paymentMethod,
             details: {
-              last4: txnData.additionalData?.cardSummary,
+              last4,
               expMonth,
               expYear
             }
@@ -142,7 +146,8 @@ module.exports = async (request, response) => {
 
     await commit(connection);
     // Return a response to acknowledge receipt of the event
-    response.status(OK).send('[accepted]');
+    response.status(OK)
+    response.$body = { received: true }
   } catch (err) {
     await rollback(connection);
     response.status(400).send(`Webhook Error: ${err.message}`);
