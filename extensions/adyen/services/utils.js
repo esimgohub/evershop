@@ -17,15 +17,9 @@ module.exports = {
     return amount * rate;
   },
   parseIp: function (request) {
-    let ip =
+    return (
       request.headers['x-forwarded-for']?.split(',').shift() ||
-      request.socket?.remoteAddress;
-    if (!ip || ip !== '::1') {
-      return null;
-    }
-    if (ip.substring(0, 7) === '::ffff:') {
-      ip = ip.substring(7);
-    }
-    return ip;
-  }
+      request.socket?.remoteAddress
+    );
+  },
 };
