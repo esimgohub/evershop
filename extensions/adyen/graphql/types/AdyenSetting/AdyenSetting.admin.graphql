@@ -1,0 +1,8 @@
+extend type Setting {
+  adyenSecretKey: String
+  adyenAccessKey: String
+  adyenBaseUrl: String
+  adyenSuccessUrl: String
+  adyenCancelUrl: String
+  adyenEndpointSecret: String
+}
