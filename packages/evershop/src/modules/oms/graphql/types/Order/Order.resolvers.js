@@ -50,6 +50,23 @@ module.exports = {
           };
           break;
         }
+        case 'adyen': {
+          const paymentDetailsObj = JSON.parse(paymentDetails);
+          if (!paymentDetailsObj?.type || !paymentDetailsObj?.details) {
+            result = null;
+            break;
+          }
+          const { type, details } = paymentDetailsObj;
+          result = {
+            type,
+            details: {
+              last4: details?.last4,
+              expMonth: details?.expMonth,
+              expYear: details?.expYear
+            }
+          };
+          break;
+        }
         case 'stripe': {
           const stripeSecretKey = await getSetting('stripeSecretKey', '');
 
