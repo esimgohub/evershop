@@ -6,12 +6,13 @@ import { Card } from '@components/admin/cms/Card';
 
 export default function AdyenPayment({
   setting: {
+    adyenApiKey,
+    adyenHmacKey,
+    adyenMerchantAccount,
+    adyenAppReturnUrl,
     adyenPaymentStatus,
     adyenDislayName,
-    adyenApiKey,
-    adyenClientKey,
-    adyenMerchantAccount,
-    adyenHmacKey
+    adyenClientKey
   }
 }) {
   return (
@@ -40,6 +41,21 @@ export default function AdyenPayment({
               name="adyenDislayName"
               placeholder="Dislay Name"
               value={adyenDislayName}
+            />
+          </div>
+        </div>
+      </Card.Session>
+      <Card.Session>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="col-span-1 items-center flex">
+            <h4>Merchant account</h4>
+          </div>
+          <div className="col-span-2">
+            <Field
+              type="text"
+              name="adyenMerchantAccount"
+              placeholder="Merchant account"
+              value={adyenMerchantAccount}
             />
           </div>
         </div>
@@ -76,21 +92,6 @@ export default function AdyenPayment({
       </Card.Session>
       <Card.Session>
         <div className="grid grid-cols-3 gap-2">
-          <div className="col-span-1 items-center flex">
-            <h4>Merchant account</h4>
-          </div>
-          <div className="col-span-2">
-            <Field
-              type="text"
-              name="adyenMerchantAccount"
-              placeholder="Merchant account"
-              value={adyenMerchantAccount}
-            />
-          </div>
-        </div>
-      </Card.Session>
-      <Card.Session>
-        <div className="grid grid-cols-3 gap-2">
           <div className="col-span-1 flex items-center">
             <h4>HMAC key (Webhook)</h4>
           </div>
@@ -100,6 +101,21 @@ export default function AdyenPayment({
               name="adyenHmacKey"
               placeholder="HMAC key"
               value={adyenHmacKey || ''}
+            />
+          </div>
+        </div>
+      </Card.Session>
+      <Card.Session>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="col-span-1 flex items-center">
+            <h4>App Return Url</h4>
+          </div>
+          <div className="col-span-2">
+            <Field
+              type="text"
+              name="adyenAppReturnUrl"
+              placeholder="App Return Url"
+              value={adyenAppReturnUrl || ''}
             />
           </div>
         </div>
@@ -114,8 +130,9 @@ AdyenPayment.propTypes = {
     adyenDislayName: PropTypes.string,
     adyenClientKey: PropTypes.string,
     adyenApiKey: PropTypes.string,
-    adyenSecretKey: PropTypes.string,
-    adyenHmacKey: PropTypes.string
+    adyenAppReturnUrl: PropTypes.string,
+    adyenHmacKey: PropTypes.string,
+    adyenMerchantAccount: PropTypes.string
   }).isRequired
 };
 
@@ -127,11 +144,12 @@ export const layout = {
 export const query = `
   query Query {
     setting {
-      adyenDislayName
-      adyenPaymentStatus
-      adyenApiKey
-      adyenHmacKey
-      adyenMerchantAccount
+      adyenApiKey,
+      adyenHmacKey,
+      adyenMerchantAccount,
+      adyenAppReturnUrl,
+      adyenPaymentStatus,
+      adyenDislayName,
       adyenClientKey
     }
   }

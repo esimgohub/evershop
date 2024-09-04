@@ -1,3 +1,4 @@
+const { getSetting } = require('@evershop/evershop/src/modules/setting/services/setting');
 const { getPaymentList } = require('../../services/adyen.service');
 const {
   OK,
@@ -7,19 +8,15 @@ const {
 // eslint-disable-next-line no-unused-vars
 module.exports = async (request, response, _, next) => {
   try {
-    let data = [];
-    const list = await getPaymentList();
-    if (list.length > 0) {
-      data = [...list]
-    }
+    const clientKey = await getSetting('adyenClientKey', null);
 
     response.status(OK);
     response.$body = {
       data: {
-        methods: data
+        clientKey
       }
     };
-    next();
+    next()
   } catch (e) {
     response.status(INTERNAL_SERVER_ERROR);
     response.json({
