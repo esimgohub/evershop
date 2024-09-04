@@ -107,7 +107,7 @@ module.exports = {
           deliveryAddressIndicator: 'digitalGoods'
         }
       };
-      if (!shopperIp || shopperIp !== '::1') {
+      if (shopperIp) {
         paymentRequestData.shopperIP = shopperIp;
       }
 
