@@ -1,8 +1,6 @@
 extend type Setting {
-  adyenSecretKey: String
-  adyenAccessKey: String
-  adyenBaseUrl: String
-  adyenSuccessUrl: String
-  adyenCancelUrl: String
-  adyenEndpointSecret: String
+  adyenApiKey: String
+  adyenHmacKey: String
+  adyenMerchantAccount: String
+  adyenAppReturnUrl: String
 }

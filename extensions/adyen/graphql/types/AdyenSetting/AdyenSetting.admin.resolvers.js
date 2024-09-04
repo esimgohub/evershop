@@ -2,114 +2,60 @@ const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 
 module.exports = {
   Setting: {
-    adyenPublishableKey: (setting) => {
+    adyenHmacKey: (setting) => {
       const adyenConfig = getConfig('system.adyen', {});
-      if (adyenConfig.publishableKey) {
-        return adyenConfig.publishableKey;
+      if (adyenConfig.hmacKey) {
+        return adyenConfig.hmacKey;
       }
-      const adyenPublishableKey = setting.find(
-        (s) => s.name === 'adyenPublishableKey'
-      );
-      if (adyenPublishableKey) {
-        return adyenPublishableKey.value;
+      const adyenHmacKey = setting.find((s) => s.name === 'adyenHmacKey');
+      if (adyenHmacKey) {
+        return adyenHmacKey.value;
       } else {
         return null;
       }
     },
-    adyenAccessKey: (setting) => {
+    adyenMerchantAccount: (setting) => {
       const adyenConfig = getConfig('system.adyen', {});
-      if (adyenConfig.accessKey) {
-        return adyenConfig.accessKey;
+      if (adyenConfig.merchantAccount) {
+        return adyenConfig.merchantAccount;
       }
-      const adyenAccessKey = setting.find(
-        (s) => s.name === 'adyenAccessKey'
+      const adyenMerchantAccount = setting.find(
+        (s) => s.name === 'adyenMerchantAccount'
       );
-      if (adyenAccessKey) {
-        return adyenAccessKey.value;
+      if (adyenMerchantAccount) {
+        return adyenMerchantAccount.value;
       } else {
         return null;
       }
     },
-    adyenBaseUrl: (setting) => {
+    adyenAppReturnUrl: (setting) => {
       const adyenConfig = getConfig('system.adyen', {});
-      if (adyenConfig.baseUrl) {
-        return adyenConfig.baseUrl;
+      if (adyenConfig.appReturnUrl) {
+        return adyenConfig.appReturnUrl;
       }
-      const adyenBaseUrl = setting.find(
-        (s) => s.name === 'adyenBaseUrl'
+      const adyenAppReturnUrl = setting.find(
+        (s) => s.name === 'adyenAppReturnUrl'
       );
-      if (adyenBaseUrl) {
-        return adyenBaseUrl.value;
+      if (adyenAppReturnUrl) {
+        return adyenAppReturnUrl.value;
       } else {
         return null;
       }
     },
-    adyenSuccessUrl: (setting) => {
+    adyenApiKey: (setting, _, { user }) => {
       const adyenConfig = getConfig('system.adyen', {});
-      if (adyenConfig.successUrl) {
-        return adyenConfig.successUrl;
-      }
-      const adyenSuccessUrl = setting.find(
-        (s) => s.name === 'adyenSuccessUrl'
-      );
-      if (adyenSuccessUrl) {
-        return adyenSuccessUrl.value;
-      } else {
-        return null;
-      }
-    },
-    adyenCancelUrl: (setting) => {
-      const adyenConfig = getConfig('system.adyen', {});
-      if (adyenConfig.cancelUrl) {
-        return adyenConfig.cancelUrl;
-      }
-      const adyenCancelUrl = setting.find(
-        (s) => s.name === 'adyenCancelUrl'
-      );
-      if (adyenCancelUrl) {
-        return adyenCancelUrl.value;
-      } else {
-        return null;
-      }
-    },
-    adyenSecretKey: (setting, _, { user }) => {
-      const adyenConfig = getConfig('system.adyen', {});
-      if (adyenConfig.secretKey) {
-        return `${adyenConfig.secretKey.substr(
+      if (adyenConfig.apiKey) {
+        return `${adyenConfig.apiKey.substring(
           0,
           5
         )}*******************************`;
       }
-      if (user) {
-        const adyenSecretKey = setting.find(
-          (s) => s.name === 'adyenSecretKey'
-        );
-        if (adyenSecretKey) {
-          return adyenSecretKey.value;
-        } else {
-          return null;
-        }
-      } else {
-        return null;
-      }
-    },
-    adyenEndpointSecret: (setting, _, { user }) => {
-      const adyenConfig = getConfig('system.adyen', {});
-      if (adyenConfig.endpointSecret) {
-        return `${adyenConfig.endpointSecret.substr(
+      const adyenApiKey = setting.find((s) => s.name === 'adyenApiKey');
+      if (adyenApiKey) {
+        return `${adyenApiKey.value.substring(
           0,
           5
         )}*******************************`;
-      }
-      if (user) {
-        const adyenEndpointSecret = setting.find(
-          (s) => s.name === 'adyenEndpointSecret'
-        );
-        if (adyenEndpointSecret) {
-          return adyenEndpointSecret.value;
-        } else {
-          return null;
-        }
       } else {
         return null;
       }

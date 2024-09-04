@@ -23,19 +23,19 @@ module.exports = {
       if (adyenDislayName) {
         return adyenDislayName.value;
       } else {
-        return 'Credit Card';
+        return 'Adyen Payment Gateway';
       }
     },
-    adyenPublishableKey: (setting) => {
+    adyenClientKey: (setting) => {
       const adyenConfig = getConfig('system.adyen', {});
-      if (adyenConfig.publishableKey) {
-        return adyenConfig.publishableKey;
+      if (adyenConfig.clientKey) {
+        return adyenConfig.clientKey;
       }
-      const adyenPublishableKey = setting.find(
-        (s) => s.name === 'adyenPublishableKey'
+      const adyenClientKey = setting.find(
+        (s) => s.name === 'adyenClientKey'
       );
-      if (adyenPublishableKey) {
-        return adyenPublishableKey.value;
+      if (adyenClientKey) {
+        return adyenClientKey.value;
       } else {
         return null;
       }
