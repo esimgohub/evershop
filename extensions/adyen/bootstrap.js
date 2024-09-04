@@ -1,5 +1,7 @@
 const { addProcessor } = require('@evershop/evershop/src/lib/util/registry');
-const { getSetting } = require('@evershop/evershop/src/modules/setting/services/setting');
+const {
+  getSetting
+} = require('@evershop/evershop/src/modules/setting/services/setting');
 
 module.exports = () => {
   addProcessor('cartFields', (fields) => {

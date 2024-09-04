@@ -1,19 +1,49 @@
 {
   "type": "object",
   "properties": {
-    "cart_id": {
-      "type": "string"
-    },
-    "method_code": {
-      "type": "string"
+    "data": {
+      "type": "object",
+      "properties": {
+        "paymentMethod": {
+          "type": "object"
+        },
+        "channel": {
+          "type": "string"
+        },
+        "browserInfo": {
+          "type": "object"
+        },
+        "method_code": {
+          "type": "string"
+        },
+        "cart_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cart_id",
+        "method_code",
+        "paymentMethod",
+        "browserInfo"
+      ],
+      "additionalProperties": true,
+      "errorMessage": {
+        "properties": {
+          "cart_id": "cart_id id is required",
+          "method_code": "method_code is required",
+          "browserInfo": "browserInfo is required",
+          "paymentMethod": "paymentMethod is required"
+        }
+      }
     }
   },
-  "required": ["cart_id", "method_code"],
-  "additionalProperties": true,
+  "required": [
+    "data"
+  ],
+  "additionalProperties": false,
   "errorMessage": {
-    "properties": {
-      "cart_id": "Cart id is required",
-      "method_code": "Payment method is required"
+    "required": {
+      "data": "Data is required"
     }
   }
 }

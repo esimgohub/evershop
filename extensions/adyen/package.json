@@ -1,0 +1,14 @@
+{
+  "name": "adyen",
+  "version": "1.0.0",
+  "description": "Adyen payment gateway.",
+  "keywords": [],
+  "author": "",
+  "license": "",
+  "engines": {
+    "node": ">= 14.0.0"
+  },
+  "dependencies": {
+    "@adyen/api-library": "^15.1.0"
+  }
+}
