@@ -29,9 +29,7 @@ module.exports = async (request, response, deledate, next) => {
 
     response.status(OK);
     response.json({
-      data: {
-        methods: data
-      }
+      data
     });
   } catch (e) {
     response.status(INTERNAL_SERVER_ERROR);

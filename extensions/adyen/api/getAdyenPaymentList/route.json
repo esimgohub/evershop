@@ -1,0 +1,5 @@
+{
+  "methods": ["GET"],
+  "path": "/adyen/paymentList",
+  "access": "public"
+}
