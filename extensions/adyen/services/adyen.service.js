@@ -107,7 +107,7 @@ module.exports = {
           deliveryAddressIndicator: 'digitalGoods'
         }
       };
-      if (!shopperIp || shopperIp !== '::1') {
+      if (shopperIp) {
         paymentRequestData.shopperIP = shopperIp;
       }
 
@@ -119,12 +119,17 @@ module.exports = {
       // intialise the API object with the client object
       const paymentsAPI = new CheckoutAPI(client).PaymentsApi; //CheckoutAPI exports a number of helpers for different API's, since we want to use Payments API we want a reference to PaymentsAPI
       const idempotencyKey = reference;
+      console.log('adyenApiKey=', adyenApiKey)
+      console.log('merchantAccount=', merchantAccount)
+      console.log('adyenPaymentRequestData=', paymentRequestData)
+
       const paymentResponse = await paymentsAPI.payments(paymentRequestData, {
         idempotencyKey: idempotencyKey
       });
 
       return generateResponse(paymentResponse);
     } catch (e) {
+      console.log('adyenError=', e)
       return generateResponse(null);
     }
   },
