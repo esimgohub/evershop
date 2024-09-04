@@ -203,7 +203,7 @@ module.exports = {
         'AQEthmfxLI/JbxBBw0m/n3Q5qf3Vb4RlGJF1f3dZ02iPEoM99AZuGjuAhnwEpRNQEMFdWw2+5HzctViMSCJMYAc=-jUOsQpq1oa50zIyr3tqAC1LSB4FoXdjK/Nx5Z5k4zEQ=-i1isE<xj)L^4k6QxD9='
       );
       const postData = {
-        merchantAccount: merchantAccount,
+        merchantAccount: merchantAccount
       };
 
       const client = new Client({
@@ -214,15 +214,18 @@ module.exports = {
       // intialise the API object with the client object
       const paymentsAPI = new CheckoutAPI(client).PaymentsApi; //CheckoutAPI expo
       const paymentMethodsResponse = await paymentsAPI.paymentMethods({
-        ...postData,
+        ...postData
       });
 
       return paymentMethodsResponse?.paymentMethods ?? [];
-
     } catch (e) {
-      return []
+      return [];
     }
+  },
+  paymentDto: async function (payment) {
+    return {};
   }
+  //   todo: add webhook data model
 };
 
 const mockPay = {
