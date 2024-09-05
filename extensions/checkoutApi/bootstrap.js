@@ -1,10 +1,16 @@
 const { addProcessor } = require('@evershop/evershop/src/lib/util/registry');
-const { getSetting } = require('@evershop/evershop/src/modules/setting/services/setting');
+const {
+  getSetting
+} = require('@evershop/evershop/src/modules/setting/services/setting');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 
-const METHODS = [{
-  code: 'tazapay', name: 'Tazapay'
-}];
+const METHODS = [
+  {
+    code: 'tazapay',
+    name: 'Tazapay'
+  },
+  { code: 'adyen', name: 'Adyen' }
+];
 
 module.exports = () => {
   addProcessor('paymentMethodList', (fields) => {
