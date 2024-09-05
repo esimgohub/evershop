@@ -1,6 +1,7 @@
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
+const { error, info } = require('@evershop/evershop/src/lib/log/logger');
 
 const getFacebookSigningKey = async (kid) => {
   const jwksUrl = getConfig('facebook_login.facebook_jwks_url');
@@ -30,11 +31,18 @@ module.exports.getFacebookUserInfoByLimitedToken = async (jwtToken) => {
   if (!decodedToken) {
     throw new Error('Invalid JWT token');
   }
+
   const header = decodedToken.header;
   const kid = header.kid;
   const alg = header.alg;
 
   const signingKey = await getFacebookSigningKey(kid);
   const facebookUserInfo = await verifyFacebookToken(jwtToken, signingKey, alg);
+  info(
+    `getFacebookUserInfoByLimitedToken.verifyFacebookToken response: ${JSON.stringify(
+      facebookUserInfo
+    )}`
+  );
+
   return facebookUserInfo;
 };

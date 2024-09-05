@@ -14,6 +14,7 @@ const {
 const {
   createCurrencyResponse
 } = require('../../services/mapper/createCurrencyResponse');
+const { info } = require('@evershop/evershop/src/lib/log/logger');
 
 module.exports = async (request, response, delegate, next) => {
   const { accessToken } = request.body;
@@ -35,6 +36,7 @@ module.exports = async (request, response, delegate, next) => {
     .select('customer.last_name', 'last_name')
     .select('customer.email', 'email')
     .select('customer.avatar_url', 'avatar_url')
+    .select('customer.is_first_login', 'is_first_login')
     .select('language.code', 'language_code')
     .select('language.name', 'language_name')
     .select('language.icon', 'language_icon')
@@ -53,6 +55,8 @@ module.exports = async (request, response, delegate, next) => {
   customerQuery.where('customer.external_id', '=', googleUserInfo.id);
 
   let [customer] = await customerQuery.execute(pool);
+
+  info(`createGoogleCustomer.executeQuery: ${JSON.stringify(customer)}`);
 
   if (customer && customer.status !== AccountStatus.ENABLED) {
     response.status(400);
@@ -74,10 +78,7 @@ module.exports = async (request, response, delegate, next) => {
     name: customer.currency_name
   };
 
-  let isFirstLogin = false;
-
   if (!customer) {
-    isFirstLogin = true;
     const [defaultLanguage, defaultCurrency] = await Promise.all([
       getDefaultLanguage(),
       getDefaultCurrency()
@@ -97,7 +98,8 @@ module.exports = async (request, response, delegate, next) => {
         status: AccountStatus.ENABLED,
         login_source: LoginSource.GOOGLE,
         language_id: defaultLanguage.id,
-        currency_id: defaultCurrency.id
+        currency_id: defaultCurrency.id,
+        is_first_login: true
       })
       .execute(pool);
   }
@@ -107,7 +109,7 @@ module.exports = async (request, response, delegate, next) => {
     firstName: customer.first_name,
     lastName: customer.last_name,
     avatarUrl: customer.avatar_url,
-    isFirstLogin,
+    isFirstLogin: customer.is_first_login,
     language: createLanguageResponse(language),
     currency: createCurrencyResponse(currency)
   };

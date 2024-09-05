@@ -4,14 +4,15 @@ const { getSetting } = require('@evershop/evershop/src/modules/setting/services/
 /**
  * Makes a signed HTTP request to the specified URL path using the given HTTP method.
  *
- * @param {string} idempotencyKey - The unique key for Tazapay payment.
+ * @param {string | null} idempotencyKey - The unique key for Tazapay payment.
  * @param {string} method - The HTTP method (e.g., 'GET', 'POST').
  * @param {string} urlPath - The URL path of the request.
  * @param {Object} [body=null] - The request payload (optional).
+ * @param {string} type - Type to get payment attempt or checkout session
  * @returns {Promise<Object>} - The response data from the server.
  * @throws {Error} - Throws an error if the request fails.
  */
-async function makeRequest(idempotencyKey, method, urlPath, body = null) {
+async function makeRequest(idempotencyKey, method, urlPath, body = null, type) {
   try {
     const httpMethod = method;
     const httpBaseURL = await getSetting('tazapayBaseUrl', null);
@@ -27,16 +28,18 @@ async function makeRequest(idempotencyKey, method, urlPath, body = null) {
       headers: {
         accept: 'application/json',
         'content-type': 'application/json',
-        'Idempotency-Key': idempotencyKey,
         authorization: await authBasic()
       }
     };
+    if (idempotencyKey) {
+      options.headers['Idempotency-Key'] = idempotencyKey;
+    }
 
     const response = await nodeFetchRequest(options, body);
     if (!response) {
       return null;
     }
-    return generateResponse(response);
+    return generateResponse(response, type);
   } catch (e) {
     error(JSON.stringify(e));
     return null;
@@ -74,26 +77,30 @@ async function authBasic() {
 
     return `Basic ${Buffer.from(basicAuth).toString('base64')}`;
   } catch (e) {
-    error("Error generating signature");
+    error('Error generating signature');
     throw e;
   }
 }
 
-function generateResponse (response) {
+function generateResponse(response, type = 'checkout') {
   if (response?.status === 'success') {
-    return {
-      success: true,
-      redirect_url: response?.data?.url
-    };
-  } else {
-    // Invalid status
-    return {
-      error: 'Failed to process payment'
-    };
+    if (type === 'checkout') {
+      return {
+        success: true,
+        redirect_url: response?.data?.url
+      };
+    } else if (type === 'payment_attempt') {
+      return {
+        success: true,
+        payment_status: response?.data?.status
+      };
+    }
   }
+  // Invalid status
+  return {
+    error: 'Failed to process payment'
+  };
 }
-
-
 
 
 module.exports = { makeRequest };

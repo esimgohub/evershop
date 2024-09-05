@@ -96,9 +96,18 @@ exports.createOrder = async function createOrder(cart) {
       }
     });
 
+    const items = cart.getActiveItems();
+    const nextCart = { ...cart.exportData() };
+    let itemCount = 0;
+    items.forEach((i) => {
+      itemCount += parseInt(i.getData('qty'), 10);
+    });
+
+    nextCart.total_qty = itemCount;
+
     const order = await insert('order')
       .given({
-        ...cart.exportData(),
+        ...nextCart,
         uuid: uuidv4().replace(/-/g, ''),
         order_number:
           10000 + parseInt(previous[0] ? previous[0].order_id : 0, 10) + 1,
@@ -109,7 +118,6 @@ exports.createOrder = async function createOrder(cart) {
       .execute(connection);
 
     // Save order items
-    const items = cart.getActiveItems();
     await Promise.all(
       items.map(async (item) => {
         const { is_active, ...itemData } = item.export(); // Destructure to remove 'is_active'

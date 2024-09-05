@@ -183,7 +183,9 @@ module.exports = async (request, response, delegate, next) => {
       throw new OrderCreationError('Order create failed');
     }
 
-    const paymentIntent = await createPaymentIntent(order, customerCountry, pool);
+    const isPaymentFailed = order.payment_status === 'failed';
+
+    const paymentIntent = await createPaymentIntent(isPaymentFailed, order, customerCountry, pool);
 
     response.status(OK);
     response.$body = {
@@ -226,7 +228,7 @@ module.exports = async (request, response, delegate, next) => {
   }
 };
 
-const createPaymentIntent = async (order, customerCountry, pool) => {
+const createPaymentIntent = async (isPaymentFailed, order, customerCountry, pool) => {
     try {
       const foundCurrency = await select()
         .from('currency')
@@ -249,8 +251,8 @@ const createPaymentIntent = async (order, customerCountry, pool) => {
 
       const body = {
         reference_id: order.uuid,
-        success_url: `${successUrl}?uuid=${order.uuid}`,
-        cancel_url: `${cancelUrl}?uuid=${order.uuid}`,
+        success_url: `${successUrl}&uuid=${order.uuid}`,
+        cancel_url: `${cancelUrl}&uuid=${order.uuid}`,
         invoice_currency: order.currency,
         amount: smallestUnit.default(formatedGrandTotal, order.currency),
         customer_details: {
@@ -264,7 +266,8 @@ const createPaymentIntent = async (order, customerCountry, pool) => {
         payment_methods: ['card'],
         expires_at: calculateExpiry(20)
       };
-      const txn = await makeRequest(order.uuid, 'POST', '/v3/checkout', body);
+      const idempotencyKey = isPaymentFailed ? null : order.uuid;
+      const txn = await makeRequest(idempotencyKey, 'POST', '/v3/checkout', body, 'checkout');
 
       if (!txn) {
         throw new PaymentIntentCreationError(`Tazapay - Payment transaction create failed`, {

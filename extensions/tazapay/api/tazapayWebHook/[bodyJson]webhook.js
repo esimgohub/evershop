@@ -98,8 +98,7 @@ module.exports = async (request, response, delegate, next) => {
           .execute(connection);
 
         // Emit event to add order placed event
-        await emit('order_placed', { ...order });
-        await emit('payment_status_changed', { ...order });
+        await emit('payment_status_changed', { orderId: order.order_id });
 
         break;
       }
@@ -116,35 +115,32 @@ module.exports = async (request, response, delegate, next) => {
         await insert('order_activity')
           .given({
             order_activity_order_id: order.order_id,
-            comment: `Tazapay payment method was failed. PaymentMethodId: ${txnData.payin}`
+            comment: `Tazapay payment method was failed. PaymentMethodId: ${txnData.payin} - PaymentAttemptId: ${txnData.id}`
           })
           .execute(connection);
 
-        await emit('payment_status_changed', { ...order });
         break;
       }
 
       // todo: handle expired event
-      // case 'checkout.expired': {
-      //   debug(`Tazapay - Payment txn was expired with PaymentMethodId: ${txnData.id}`);
-      //   // Update the order status
-      //   await update('order')
-      //     .given({ payment_status: 'failed' })
-      //     .where('order_id', '=', order.order_id)
-      //     .execute(connection);
-      //
-      //   // Add an activity log
-      //   await insert('order_activity')
-      //     .given({
-      //       order_activity_order_id: order.order_id,
-      //       comment: `Tazapay payment method was expired. PaymentMethodId: ${txnData.id}`
-      //     })
-      //     .execute(connection);
-      //
-      //   await emit('payment_status_changed', { ...order });
-      //   break;
-      // }
+      case 'checkout.expired': {
+        debug(`Tazapay - Payment txn was expired with PaymentAttemptId: ${txnData.id}`);
+        // Update the order status
+        await update('order')
+          .given({ payment_status: 'failed' })
+          .where('order_id', '=', order.order_id)
+          .execute(connection);
 
+        // Add an activity log
+        await insert('order_activity')
+          .given({
+            order_activity_order_id: order.order_id,
+            comment: `Tazapay payment method was expired. PaymentMethodId: ${txnData.payin} - PaymentAttemptId: ${txnData.id}`
+          })
+          .execute(connection);
+
+        break;
+      }
 
       // ... handle other event types
       default:

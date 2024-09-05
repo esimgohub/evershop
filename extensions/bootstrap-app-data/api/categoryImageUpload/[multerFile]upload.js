@@ -18,36 +18,45 @@ module.exports = async (request, response, delegate, next) => {
       }
     });
   } else {
+    // return data instance to client.
+    response.status(OK).json({
+      message: "Uploading..."
+    });
+
+    console.log(`=== Start upload files ===\n`);
+
     const files = await uploadFile(request.files, request.params[0] || '');
+
+    console.log(`=== Upload files finished ===\n\n`);
 
     const connection = await getConnection();
     await startTransaction(connection);
-    
+
     try {
+      console.log(`=== Start to save category image to DB ===\n`);
+
       for (const file of files) {
         const { name, url } = file;
         const [code, ext] = name.split('.');
-
         await update('category_description')
           .given({
             image: url
           })
           .where('url_key', '=', code.toUpperCase())
           .execute(connection);
+
+        console.log("+ processed file on code: ", code);
       }
 
       await commit(connection);
+
+      console.log(`=== Save category image to DB finished ===\n\n`);
+
+      console.log("=== DONE ===");
 
     } catch (e) {
       await rollback(connection);
       throw e;
     }
-    
-    response.status(OK).json({
-      data: {
-        files
-      },
-      message: "Successfully"
-    });
   }
 };
