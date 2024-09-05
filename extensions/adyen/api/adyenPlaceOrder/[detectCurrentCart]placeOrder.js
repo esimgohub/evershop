@@ -43,8 +43,7 @@ class PaymentIntentCreationError extends Error {
 module.exports = async (request, response, delegate, next) => {
   try {
     //
-    const { data } = request.body;
-    const { cart_id, method_code, ...adyenData } = data;
+    const { cart_id, method_code, ...adyenData } = request.body;
 
     let order = await getOrderByCartUUID(cart_id, pool);
     const shopperIp = parseIp(request);
