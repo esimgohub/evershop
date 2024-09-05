@@ -52,10 +52,7 @@ module.exports = {
       }
       const adyenApiKey = setting.find((s) => s.name === 'adyenApiKey');
       if (adyenApiKey) {
-        return `${adyenApiKey.value.substring(
-          0,
-          5
-        )}*******************************`;
+        return adyenApiKey.value;
       } else {
         return null;
       }
