@@ -76,6 +76,9 @@ module.exports = {
       );
 
       const paymentRequestData = {
+        additionalData: {
+          'riskdata.skipRisk': true
+        },
         amount: {
           currency: order.currency,
           value: convertToMinorUnits(Number(order.grand_total), order.currency)
@@ -119,9 +122,9 @@ module.exports = {
       // intialise the API object with the client object
       const paymentsAPI = new CheckoutAPI(client).PaymentsApi; //CheckoutAPI exports a number of helpers for different API's, since we want to use Payments API we want a reference to PaymentsAPI
       const idempotencyKey = reference;
-      console.log('adyenApiKey=', adyenApiKey)
-      console.log('merchantAccount=', merchantAccount)
-      console.log('adyenPaymentRequestData=', paymentRequestData)
+      console.log('adyenApiKey=', adyenApiKey);
+      console.log('merchantAccount=', merchantAccount);
+      console.log('adyenPaymentRequestData=', paymentRequestData);
 
       const paymentResponse = await paymentsAPI.payments(paymentRequestData, {
         idempotencyKey: idempotencyKey
@@ -129,7 +132,7 @@ module.exports = {
 
       return generateResponse(paymentResponse);
     } catch (e) {
-      console.log('adyenError=', e)
+      console.log('adyenError=', e);
       return generateResponse(null);
     }
   },
