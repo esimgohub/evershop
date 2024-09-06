@@ -73,11 +73,13 @@ module.exports = async (request, response) => {
         }
         let payment_details = null;
         if (txnData?.success === 'true') {
+          const brand = txnData?.paymentMethod
           const [_, last4, expiryDate] = txnData?.reason.split(':');
           const [expMonth, expYear] = expiryDate.split('/');
           payment_details = JSON.stringify({
             type: txnData?.paymentMethod,
             details: {
+              brand,
               last4,
               expMonth,
               expYear

@@ -60,6 +60,7 @@ module.exports = {
           result = {
             type,
             details: {
+              brand: details?.brand,
               last4: details?.last4,
               expMonth: details?.expMonth,
               expYear: details?.expYear
