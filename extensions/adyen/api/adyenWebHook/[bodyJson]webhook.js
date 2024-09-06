@@ -15,7 +15,9 @@ const {
 const { emit } = require('@evershop/evershop/src/lib/event/emitter');
 const { debug } = require('@evershop/evershop/src/lib/log/logger');
 const { display } = require('zero-decimal-currencies');
-const { getSetting } = require('@evershop/evershop/src/modules/setting/services/setting');
+const {
+  getSetting
+} = require('@evershop/evershop/src/modules/setting/services/setting');
 const { OK } = require('@evershop/evershop/src/lib/util/httpStatus');
 
 // eslint-disable-next-line no-unused-vars
@@ -32,7 +34,8 @@ module.exports = async (request, response) => {
     const notificationRequestItems = webhookData.notificationItems;
 
     // fetch first (and only) NotificationRequestItem
-    const notificationRequestItem = notificationRequestItems[0].NotificationRequestItem;
+    const notificationRequestItem =
+      notificationRequestItems[0].NotificationRequestItem;
     info(notificationRequestItem);
 
     const hmacKey = await getSetting('adyenHmacKey', '');
@@ -53,12 +56,20 @@ module.exports = async (request, response) => {
 
     const order = await select()
       .from('order')
-      .where('uuid', '=', txnData?.merchantReference?.split("-")[0] === 'PLAYGROUND' ? "531e6eff-c50a-4a9e-8918-e9d52faa5e61": txnData?.merchantReference)
+      .where(
+        'uuid',
+        '=',
+        txnData?.merchantReference?.split('-')[0] === 'PLAYGROUND'
+          ? '531e6eff-c50a-4a9e-8918-e9d52faa5e61'
+          : txnData?.merchantReference
+      )
       .load(connection);
 
     if (!order) {
       error(`Adyen - Order not found with order uuid: ${txnData.reference_id}`);
-      throw new Error(`Adyen - Order not found with order uuid: ${txnData.reference_id}`);
+      throw new Error(
+        `Adyen - Order not found with order uuid: ${txnData.reference_id}`
+      );
     }
 
     // Handle the event
@@ -73,7 +84,7 @@ module.exports = async (request, response) => {
         }
         let payment_details = null;
         if (txnData?.success === 'true') {
-          const brand = txnData?.paymentMethod
+          const brand = txnData?.paymentMethod;
           const [_, last4, expiryDate] = txnData?.reason.split(':');
           const [expMonth, expYear] = expiryDate.split('/');
           payment_details = JSON.stringify({
@@ -85,45 +96,56 @@ module.exports = async (request, response) => {
               expYear
             }
           });
+
+          await insert('payment_transaction')
+            .given({
+              amount: parseFloat(
+                display(txnData?.amount?.value, txnData?.amount?.currency)
+              ),
+              payment_transaction_order_id: order.order_id,
+              transaction_id: txnData.merchantReference,
+              transaction_type: 'online',
+              payment_action: 'Capture'
+            })
+            .execute(connection);
+
+          // Update the order status
+          await update('order')
+            .given({
+              payment_status: 'paid',
+              payment_details
+            })
+            .where('order_id', '=', order.order_id)
+            .execute(connection);
+
+          // Add an activity log
+          await insert('order_activity')
+            .given({
+              order_activity_order_id: order.order_id,
+              comment: `Customer paid by using Adyen - pspReference: ${txnData.pspReference}`
+            })
+            .execute(connection);
+
+          // Emit event to add order placed event
+          await emit('payment_status_changed', { orderId: order.order_id });
+        } else {
+          // Update the order status
+          await update('order')
+            .given({
+              payment_status: 'failed',
+              payment_details
+            })
+            .where('order_id', '=', order.order_id)
+            .execute(connection);
         }
-
-        await insert('payment_transaction')
-          .given({
-            amount: parseFloat(
-              display(txnData?.amount?.value, txnData?.amount?.currency)
-            ),
-            payment_transaction_order_id: order.order_id,
-            transaction_id: txnData.merchantReference,
-            transaction_type: 'online',
-            payment_action: 'Capture'
-          })
-          .execute(connection);
-
-        // Update the order status
-        await update('order')
-          .given({
-            payment_status: txnData?.success === 'true' ? 'paid' : 'failed',
-            payment_details
-          })
-          .where('order_id', '=', order.order_id)
-          .execute(connection);
-
-        // Add an activity log
-        await insert('order_activity')
-          .given({
-            order_activity_order_id: order.order_id,
-            comment: `Customer paid by using Adyen - pspReference: ${txnData.pspReference}`
-          })
-          .execute(connection);
-
-        // Emit event to add order placed event
-        await emit('payment_status_changed', { orderId: order.order_id });
 
         break;
       }
 
       case 'CAPTURE_FAILED': {
-        debug(`Adyen - Payment txn was failed with pspReference: ${txnData.pspReference}`);
+        debug(
+          `Adyen - Payment txn was failed with pspReference: ${txnData.pspReference}`
+        );
         // Update the order status
         await update('order')
           .given({ payment_status: 'failed' })
@@ -148,8 +170,8 @@ module.exports = async (request, response) => {
 
     await commit(connection);
     // Return a response to acknowledge receipt of the event
-    response.status(OK)
-    response.$body = { received: true }
+    response.status(OK);
+    response.$body = { received: true };
   } catch (err) {
     await rollback(connection);
     response.status(400).send(`Webhook Error: ${err.message}`);
