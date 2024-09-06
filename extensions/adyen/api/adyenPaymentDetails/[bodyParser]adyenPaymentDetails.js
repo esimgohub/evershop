@@ -11,10 +11,12 @@ module.exports = async (request, response, _, next) => {
     if (!adyenResponse) {
       throw new Error('Failed to handle payment process');
     }
-    return {
+    response.status(OK);
+    response.$body = {
       success: true,
       ...adyenResponse
     };
+    next();
   } catch (e) {
     response.status(INTERNAL_SERVER_ERROR);
     response.json({

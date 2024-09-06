@@ -77,7 +77,7 @@ module.exports = {
 
       const paymentRequestData = {
         additionalData: {
-          'riskdata.skipRisk': true
+          'riskdata.skipRisk': 'true'
         },
         amount: {
           currency: order.currency,
@@ -207,11 +207,11 @@ module.exports = {
     try {
       const merchantAccount = await getSetting(
         'adyenMerchantAccount',
-        'GoHub_US'
+        null
       );
       const adyenApiKey = await getSetting(
         'adyenApiKey',
-        'AQEthmfxLI/JbxBBw0m/n3Q5qf3Vb4RlGJF1f3dZ02iPEoM99AZuGjuAhnwEpRNQEMFdWw2+5HzctViMSCJMYAc=-jUOsQpq1oa50zIyr3tqAC1LSB4FoXdjK/Nx5Z5k4zEQ=-i1isE<xj)L^4k6QxD9='
+        null
       );
       const postData = {
         merchantAccount: merchantAccount
@@ -233,6 +233,7 @@ module.exports = {
 
       return paymentMethodsResponse?.paymentMethods ?? [];
     } catch (e) {
+      console.error(e);
       return [];
     }
   },
