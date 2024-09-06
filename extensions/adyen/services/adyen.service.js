@@ -116,7 +116,10 @@ module.exports = {
 
       const client = new Client({
         apiKey: adyenApiKey,
-        environment: 'TEST'
+        environment: 'TEST',
+        config: {
+          connectionTimeoutMillis: 10000
+        }
       });
 
       // intialise the API object with the client object
@@ -216,7 +219,10 @@ module.exports = {
 
       const client = new Client({
         apiKey: adyenApiKey,
-        environment: 'TEST'
+        environment: 'TEST',
+        config: {
+          connectionTimeoutMillis: 10000
+        }
       });
 
       // intialise the API object with the client object
@@ -249,7 +255,10 @@ module.exports = {
 
       const client = new Client({
         apiKey: adyenApiKey,
-        environment: 'TEST'
+        environment: 'TEST',
+        config: {
+          connectionTimeoutMillis: 10000
+        }
       });
 
       // intialise the API object with the client object
