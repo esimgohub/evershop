@@ -122,9 +122,9 @@ module.exports = {
       // intialise the API object with the client object
       const paymentsAPI = new CheckoutAPI(client).PaymentsApi; //CheckoutAPI exports a number of helpers for different API's, since we want to use Payments API we want a reference to PaymentsAPI
       const idempotencyKey = reference;
-      console.log('adyenApiKey=', adyenApiKey);
-      console.log('merchantAccount=', merchantAccount);
-      console.log('adyenPaymentRequestData=', paymentRequestData);
+      console.log('adyenApiKey: ', adyenApiKey);
+      console.log('merchantAccount: ', merchantAccount);
+      console.log('adyenPaymentRequestData: ', paymentRequestData);
 
       const paymentResponse = await paymentsAPI.payments(paymentRequestData, {
         idempotencyKey: idempotencyKey
@@ -132,7 +132,7 @@ module.exports = {
 
       return generateResponse(paymentResponse);
     } catch (e) {
-      console.log('adyenError=', e);
+      console.error('adyenError: ', e);
       return generateResponse(null);
     }
   },
@@ -232,8 +232,39 @@ module.exports = {
   },
   paymentDto: async function (payment) {
     return {};
+  },
+  submitPaymentDetails: async function (details) {
+    try {
+      const merchantAccount = await getSetting(
+        'adyenMerchantAccount',
+        'GoHub_US'
+      );
+      const adyenApiKey = await getSetting(
+        'adyenApiKey',
+        'AQEthmfxLI/JbxBBw0m/n3Q5qf3Vb4RlGJF1f3dZ02iPEoM99AZuGjuAhnwEpRNQEMFdWw2+5HzctViMSCJMYAc=-jUOsQpq1oa50zIyr3tqAC1LSB4FoXdjK/Nx5Z5k4zEQ=-i1isE<xj)L^4k6QxD9='
+      );
+      const postData = {
+        merchantAccount: merchantAccount
+      };
+
+      const client = new Client({
+        apiKey: adyenApiKey,
+        environment: 'TEST'
+      });
+
+      // intialise the API object with the client object
+      const paymentsAPI = new CheckoutAPI(client).PaymentsApi; //CheckoutAPI expo
+      const paymentDetailsResponse = await paymentsAPI.paymentsDetails({ details });
+      if (!paymentDetailsResponse?.resultCode) {
+        throw new Error(`Failed to get payment details from adyen: ${paymentDetailsResponse}`);
+      }
+
+      return paymentDetailsResponse;
+    } catch (e) {
+      console.error(e);
+      return null
+    }
   }
-  //   todo: add webhook data model
 };
 
 const mockPay = {
