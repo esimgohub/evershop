@@ -1,0 +1,14 @@
+type eSimItem {
+    lpa: String
+    activationCode: String
+    sm: String
+    productDetails: String
+    dataAmount: String
+    dayAmount: String
+    dataAmountUnit: String
+}
+
+extend type Query {
+    eSimDetails(eSimUUID: String!): eSimItem
+    eSimList: [eSimItem]
+}
