@@ -10,7 +10,8 @@ module.exports = async (connection) => {
         "uuid" UUID NOT NULL DEFAULT gen_random_uuid (),
         "order_item_id" INT NOT NULL,
         "lpa" VARCHAR(255),
-        "customer_id" INT DEFAULT NULL
+        "customer_id" INT DEFAULT NULL,
+        "expiry_date" TIMESTAMP WITH TIME ZONE NOT NULL
       )
     `
   );

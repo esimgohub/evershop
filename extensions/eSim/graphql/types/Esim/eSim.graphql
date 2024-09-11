@@ -3,15 +3,27 @@ type eSimItem {
     iosLpa: String
     androidLpa: String
     activationCode: String
-    sm: String
+    smAddress: String
     productDetailsHTML: String
     dataAmount: String
     dayAmount: String
     dataAmountUnit: String
     tripText: String
+    expired: Boolean
+    expiryDate: String
+}
+
+type eSimCollectionItem {
+    esimUUID: String
+    dataAmount: String
+    dayAmount: String
+    dataAmountUnit: String
+    tripText: String
+    expired: Boolean
+    expiryDate: String
 }
 
 extend type Query {
     eSimDetails(esimUUID: String!): eSimItem
-    eSimList: [eSimItem]
+    eSimList: [eSimCollectionItem]
 }

@@ -59,8 +59,9 @@ module.exports = async (request, response, delegate, next) => {
             .leftJoin('currency', 'currency')
             .on('customer.currency_id', '=', 'currency.id');
 
+          // todo: test
           customerQuery
-            .where('customer.customer_id', '=', customerSessionData.customerID)
+            .where('customer.customer_id', '=', 1)
             .andWhere('customer.status', '=', 1);
 
           currentCustomer = await customerQuery.load(pool);

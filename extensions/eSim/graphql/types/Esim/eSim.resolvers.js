@@ -1,10 +1,10 @@
+const dayjs = require('dayjs');
 const {
   getOrderByUUID,
   getOrderItemByID
 } = require('../../../services/esim.service');
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
-const { getValue } = require('@evershop/evershop/src/lib/util/registry');
-const { select } = require('@evershop/postgres-query-builder');
+const { select, insert } = require('@evershop/postgres-query-builder');
 const _ = require('lodash');
 const {
   productDetailDescriptionHtmlTemplate
@@ -12,7 +12,6 @@ const {
 const {
   getProductsBaseQuery
 } = require('@evershop/evershop/src/modules/catalog/services/getProductsBaseQuery');
-const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const variantsOptions = [
   {
     attribute_code: 'data-amount-unit',
@@ -59,9 +58,13 @@ function transformVariantsOptions(variantsOptions, supportedCodes) {
     .value();
 }
 
+function getUniqueVal(esims) {
+  return  _.uniqBy(esims, 'order_item_id');
+}
+
 module.exports = {
   Query: {
-    eSimDetails: async ({ esimUUID }, {}, { pool }) => {
+    eSimDetails: async (_, { esimUUID }, { pool }) => {
       try {
         // todo: cac thong tin cho esim details:
         // 1.) variant prod info: day amount,...
@@ -77,20 +80,7 @@ module.exports = {
         }
         const [_, sm_address, code] = esim.lpa.split('$');
 
-      //   const lpaPartial = orderTask.serials?.[0].qrCode?.split('$');
-      //   const activeIOSCode = `SM-DP + Address: ${lpaPartial[1]} and Code: ${lpaPartial[2]}`;
-      //   return {
-      //     sku: orderDetail.itemCode,
-      //     iccid: orderTask.serials?.[0].iccid,
-      //     qrCode: orderTask.serials?.[0].qrImageUrl,
-      //     lpa: orderTask.serials?.[0].qrCode,
-      //     iosLpa: activeIOSCode,
-      //     androidLpa: orderTask.serials?.[0].qrCode,
-      //   };
-      // });
-
-
-      // todo: get product info by order_item_id
+        // todo: get product info by order_item_id
         const orderItem = await getOrderItemByID(esim.order_item_id, pool);
 
         const queryProduct = select();
@@ -98,20 +88,30 @@ module.exports = {
           .from('product')
           .select('uuid')
           .select('product_id', 'productId')
-          .where('product_id', '=', orderItem.product_id)
-        const product = await query.execute(pool);
+          .where('product_id', '=', orderItem[0].product_id);
+        const product = await queryProduct.execute(pool);
 
-        const variantsOptions = JSON.parse(orderItem.variant_options);
-        const tripText = orderItem.trip;
+        let variantsOptions = null;
+        let tripText = null;
+        if (orderItem?.length && orderItem[0]?.variant_options) {
+          variantsOptions = transformVariantsOptions(JSON.parse(orderItem[0].variant_options), supportedCodes);
+        }
+        if (orderItem[0]?.trip) {
+          tripText = orderItem[0].trip;
+        }
+        const isExpired = dayjs(esim.expired_day).isBefore(dayjs());
+
         return {
           ...variantsOptions,
           lpaToQrCode: esim.lpa,
           iosLpa: code,
-          android: esim.lpa,
+          androidLpa: esim.lpa,
           activationCode: code,
-          sm: sm_address,
+          smAddress: sm_address,
+          expired: isExpired,
+          expiryDate: esim.expiry_date,
           tripText,
-          product
+          product: product?.length ? product : null,
         };
       } catch (error) {
         console.error(error);
@@ -129,7 +129,40 @@ module.exports = {
         query.where('customer_id', '=', customer.customer_id);
         query.orderBy('created_at', 'DESC');
         const esims = await query.execute(pool);
-        return esims.map((row) => camelCase(row));
+
+        if (!esims || !esims?.length) {
+          return [];
+        }
+
+        // todo: pick unique order_item_id
+        const results = []
+        // const uniqueList = _.uniqBy(esims, 'order_item_id');
+        const uniqueList = getUniqueVal(esims);
+        for (const item of uniqueList) {
+          let variantsOptions = null;
+          let tripText = null;
+
+          const orderItem = await getOrderItemByID(item.order_item_id, pool);
+          if (orderItem?.length && orderItem[0]?.variant_options) {
+            variantsOptions = transformVariantsOptions(JSON.parse(orderItem[0].variant_options), supportedCodes);
+          }
+          if (orderItem[0]?.trip) {
+            tripText = orderItem[0].trip;
+          }
+          const isExpired = dayjs(item.expired_day).isBefore(dayjs());
+
+          results.push(
+            {
+              ...variantsOptions,
+              esimUUID: item.uuid,
+              expired: isExpired,
+              expiryDate: item.expiry_date,
+              tripText,
+            }
+          )
+        }
+
+        return results;
       } catch (error) {
         console.error(error);
         return [];

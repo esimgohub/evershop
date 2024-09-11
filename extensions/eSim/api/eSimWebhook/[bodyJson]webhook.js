@@ -54,25 +54,24 @@ module.exports = async (request, response, delegate, next) => {
     // order_item_id + lpa
 
     // Save eSim
-    await Promise.all(
-      orderDetails.map(async (esim) => {
-        const { lpa, sku } = esim;
-        if (!lpa || !sku) {
-          console.error(
-            `referenceOrderCode: ${referenceOrderCode} - Invalid OrderDetail: ${orderDetails}`
-          );
-          throw new Error('Invalid OrderDetail of webhookData');
-        }
+    for (const esim of orderDetails) {
+      // Process orderItem as needed
+      const { lpa, sku } = esim;
+      if (!lpa || !sku) {
+        console.error(
+          `referenceOrderCode: ${referenceOrderCode} - Invalid OrderDetail: ${orderDetails}`
+        );
+        throw new Error('Invalid OrderDetail of webhookData');
+      }
 
-        await insert('esim')
-          .given({
-            lpa,
-            order_item_id: dict[sku],
-            customer_id: order.customer_id
-          })
-          .execute(connection);
-      })
-    );
+      await insert('esim')
+        .given({
+          lpa,
+          order_item_id: dict[sku],
+          customer_id: order.customer_id
+        })
+        .execute(connection);
+    }
     //
     await commit(connection);
     // Return a response to acknowledge receipt of the event
