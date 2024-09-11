@@ -1,14 +1,17 @@
 type eSimItem {
-    lpa: String
+    lpaToQrCode: String
+    iosLpa: String
+    androidLpa: String
     activationCode: String
     sm: String
-    productDetails: String
+    productDetailsHTML: String
     dataAmount: String
     dayAmount: String
     dataAmountUnit: String
+    tripText: String
 }
 
 extend type Query {
-    eSimDetails(eSimUUID: String!): eSimItem
+    eSimDetails(esimUUID: String!): eSimItem
     eSimList: [eSimItem]
 }
