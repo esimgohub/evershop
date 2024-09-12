@@ -93,12 +93,9 @@ module.exports = {
       }
     );
 
-    if (![200, 201].includes(response.status) || !response?.data?.data) {
+    if (![200, 201].includes(response.status)) {
       throw new Error(response?.statusText);
     }
-
-    const { data: responseData } = response.data;
-    info(`sendFulfillOrder axios response data: ${responseData} `);
 
     await update('order')
       .given({ fulfillment_status: 'Processing' })
