@@ -63,7 +63,7 @@ module.exports = {
     });
 
     const orderPayload = {
-      referenceOrderCode: order.order_number,
+      referenceOrderCode: order.uuid,
       source: orderSource.b2b,
       shippingFirstName: order.customer_first_name,
       shippingLastName: order.customer_last_name,

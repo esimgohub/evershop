@@ -75,6 +75,19 @@ module.exports = {
         'AQEthmfxLI/JbxBBw0m/n3Q5qf3Vb4RlGJF1f3dZ02iPEoM99AZuGjuAhnwEpRNQEMFdWw2+5HzctViMSCJMYAc=-jUOsQpq1oa50zIyr3tqAC1LSB4FoXdjK/Nx5Z5k4zEQ=-i1isE<xj)L^4k6QxD9='
       );
 
+      let firstName = null
+      let lastName = null
+      if (order?.customer_full_name) {
+        const nameParts = order.customer_full_name.trim().split(/\s+/); // Split by spaces and remove extra spaces
+        firstName = nameParts[0]; // First word is the first name
+        lastName = nameParts.slice(1).join(' '); // Join the rest as the last name
+      } else {
+        firstName = 'Bear'
+        lastName = 'Gohub'
+      }
+
+      const browserInfo = adyenData?.browserInfo ?? null
+
       const paymentRequestData = {
         additionalData: {
           'riskdata.skipRisk': 'true'
@@ -93,15 +106,14 @@ module.exports = {
           ...authenticationData
         },
         shopperInteraction: 'Ecommerce',
-        // todo: dynamic
         countryCode: countryCode ?? 'VN',
         shopperName: {
-          firstName: order?.first_name ?? 'Test',
-          lastName: order?.last_name ?? 'Shopper'
+          firstName: firstName,
+          lastName: lastName
         },
-        shopperEmail: order?.email ?? 'test@adyen.com',
+        shopperEmail: order.customer_email ?? await getSetting('storeEmail', 'booking@gohub.vn'),
         channel: adyenData.channel, // required for native
-        browserInfo: adyenData.browserInfo, // required for native
+        browserInfo, // required for native
         // origin: 'http://127.0.0.1:8080/', // required for native
         paymentMethod: adyenData.paymentMethod,
         merchantAccount: merchantAccount,
