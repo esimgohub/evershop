@@ -1,7 +1,7 @@
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 dayjs.extend(utc);
-const { getOrderItemByID } = require('../../../services/order.service');
+const { getOrderItemByItemID } = require('../../../services/order.service');
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const { select, insert } = require('@evershop/postgres-query-builder');
 const _ = require('lodash');
@@ -55,7 +55,7 @@ module.exports = {
         const [_, sm_address, code] = esim.lpa.split('$');
 
         // todo: get product info by order_item_id
-        const orderItem = await getOrderItemByID(esim.order_item_id, pool);
+        const orderItem = await getOrderItemByItemID(esim.order_item_id, pool);
 
         const queryProduct = select();
         queryProduct
@@ -132,7 +132,7 @@ module.exports = {
           let countryImg = null;
           let countryName = null;
 
-          const orderItem = await getOrderItemByID(item.order_item_id, pool);
+          const orderItem = await getOrderItemByItemID(item.order_item_id, pool);
 
           const categoryDescriptionQuery = select().from('category_description');
 

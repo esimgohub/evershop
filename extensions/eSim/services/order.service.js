@@ -14,7 +14,7 @@ module.exports = {
     }
     return order;
   },
-  getOrderItemByID: async (id, pool) => {
+  getOrderItemByOrderID: async (id, pool) => {
     const items = await select()
       .from('order_item')
       .where('order_item_order_id', '=', id)
@@ -23,5 +23,16 @@ module.exports = {
       return null;
     }
     return items;
+  },
+  getOrderItemByItemID: async (id, pool) => {
+    const items = await select()
+      .from('order_item')
+      .where('order_item_id', '=', id)
+      .execute(pool);
+    if (!items) {
+      return null;
+    }
+    return items;
   }
+
 };

@@ -1,7 +1,7 @@
 const { info } = require('@evershop/evershop/src/lib/log/logger');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const axios = require('axios');
-const { getOrderByUUID, getOrderItemByID } = require('./order.service');
+const { getOrderByUUID, getOrderItemByOrderID } = require('./order.service');
 const dayjs = require('dayjs');
 const { insert } = require('@evershop/postgres-query-builder');
 
@@ -47,7 +47,7 @@ module.exports = {
     }
 
     // todo: get Order_item by order order.id
-    const items = await getOrderItemByID(order.order_id, pool);
+    const items = await getOrderItemByOrderID(order.order_id, pool);
     const dict = new Map();
 
     // pick order_item match with sku
@@ -55,7 +55,7 @@ module.exports = {
       const { sku } = esim;
       const found = items.find((ite) => ite.product_sku === sku);
       if (found) {
-        dict.set(sku, found.order_item_order_id);
+        dict.set(sku, found.order_item_id);
       }
     });
 

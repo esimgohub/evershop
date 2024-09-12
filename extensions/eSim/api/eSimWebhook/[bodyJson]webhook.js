@@ -16,7 +16,7 @@ const {
 const { OK } = require('@evershop/evershop/src/lib/util/httpStatus');
 const {
   getOrderByUUID,
-  getOrderItemByID
+  getOrderItemByOrderID
 } = require('../../services/order.service');
 module.exports = async (request, response) => {
   const connection = await getConnection();
@@ -40,8 +40,7 @@ module.exports = async (request, response) => {
     }
 
     // todo: get Order_item by order order.id
-    const items = await getOrderItemByID(order.order_id, connection);
-
+    const items = await getOrderItemByOrderID(order.order_id, connection);
     const dict = new Map();
 
     // pick order_item match with sku
@@ -49,7 +48,7 @@ module.exports = async (request, response) => {
       const { sku } = esim;
       const found = items.find((ite) => ite.product_sku === sku);
       if (found) {
-        dict.set(sku, found.order_item_order_id);
+        dict.set(sku, found.order_item_id);
       }
     });
 
