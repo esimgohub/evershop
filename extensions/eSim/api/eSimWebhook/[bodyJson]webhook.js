@@ -94,7 +94,7 @@ module.exports = async (request, response) => {
       webhookData?.referenceOrderCode
     );
     if (refOrderCode) {
-      emit('esim_fulfillment', { orderUUID: refOrderCode });
+      emit('esim_fulfillment', { orderUUID: webhookData.referenceOrderCode });
     }
     await rollback(connection);
     response.status(400);
