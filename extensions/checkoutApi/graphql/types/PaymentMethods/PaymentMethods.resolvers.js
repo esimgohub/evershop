@@ -1,6 +1,5 @@
-const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const { getValue } = require('@evershop/evershop/src/lib/util/registry');
-const { getPaymentList } = require('adyen/services/adyen.service');
+const { getPaymentList } = require('../../../../adyen/services/adyen.service');
 
 module.exports = {
   Query: {
