@@ -17,13 +17,12 @@
       "type": "object"
     }
   },
-  "required": ["cart_id", "method_code", "browserInfo", "paymentMethod"],
+  "required": ["cart_id", "method_code", "paymentMethod"],
   "additionalProperties": true,
   "errorMessage": {
     "properties": {
       "cart_id": "cart_id id is required",
       "method_code": "method_code is required",
-      "browserInfo": "browserInfo is required",
       "paymentMethod": "paymentMethod is required"
     }
   }

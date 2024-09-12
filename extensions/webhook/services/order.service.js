@@ -141,7 +141,6 @@ module.exports = {
       if (orderDetails?.length !== 0) {
         const updateOrderItemQueries = orderDetails.map((orderDetail) => {
           const { sku, ...orderDetailData } = orderDetail;
-          console.log('orderDetailData', orderDetailData, sku);
           return update('order_item')
             .given({
               serial: {
