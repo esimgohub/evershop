@@ -1,12 +1,13 @@
+const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
+const { insert } = require('@evershop/postgres-query-builder');
 const { info } = require('@evershop/evershop/src/lib/log/logger');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const axios = require('axios');
 const { getOrderByUUID, getOrderItemByOrderID } = require('./order.service');
 const dayjs = require('dayjs');
-const { insert } = require('@evershop/postgres-query-builder');
 
 module.exports = {
-  sendFulfillEsim: async (orderUUID, pool) => {
+  sendFulfillEsim: async (orderUUID) => {
     // GET request to get esim by REFERENCE order code
     info(
       `send esim fulfillment by reference order code: ${JSON.stringify(
@@ -27,14 +28,14 @@ module.exports = {
       }
     );
 
-    if (response.status > 209) {
+    if (response.status > 209 || !response?.data?.data) {
       throw new Error(response?.statusText);
     }
 
-    const { data: responseData } = response;
+    const { data: responseData } = response.data;
     info(`send esim fulfillment axios response data: ${responseData} `);
-
     const { referenceOrderCode, orderDetails } = responseData;
+
     if (!referenceOrderCode || !orderDetails?.length) {
       console.error(`Received responseData: ${responseData}`);
       throw new Error('Invalid responseData');

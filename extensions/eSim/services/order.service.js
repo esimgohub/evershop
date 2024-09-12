@@ -1,7 +1,4 @@
 const { select } = require('@evershop/postgres-query-builder');
-const { info } = require('@evershop/evershop/src/lib/log/logger');
-const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
-const axios = require('axios');
 
 module.exports = {
   getOrderByUUID: async (uuid, pool) => {

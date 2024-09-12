@@ -93,11 +93,11 @@ module.exports = {
       }
     );
 
-    if (![200, 201].includes(response.status)) {
+    if (![200, 201].includes(response.status) || !response?.data?.data) {
       throw new Error(response?.statusText);
     }
 
-    const { data: responseData } = response;
+    const { data: responseData } = response.data;
     info(`sendFulfillOrder axios response data: ${responseData} `);
 
     await update('order')

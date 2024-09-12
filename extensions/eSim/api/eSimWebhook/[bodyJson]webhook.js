@@ -80,9 +80,9 @@ module.exports = async (request, response) => {
       data: { ...webhookData }
     };
   } catch (e) {
-    // if (webhookData?.referenceOrderCode) {
-    //   emit('esim_fulfillment', { orderUUID: webhookData.referenceOrderCode });
-    // }
+    if (webhookData?.referenceOrderCode) {
+      emit('esim_fulfillment', { orderUUID: webhookData.referenceOrderCode });
+    }
     await rollback(connection);
     // todo: trigger api
     response.status(400);
