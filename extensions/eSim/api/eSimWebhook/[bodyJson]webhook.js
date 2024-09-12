@@ -1,3 +1,6 @@
+const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+dayjs.extend(utc);
 const { emit } = require('@evershop/evershop/src/lib/event/emitter');
 const {
   getConnection,
@@ -14,15 +17,15 @@ const { OK } = require('@evershop/evershop/src/lib/util/httpStatus');
 const {
   getOrderByUUID,
   getOrderItemByID
-} = require('../../services/esim.service');
-module.exports = async (request, response, delegate, next) => {
+} = require('../../services/order.service');
+module.exports = async (request, response) => {
   const connection = await getConnection();
+  const payloadBuffer = request.body;
+  const payloadString = payloadBuffer.toString('utf8'); // 'utf8' is the encoding
+  const webhookData = JSON.parse(payloadString);
 
   try {
     await startTransaction(connection);
-    const payloadBuffer = request.body;
-    const payloadString = payloadBuffer.toString('utf8'); // 'utf8' is the encoding
-    const webhookData = JSON.parse(payloadString);
 
     const { referenceOrderCode, orderDetails } = webhookData;
     if (!referenceOrderCode || !orderDetails?.length) {
@@ -51,11 +54,7 @@ module.exports = async (request, response, delegate, next) => {
     });
 
     // todo: insert into esim table by order OrderDetails from webhook:
-    // order_item_id + lpa
-
-    // Save eSim
     for (const esim of orderDetails) {
-      // Process orderItem as needed
       const { lpa, sku } = esim;
       if (!lpa || !sku) {
         console.error(
@@ -64,23 +63,30 @@ module.exports = async (request, response, delegate, next) => {
         throw new Error('Invalid OrderDetail of webhookData');
       }
 
+      const expiryDate = dayjs(order.created_at).add(30, 'day').utc().format(); // Converts to UTC format
+
       await insert('esim')
         .given({
           lpa,
-          order_item_id: dict[sku],
-          customer_id: order.customer_id
+          order_item_id: dict.get(sku),
+          customer_id: order.customer_id,
+          expiry_date: expiryDate
         })
         .execute(connection);
     }
     //
     await commit(connection);
-    // Return a response to acknowledge receipt of the event
-    response.status(OK).send(webhookData);
+    response.status(OK);
+    response.$body = {
+      data: { ...webhookData }
+    };
   } catch (e) {
-    // failed
+    // if (webhookData?.referenceOrderCode) {
+    //   emit('esim_fulfillment', { orderUUID: webhookData.referenceOrderCode });
+    // }
     await rollback(connection);
     // todo: trigger api
-    // emit('esim_fulfillment', { orderId: order.order_id });
-    response.status(400).send(`Webhook Error: ${err.message}`);
+    response.status(400);
+    response.$body = `Webhook Error: ${e.message}`
   }
 };

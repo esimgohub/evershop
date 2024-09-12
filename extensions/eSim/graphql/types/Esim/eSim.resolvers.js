@@ -1,40 +1,14 @@
 const dayjs = require('dayjs');
-const {
-  getOrderByUUID,
-  getOrderItemByID
-} = require('../../../services/esim.service');
+const utc = require('dayjs/plugin/utc');
+dayjs.extend(utc);
+const { getOrderItemByID } = require('../../../services/order.service');
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const { select, insert } = require('@evershop/postgres-query-builder');
 const _ = require('lodash');
 const {
   productDetailDescriptionHtmlTemplate
 } = require('@evershop/evershop/src/modules/catalog/utils/product-detail');
-const {
-  getProductsBaseQuery
-} = require('@evershop/evershop/src/modules/catalog/services/getProductsBaseQuery');
-const variantsOptions = [
-  {
-    attribute_code: 'data-amount-unit',
-    attribute_name: 'Data Amount Unit',
-    attribute_id: 14,
-    option_id: 73,
-    option_text: 'GB'
-  },
-  {
-    attribute_code: 'day-amount',
-    attribute_name: 'Day Amount',
-    attribute_id: 5,
-    option_id: 57,
-    option_text: '20'
-  },
-  {
-    attribute_code: 'data-amount',
-    attribute_name: 'Data Amount',
-    attribute_id: 6,
-    option_id: 60,
-    option_text: '2'
-  }
-];
+const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 
 // Dictionary of supported attribute codes
 const supportedCodes = {
@@ -59,12 +33,12 @@ function transformVariantsOptions(variantsOptions, supportedCodes) {
 }
 
 function getUniqueVal(esims) {
-  return  _.uniqBy(esims, 'order_item_id');
+  return _.uniqBy(esims, 'order_item_id');
 }
 
 module.exports = {
   Query: {
-    eSimDetails: async (_, { esimUUID }, { pool }) => {
+    eSimDetails: async (_, { esimUUID }, { pool, homeUrl }) => {
       try {
         // todo: cac thong tin cho esim details:
         // 1.) variant prod info: day amount,...
@@ -91,36 +65,51 @@ module.exports = {
           .where('product_id', '=', orderItem[0].product_id);
         const product = await queryProduct.execute(pool);
 
+        const categoryDescriptionQuery = select().from('category_description');
+
+        const categoryId = orderItem[0]?.category_id;
+        let countryImg = null;
+        let countryName = null;
+
+        categoryDescriptionQuery.where('category_description_id', '=', categoryId);
+        const rows = await categoryDescriptionQuery.execute(pool);
+        const cateObj = { ...rows[0] };
+        countryImg = cateObj.image ? `${homeUrl}${cateObj.image}` : null
+        countryName = cateObj.name ?? null
         let variantsOptions = null;
         let tripText = null;
         if (orderItem?.length && orderItem[0]?.variant_options) {
-          variantsOptions = transformVariantsOptions(JSON.parse(orderItem[0].variant_options), supportedCodes);
+          variantsOptions = transformVariantsOptions(
+            JSON.parse(orderItem[0].variant_options),
+            supportedCodes
+          );
         }
         if (orderItem[0]?.trip) {
           tripText = orderItem[0].trip;
         }
-        const isExpired = dayjs(esim.expired_day).isBefore(dayjs());
+        const isExpired = dayjs(esim.expiry_date).utc().isBefore(dayjs().utc());
 
         return {
           ...variantsOptions,
+          countryImg,
+          countryName,
           lpaToQrCode: esim.lpa,
           iosLpa: code,
           androidLpa: esim.lpa,
           activationCode: code,
           smAddress: sm_address,
           expired: isExpired,
-          expiryDate: esim.expiry_date,
           tripText,
           product: product?.length ? product : null,
+          dayLeft: Math.max(dayjs(esim.expiry_date).diff(dayjs(), 'day'), 0),  // Calculate days left
         };
       } catch (error) {
         console.error(error);
         return null;
       }
     },
-    eSimList: async (_, {}, { customer, pool }) => {
+    eSimList: async (_, {}, { customer, homeUrl, pool }) => {
       try {
-        // todo: get esim list by customerId
         if (!customer?.customer_id) {
           console.error(`Customer not found: ${customer}`);
           return [];
@@ -135,34 +124,54 @@ module.exports = {
         }
 
         // todo: pick unique order_item_id
-        const results = []
-        // const uniqueList = _.uniqBy(esims, 'order_item_id');
         const uniqueList = getUniqueVal(esims);
+        const seen = {};
+
         for (const item of uniqueList) {
           let variantsOptions = null;
-          let tripText = null;
+          let countryImg = null;
+          let countryName = null;
 
           const orderItem = await getOrderItemByID(item.order_item_id, pool);
-          if (orderItem?.length && orderItem[0]?.variant_options) {
-            variantsOptions = transformVariantsOptions(JSON.parse(orderItem[0].variant_options), supportedCodes);
-          }
-          if (orderItem[0]?.trip) {
-            tripText = orderItem[0].trip;
-          }
-          const isExpired = dayjs(item.expired_day).isBefore(dayjs());
 
-          results.push(
-            {
-              ...variantsOptions,
-              esimUUID: item.uuid,
-              expired: isExpired,
-              expiryDate: item.expiry_date,
-              tripText,
-            }
-          )
+          const categoryDescriptionQuery = select().from('category_description');
+
+          const categoryId = orderItem[0]?.category_id;
+          categoryDescriptionQuery.where('category_description_id', '=', categoryId);
+          const rows = await categoryDescriptionQuery.execute(pool);
+          const cateObj = { ...rows[0] };
+          countryImg = cateObj.image ? `${homeUrl}${cateObj.image}` : null
+          countryName = cateObj.name ?? null
+
+          if (orderItem?.length && orderItem[0]?.variant_options) {
+            variantsOptions = transformVariantsOptions(
+              JSON.parse(orderItem[0].variant_options),
+              supportedCodes
+            );
+          }
+          const isExpired = dayjs(item.expiry_date).utc().isBefore(dayjs().utc());
+          // todo: tong hop thong tin ve order_item_id
+          seen[item.order_item_id] = {
+            ...variantsOptions,
+            countryImg,
+            countryName,
+            expired: isExpired,
+            dayLeft: Math.max(dayjs(item.expiry_date).diff(dayjs(), 'day'), 0),  // Calculate days left
+          };
+        }
+        const ans = []
+        // todo: dien thong tin cho esim
+        for (const e of esims) {
+          const getObj = seen[e.order_item_id];
+          ans.push({
+            ...getObj,
+            esimUUID: e.uuid
+          });
         }
 
-        return results;
+
+
+        return ans;
       } catch (error) {
         console.error(error);
         return [];

@@ -11,7 +11,8 @@ module.exports = async (connection) => {
         "order_item_id" INT NOT NULL,
         "lpa" VARCHAR(255),
         "customer_id" INT DEFAULT NULL,
-        "expiry_date" TIMESTAMP WITH TIME ZONE NOT NULL
+        "expiry_date" TIMESTAMP WITH TIME ZONE NOT NULL,
+        CONSTRAINT "LPA_UNIQUE" UNIQUE ("lpa")
       )
     `
   );
