@@ -98,6 +98,6 @@ module.exports = async (request, response) => {
     }
     await rollback(connection);
     response.status(400);
-    response.$body = `Webhook Error: ${e.message}`;
+    response.$body = `Webhook Error: ${JSON.stringify(e)}`;
   }
 };
