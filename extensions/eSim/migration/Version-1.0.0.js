@@ -12,7 +12,7 @@ module.exports = async (connection) => {
         "lpa" VARCHAR(255),
         "customer_id" INT DEFAULT NULL,
         "expiry_date" TIMESTAMP WITH TIME ZONE NOT NULL,
-        CONSTRAINT "LPA_UNIQUE" UNIQUE ("lpa")
+        CONSTRAINT "UNIQUE_ORDER_ITEM_LPA" UNIQUE ("order_item_id", "lpa")
       )
     `
   );

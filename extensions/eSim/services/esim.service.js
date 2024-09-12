@@ -1,5 +1,5 @@
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
-const { insert } = require('@evershop/postgres-query-builder');
+const { insert, update } = require('@evershop/postgres-query-builder');
 const { info } = require('@evershop/evershop/src/lib/log/logger');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const axios = require('axios');
@@ -81,6 +81,28 @@ module.exports = {
         })
         .execute(pool);
     }
-    //
+    await update('order')
+      .given({ fulfillment_status: 'Completed' })
+      .where('order_id', '=', order.order_id)
+      .execute(pool);
+  },
+  /**
+   * Extracts the UUID from the reference order code with the prefix "AP:".
+   * @param {string} refOrderCode - The reference order code string.
+   * @returns {string | null} - The extracted UUID, or null if the prefix "AP:" is not found.
+   */
+  extractUuidFromReferenceOrderCode: (refOrderCode) => {
+    const prefix = 'AP:';
+    if (!refOrderCode) {
+      return null;
+    }
+    // Check if the reference order code starts with the prefix "AP:"
+    if (refOrderCode.startsWith(prefix)) {
+      // Extract the UUID part after the prefix
+      return refOrderCode.slice(prefix.length).trim();
+    }
+
+    // Return null if the prefix "AP:" is not found
+    return null;
   }
 };

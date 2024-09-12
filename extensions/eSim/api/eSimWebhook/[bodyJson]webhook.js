@@ -18,6 +18,10 @@ const {
   getOrderByUUID,
   getOrderItemByOrderID
 } = require('../../services/order.service');
+const {
+  extractUuidFromReferenceOrderCode
+} = require('../../services/esim.service');
+
 module.exports = async (request, response) => {
   const connection = await getConnection();
   const payloadBuffer = request.body;
@@ -28,14 +32,18 @@ module.exports = async (request, response) => {
     await startTransaction(connection);
 
     const { referenceOrderCode, orderDetails } = webhookData;
-    if (!referenceOrderCode || !orderDetails?.length) {
-      console.error(`Received webhookData: ${webhookData}`);
+
+    const refOrderCode = extractUuidFromReferenceOrderCode(referenceOrderCode);
+    if (!refOrderCode || !orderDetails?.length) {
+      console.error(`Invalid webhookData: ${JSON.stringify(webhookData)}`);
       throw new Error('Invalid webhookData');
     }
     // todo: get ORDER by order.uuid
-    const order = await getOrderByUUID(referenceOrderCode, connection);
+    const order = await getOrderByUUID(refOrderCode, connection);
     if (!order) {
-      console.error(`Received webhookData: ${webhookData}`);
+      console.error(
+        `Invalid webhookData: ${JSON.stringify(webhookData)} - Order not found`
+      );
       throw new Error('Order not found');
     }
 
@@ -57,7 +65,9 @@ module.exports = async (request, response) => {
       const { lpa, sku } = esim;
       if (!lpa || !sku) {
         console.error(
-          `referenceOrderCode: ${referenceOrderCode} - Invalid OrderDetail: ${orderDetails}`
+          `referenceOrderCode: ${refOrderCode} - Invalid OrderDetail: ${JSON.stringify(
+            orderDetails
+          )}`
         );
         throw new Error('Invalid OrderDetail of webhookData');
       }
@@ -77,15 +87,17 @@ module.exports = async (request, response) => {
     await commit(connection);
     response.status(OK);
     response.$body = {
-      data: { ...webhookData }
+      ...webhookData
     };
   } catch (e) {
-    if (webhookData?.referenceOrderCode) {
+    const refOrderCode = extractUuidFromReferenceOrderCode(
+      webhookData?.referenceOrderCode
+    );
+    if (refOrderCode) {
       emit('esim_fulfillment', { orderUUID: webhookData.referenceOrderCode });
     }
     await rollback(connection);
-    // todo: trigger api
     response.status(400);
-    response.$body = `Webhook Error: ${e.message}`
+    response.$body = `Webhook Error: ${JSON.stringify(e)}`;
   }
 };
