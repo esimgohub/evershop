@@ -58,6 +58,7 @@
     "@evershop/evershop": "^1.1.0",
     "crypto-js": "^4.2.0",
     "geoip-lite": "^1.4.10",
+    "lodash": "^4.17.21",
     "short-unique-id": "^5.2.0"
   }
 }

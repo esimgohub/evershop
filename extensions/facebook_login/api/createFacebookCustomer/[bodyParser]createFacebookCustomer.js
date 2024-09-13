@@ -74,7 +74,9 @@ module.exports = async (request, response, delegate, next) => {
     .leftJoin('currency')
     .on('customer.currency_id', '=', 'currency.id');
 
-  customerQuery.where('customer.external_id', '=', facebookUserId);
+  customerQuery
+    .where('customer.external_id', '=', facebookUserId)
+    .andWhere('customer.login_source', '=', LoginSource.FACEBOOK);
 
   let [customer] = await customerQuery.execute(pool);
 
@@ -104,6 +106,32 @@ module.exports = async (request, response, delegate, next) => {
       getDefaultCurrency()
     ]);
 
+    let insertingEmail = facebookUserInfo?.email;
+    if (facebookUserInfo?.email) {
+      let existingCustomerWithEmailQuery = select(
+        'customer.customer_id',
+        'customer_id'
+      )
+        .select('customer.email', 'email')
+        .select('customer.status', 'status')
+        .from('customer');
+
+      existingCustomerWithEmailQuery.where(
+        'customer.email',
+        '=',
+        facebookUserInfo.email
+      );
+
+      const [existingCustomerWithEmail] =
+        await existingCustomerWithEmailQuery.execute(pool);
+      if (
+        existingCustomerWithEmail &&
+        existingCustomerWithEmail?.status === AccountStatus.ENABLED
+      ) {
+        insertingEmail = null;
+      }
+    }
+
     language = defaultLanguage;
     currency = defaultCurrency;
 
@@ -111,7 +139,7 @@ module.exports = async (request, response, delegate, next) => {
       .given({
         external_id: facebookUserInfo.id || userId,
         login_source: LoginSource.FACEBOOK,
-        email: facebookUserInfo.email,
+        email: insertingEmail,
         first_name: facebookUserInfo.given_name,
         last_name: facebookUserInfo.family_name,
         full_name: facebookUserInfo.given_name + facebookUserInfo.family_name,
