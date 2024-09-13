@@ -85,7 +85,7 @@ module.exports = async (request, response) => {
     }
     //
     await commit(connection);
-    response.status(OK);
+    response.status(201);
     response.$body = {
       ...webhookData
     };
