@@ -8,7 +8,6 @@ const _ = require('lodash');
 const {
   productDetailDescriptionHtmlTemplate
 } = require('@evershop/evershop/src/modules/catalog/utils/product-detail');
-const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 
 // Dictionary of supported attribute codes
 const supportedCodes = {
@@ -28,7 +27,17 @@ function transformVariantsOptions(variantsOptions, supportedCodes) {
   return _.chain(variantsOptions)
     .filter((option) => supportedCodes.hasOwnProperty(option.attribute_code)) // Filter only supported attribute codes
     .keyBy((option) => _.camelCase(supportedCodes[option.attribute_code])) // Use the dictionary to set the output keys
-    .mapValues((option) => option.option_text) // Map the option_text as the value
+    .mapValues((option) => {
+      if (option.attribute_code === 'data-amount') {
+        return option.option_text?.toLowerCase() === 'unlimited'
+          ? 'Unlimited'
+          : Number(option.option_text).toString();
+      }
+      if (option.attribute_code === 'day-amount') {
+        return Number(option.option_text).toString();
+      }
+      return option.option_text;
+    }) // Map the option_text as the value
     .value();
 }
 
@@ -60,8 +69,8 @@ module.exports = {
         const queryProduct = select();
         queryProduct
           .from('product')
-          .select('uuid')
-          .select('product_id', 'productId')
+          .select('parent_product_id', 'productId')
+          .select('parent_product_uuid', 'uuid')
           .where('product_id', '=', orderItem[0].product_id);
         const product = await queryProduct.execute(pool);
 
@@ -71,11 +80,15 @@ module.exports = {
         let countryImg = null;
         let countryName = null;
 
-        categoryDescriptionQuery.where('category_description_id', '=', categoryId);
+        categoryDescriptionQuery.where(
+          'category_description_id',
+          '=',
+          categoryId
+        );
         const rows = await categoryDescriptionQuery.execute(pool);
         const cateObj = { ...rows[0] };
-        countryImg = cateObj.image ? `${homeUrl}${cateObj.image}` : null
-        countryName = cateObj.name ?? null
+        countryImg = cateObj.image ? `${homeUrl}${cateObj.image}` : null;
+        countryName = cateObj.name ?? null;
         let variantsOptions = null;
         let tripText = null;
         if (orderItem?.length && orderItem[0]?.variant_options) {
@@ -83,6 +96,23 @@ module.exports = {
             JSON.parse(orderItem[0].variant_options),
             supportedCodes
           );
+          // todo: totalDataAmount
+          if (variantsOptions.dataAmount === 'Unlimited') {
+            variantsOptions.totalDataAmount = 'Unlimited';
+          } else {
+            const dataA = Number(variantsOptions.dataAmount);
+            const dayA = Number(variantsOptions.dayAmount);
+            if (typeof dayA === 'number' && typeof dataA === 'number') {
+              let total = dataA * dayA;
+              if (total >= 1024) {
+                variantsOptions.totalDataAmount = `${total / 1000}GB`;
+              } else {
+                variantsOptions.totalDataAmount = `${total}${variantsOptions.dataAmountUnit}`;
+              }
+            } else {
+              variantsOptions.totalDataAmount = null;
+            }
+          }
         }
         if (orderItem[0]?.trip) {
           tripText = orderItem[0].trip;
@@ -100,8 +130,8 @@ module.exports = {
           smAddress: sm_address,
           expired: isExpired,
           tripText,
-          product: product?.length ? product : null,
-          dayLeft: Math.max(dayjs(esim.expiry_date).diff(dayjs(), 'day'), 0),  // Calculate days left
+          product: product?.length ? product[0] : null,
+          dayLeft: Math.max(dayjs(esim.expiry_date).diff(dayjs(), 'day'), 0) // Calculate days left
         };
       } catch (error) {
         console.error(error);
@@ -132,35 +162,62 @@ module.exports = {
           let countryImg = null;
           let countryName = null;
 
-          const orderItem = await getOrderItemByItemID(item.order_item_id, pool);
+          const orderItem = await getOrderItemByItemID(
+            item.order_item_id,
+            pool
+          );
 
-          const categoryDescriptionQuery = select().from('category_description');
+          const categoryDescriptionQuery = select().from(
+            'category_description'
+          );
 
           const categoryId = orderItem[0]?.category_id;
-          categoryDescriptionQuery.where('category_description_id', '=', categoryId);
+          categoryDescriptionQuery.where(
+            'category_description_id',
+            '=',
+            categoryId
+          );
           const rows = await categoryDescriptionQuery.execute(pool);
           const cateObj = { ...rows[0] };
-          countryImg = cateObj.image ? `${homeUrl}${cateObj.image}` : null
-          countryName = cateObj.name ?? null
+          countryImg = cateObj.image ? `${homeUrl}${cateObj.image}` : null;
+          countryName = cateObj.name ?? null;
 
           if (orderItem?.length && orderItem[0]?.variant_options) {
             variantsOptions = transformVariantsOptions(
               JSON.parse(orderItem[0].variant_options),
               supportedCodes
             );
+            // todo: totalDataAmount
+            if (variantsOptions.dataAmount === 'Unlimited') {
+              variantsOptions.totalDataAmount = 'Unlimited';
+            } else {
+              const dataA = Number(variantsOptions.dataAmount);
+              const dayA = Number(variantsOptions.dayAmount);
+              if (typeof dayA === 'number' && typeof dataA === 'number') {
+                const total = dataA * dayA;
+                if (total >= 1024) {
+                  variantsOptions.totalDataAmount = `${total / 1000}GB`;
+                } else {
+                  variantsOptions.totalDataAmount = `${total}${variantsOptions.dataAmountUnit}`;
+                }
+              } else {
+                variantsOptions.totalDataAmount = null;
+              }
+            }
           }
-          const isExpired = dayjs(item.expiry_date).utc().isBefore(dayjs().utc());
+          const isExpired = dayjs(item.expiry_date)
+            .utc()
+            .isBefore(dayjs().utc());
           // todo: tong hop thong tin ve order_item_id
           seen[item.order_item_id] = {
             ...variantsOptions,
             countryImg,
             countryName,
             expired: isExpired,
-            dayLeft: Math.max(dayjs(item.expiry_date).diff(dayjs(), 'day'), 0),  // Calculate days left
+            dayLeft: Math.max(dayjs(item.expiry_date).diff(dayjs(), 'day'), 0) // Calculate days left
           };
         }
-        const ans = []
-        // todo: dien thong tin cho esim
+        const ans = [];
         for (const e of esims) {
           const getObj = seen[e.order_item_id];
           ans.push({
@@ -168,8 +225,6 @@ module.exports = {
             esimUUID: e.uuid
           });
         }
-
-
 
         return ans;
       } catch (error) {
