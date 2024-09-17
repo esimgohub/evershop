@@ -4,7 +4,7 @@ const { execute } = require('@evershop/postgres-query-builder');
 module.exports = exports = async (connection) => {
   await execute(
     connection,
-    `CREATE TABLE "customer_coupon_use" (
+    `CREATE TABLE IF NOT EXISTS "customer_coupon_use" (
     "customer_coupon_use_id" INT GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) PRIMARY KEY,
     "customer_id" INT NOT NULL,
     "coupon" varchar NOT NULL,
