@@ -21,7 +21,9 @@ function validateCouponDataBeforeInsert(data) {
     'coupon',
     'status',
     'discount_amount',
-    'discount_type'
+    'discount_type',
+    'max_uses_time_per_coupon',
+    'max_uses_time_per_customer'
   ];
   const jsonSchema = getValueSync(
     'createCouponDataJsonSchema',

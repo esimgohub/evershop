@@ -50,7 +50,9 @@ export default function General({ coupon = {} }) {
           props: {
             startDate: get(coupon, 'startDate.text', ''),
             endDate: get(coupon, 'endDate.text', ''),
-            discountAmount: get(coupon, 'discountAmount', '')
+            discountAmount: get(coupon, 'discountAmount', ''),
+            maxUsesTimePerCoupon: get(coupon, 'maxUsesTimePerCoupon', ''),
+            maxUsesTimePerCustomer: get(coupon, 'maxUsesTimePerCustomer', '')
           },
           sortOrder: 40
         },
@@ -76,6 +78,8 @@ General.propTypes = {
     status: PropTypes.number,
     description: PropTypes.string,
     discountAmount: PropTypes.number,
+    maxUsesTimePerCoupon: PropTypes.number,
+    maxUsesTimePerCustomer: PropTypes.number,
     freeShipping: PropTypes.number,
     startDate: PropTypes.string,
     endDate: PropTypes.string
@@ -98,6 +102,8 @@ export const query = `
       status
       description
       discountAmount
+      maxUsesTimePerCoupon
+      maxUsesTimePerCustomer
       freeShipping
       startDate {
         text
