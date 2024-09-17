@@ -5,10 +5,14 @@ const { getCartByUUID } = require('../../../services/getCartByUUID');
 
 module.exports = {
   Query: {
-    cart: async (_, { id }, { cartId }) => {
+    cart: async (_, { id, coupon }, { cartId }) => {
       try {
         const cart = await getCartByUUID(id || cartId);
-        return camelCase(cart.exportData());
+        if (coupon) {
+          await cart.setData('coupon', coupon);
+        }
+        const originalCart = cart.exportData();
+        return camelCase(originalCart);
       } catch (error) {
         return null;
       }
