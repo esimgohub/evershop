@@ -8,6 +8,7 @@ type eSimItem {
     dataAmount: String
     dayAmount: String
     dataAmountUnit: String
+    totalDataAmount: String
     tripText: String
     expired: Boolean
     dayLeft: Int
@@ -20,6 +21,7 @@ type eSimCollectionItem {
     dataAmount: String
     dayAmount: String
     dataAmountUnit: String
+    totalDataAmount: String
     expired: Boolean
     dayLeft: Int
     countryImg: String

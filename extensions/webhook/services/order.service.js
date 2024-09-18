@@ -19,7 +19,7 @@ module.exports = {
     info(`sendFulfillOrder data: ${orderId}`);
 
     const orderQuery = select('odr.order_id')
-      .select('odr.uuid', 'order_uuid')
+      .select('odr.order_number', 'order_number')
       .select('odr.customer_email', 'order_email')
       .select('odr.shipping_address_id', 'shipping_address_id')
       .select('odr.billing_address_id', 'billing_address_id')
@@ -63,7 +63,7 @@ module.exports = {
     });
 
     const orderPayload = {
-      referenceOrderCode: order.order_uuid,
+      referenceOrderCode: order.order_number,
       source: orderSource.b2b,
       shippingFirstName: order.customer_first_name,
       shippingLastName: order.customer_last_name,
@@ -102,9 +102,9 @@ module.exports = {
       .where('order_id', '=', orderId)
       .execute(pool);
   },
-  getOneOrder: async function (orderUUID, referenceOrderCode) {
+  getOneOrder: async function (orderNumber, referenceOrderCode) {
     const getOrderByIdQuery = select().from('order');
-    getOrderByIdQuery.where('order.uuid', '=', orderUUID);
+    getOrderByIdQuery.where('order.order_number', '=', orderNumber);
 
     getOrderByIdQuery.where(
       'order.reference_order_number',
@@ -116,9 +116,9 @@ module.exports = {
     return order;
   },
 
-  updateOrderById: async function (orderUUID, data) {
+  updateOrderById: async function (orderNumber, data) {
     const { referenceOrderCode, status, orderDetails } = data;
-    const order = await this.getOneOrder(orderUUID, referenceOrderCode);
+    const order = await this.getOneOrder(orderNumber, referenceOrderCode);
     if (!order) {
       throw new Error('Order not found');
     }
@@ -131,14 +131,13 @@ module.exports = {
         .given({
           fulfillment_status: status
         })
-        .where('order.uuid', '=', orderUUID)
+        .where('order.order_number', '=', orderNumber)
         .and('order.reference_order_number', '=', referenceOrderCode)
         .execute(pool);
 
       if (orderDetails?.length !== 0) {
         const updateOrderItemQueries = orderDetails.map((orderDetail) => {
           const { sku, ...orderDetailData } = orderDetail;
-          console.log('orderDetailData', orderDetailData, sku);
           return update('order_item')
             .given({
               serial: {
