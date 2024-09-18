@@ -43,7 +43,7 @@ class PaymentIntentCreationError extends Error {
 module.exports = async (request, response, delegate, next) => {
   try {
     //
-    const { cart_id, method_code, ...adyenData } = request.body;
+    const { coupon, cart_id, method_code, ...adyenData } = request.body;
 
     let order = await getOrderByCartUUID(cart_id, pool);
     const shopperIp = parseIp(request);
@@ -76,6 +76,10 @@ module.exports = async (request, response, delegate, next) => {
       const address = await getDefaultAddress();
       const result = await insert('cart_address').given(address).execute(pool);
       await cart.setData('billing_address_id', parseInt(result.insertId, 10));
+
+      if (coupon) {
+        await cart.setData('coupon', coupon);
+      }
 
       // Save payment method
       await cart.setData('payment_method', method_code);

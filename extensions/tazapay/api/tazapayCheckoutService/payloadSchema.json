@@ -6,6 +6,9 @@
     },
     "method_code": {
       "type": "string"
+    },
+    "coupon": {
+      "type": "string"
     }
   },
   "required": ["cart_id", "method_code"],

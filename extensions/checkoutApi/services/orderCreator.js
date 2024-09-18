@@ -5,7 +5,8 @@ const {
   rollback,
   select,
   startTransaction,
-  update
+  update,
+  execute
 } = require('@evershop/postgres-query-builder');
 const { v4: uuidv4 } = require('uuid');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
@@ -80,14 +81,12 @@ exports.createOrder = async function createOrder(cart) {
       .given(cartBillingAddress)
       .execute(connection);
 
-
     // Save order to DB
     const previous = await select('order_id')
       .from('order')
       .orderBy('order_id', 'DESC')
       .limit(0, 1)
-      .execute(pool);
-
+      .execute(connection);
 
     let defaultPaymentStatus = null;
     Object.keys(paymentStatusList).forEach((key) => {
@@ -116,6 +115,32 @@ exports.createOrder = async function createOrder(cart) {
         payment_status: defaultPaymentStatus
       })
       .execute(connection);
+
+    const customerId = Number(order.customer_id)
+    if (order.coupon) {
+      const couponFounded = await select()
+        .from('customer_coupon_use')
+        .where('customer_coupon_use.customer_id', '=', customerId)
+        .andWhere('customer_coupon_use.coupon', '=', order.coupon)
+        .load(connection);
+      if (!couponFounded) {
+        await insert('customer_coupon_use')
+          .given({
+            customer_id: customerId,
+            coupon: order.coupon,
+            used_time: 1
+          })
+          .execute(connection);
+      } else {
+        await update('customer_coupon_use')
+          .given({
+            used_time: couponFounded.used_time + 1
+          })
+          .where('customer_coupon_use.customer_id', '=', customerId)
+          .andWhere('customer_coupon_use.coupon', '=', order.coupon)
+          .execute(connection);
+      }
+    }
 
     // Save order items
     await Promise.all(
