@@ -25,12 +25,17 @@ Returns a collection of coupons
 """
 type CouponCollection {
     items: [Coupon]
-    currentPage: Int!
-    total: Int!
-    currentFilters: [Filter]
+    currentPage: Int
+    total: Int
+}
+
+
+input FilterClientInput {
+    page: Int
+    perPage: Int
 }
 
 extend type Query {
-    availableCoupons: CouponCollection
+    availableCoupons(filters: FilterClientInput): CouponCollection
     coupon(id: Int): Coupon
 }
