@@ -5,28 +5,22 @@ const {
 } = require('../../../services/getCouponsBaseQuery');
 const { CouponCollection } = require('../../../services/CouponCollection');
 
-const clientFilterDto = (filter) => {
-  if (!filter?.page || !filter.perPage) {
-    return [];
-  }
-  const limitKey = 'limit';
-  const pageKey = 'page';
-
-  const operationEnum = 'eq'
-  return [
-    {
-      key: limitKey,
-      operation: operationEnum,
-      value: filter.perPage
-    },
-    {
-      key: pageKey,
-      operation: operationEnum,
-      value: filter.page
-    }
-  ]
+const FILTER_MAP = {
+  page: 'page',
+  perPage: 'limit',
+  coupon: 'coupon'
 }
 
+const clientFilterDto = (filter) => {
+  if (!filter || !Object.keys(filter).length) {
+    return []
+  }
+  return Object.keys(filter).map((key) => ({
+      key: FILTER_MAP[key],
+      operation: key === 'coupon' ? 'like' : 'eq',
+      value: filter[key]
+    }));
+}
 module.exports = {
   Cart: {
     applyCouponApi: (cart) => buildUrl('couponApply', { cart_id: cart.uuid })
@@ -45,8 +39,8 @@ module.exports = {
 
       const query = getCouponsBaseQuery();
       const root = new CouponCollection(query);
-      const dto  = clientFilterDto(filters)
-      await root.init(dto);
+      const dto  = clientFilterDto(filters);
+      await root.init(filters.page, filters.perPage, dto);
       return root;
     }
   }
