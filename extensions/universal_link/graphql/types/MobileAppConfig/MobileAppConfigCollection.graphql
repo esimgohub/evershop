@@ -1,0 +1,14 @@
+type AppStoreConfig {
+  googlePlayUrl: String
+  appStoreUrl: String
+}
+
+type MobileAppConfig {
+  baseUrl: String
+  url: String
+}
+
+extend type Query {
+  appStoreConfig: AppStoreConfig
+  mobileAppConfig: MobileAppConfig
+}
