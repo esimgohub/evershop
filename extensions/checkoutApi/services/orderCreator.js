@@ -5,11 +5,13 @@ const {
   rollback,
   select,
   startTransaction,
-  update
+  update,
+  execute
 } = require('@evershop/postgres-query-builder');
 const { v4: uuidv4 } = require('uuid');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
+const randomStr = require('@evershop/evershop/src/modules/base/services/randomStr');
 
 /* Default validation rules */
 let validationServices = [
@@ -80,14 +82,12 @@ exports.createOrder = async function createOrder(cart) {
       .given(cartBillingAddress)
       .execute(connection);
 
-
     // Save order to DB
     const previous = await select('order_id')
       .from('order')
       .orderBy('order_id', 'DESC')
       .limit(0, 1)
-      .execute(pool);
-
+      .execute(connection);
 
     let defaultPaymentStatus = null;
     Object.keys(paymentStatusList).forEach((key) => {
@@ -104,18 +104,44 @@ exports.createOrder = async function createOrder(cart) {
     });
 
     nextCart.total_qty = itemCount;
+    const orderRef = `AP${randomStr(5)}`;
 
     const order = await insert('order')
       .given({
         ...nextCart,
         uuid: uuidv4().replace(/-/g, ''),
-        order_number:
-          10000 + parseInt(previous[0] ? previous[0].order_id : 0, 10) + 1,
+        order_number: orderRef,
         // FIXME: Must be structured
         billing_address_id: billAddr.insertId,
         payment_status: defaultPaymentStatus
       })
       .execute(connection);
+
+    const customerId = Number(order.customer_id)
+    if (order.coupon) {
+      const couponFounded = await select()
+        .from('customer_coupon_use')
+        .where('customer_coupon_use.customer_id', '=', customerId)
+        .andWhere('customer_coupon_use.coupon', '=', order.coupon)
+        .load(connection);
+      if (!couponFounded) {
+        await insert('customer_coupon_use')
+          .given({
+            customer_id: customerId,
+            coupon: order.coupon,
+            used_time: 1
+          })
+          .execute(connection);
+      } else {
+        await update('customer_coupon_use')
+          .given({
+            used_time: couponFounded.used_time + 1
+          })
+          .where('customer_coupon_use.customer_id', '=', customerId)
+          .andWhere('customer_coupon_use.coupon', '=', order.coupon)
+          .execute(connection);
+      }
+    }
 
     // Save order items
     await Promise.all(

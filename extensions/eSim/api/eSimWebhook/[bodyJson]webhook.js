@@ -18,9 +18,6 @@ const {
   getOrderByUUID,
   getOrderItemByOrderID
 } = require('../../services/order.service');
-const {
-  extractUuidFromReferenceOrderCode
-} = require('../../services/esim.service');
 
 module.exports = async (request, response) => {
   const connection = await getConnection();
@@ -33,13 +30,12 @@ module.exports = async (request, response) => {
 
     const { referenceOrderCode, orderDetails } = webhookData;
 
-    const refOrderCode = extractUuidFromReferenceOrderCode(referenceOrderCode);
-    if (!refOrderCode || !orderDetails?.length) {
+    if (!referenceOrderCode || !orderDetails?.length) {
       console.error(`Invalid webhookData: ${JSON.stringify(webhookData)}`);
       throw new Error('Invalid webhookData');
     }
     // todo: get ORDER by order.uuid
-    const order = await getOrderByUUID(refOrderCode, connection);
+    const order = await getOrderByUUID(referenceOrderCode, connection);
     if (!order) {
       console.error(
         `Invalid webhookData: ${JSON.stringify(webhookData)} - Order not found`
@@ -65,7 +61,7 @@ module.exports = async (request, response) => {
       const { lpa, sku } = esim;
       if (!lpa || !sku) {
         console.error(
-          `referenceOrderCode: ${refOrderCode} - Invalid OrderDetail: ${JSON.stringify(
+          `referenceOrderCode: ${referenceOrderCode} - Invalid OrderDetail: ${JSON.stringify(
             orderDetails
           )}`
         );
@@ -90,10 +86,7 @@ module.exports = async (request, response) => {
       ...webhookData
     };
   } catch (e) {
-    const refOrderCode = extractUuidFromReferenceOrderCode(
-      webhookData?.referenceOrderCode
-    );
-    if (refOrderCode) {
+    if (webhookData?.referenceOrderCode) {
       emit('esim_fulfillment', { orderUUID: webhookData.referenceOrderCode });
     }
     await rollback(connection);

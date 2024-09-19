@@ -49,6 +49,13 @@ type ByXGetY {
   discount: String
 }
 
+type AdminCouponCollection {
+  items: [Coupon]
+  currentPage: Int
+  total: Int
+  currentFilters: [Filter]
+}
+
 """
 Represents the user condition of a coupon.
 """
@@ -59,5 +66,5 @@ type UserCondition {
 }
 
 extend type Query {
-  coupons(filters: [FilterInput]): CouponCollection
+  coupons(filters: [FilterInput]): AdminCouponCollection
 }

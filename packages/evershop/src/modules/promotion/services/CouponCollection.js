@@ -7,7 +7,7 @@ class CouponCollection {
     this.baseQuery = baseQuery;
   }
 
-  async init(filters = []) {
+  async init(page, perPage, filters = []) {
     const currentFilters = [];
 
     // Apply the filters
@@ -30,6 +30,8 @@ class CouponCollection {
       }
     });
 
+    this.page = page;
+    this.perPage = perPage;
     // Clone the main query for getting total right before doing the paging
     const totalQuery = this.baseQuery.clone();
     totalQuery.select('COUNT(coupon.coupon_id)', 'total');
@@ -38,6 +40,13 @@ class CouponCollection {
 
     this.currentFilters = currentFilters;
     this.totalQuery = totalQuery;
+  }
+
+  async isCanLoadMore() {
+    const res = await this.totalQuery.execute(pool);
+    const total = res[0]?.total
+    const  endIndex = this.page * this.perPage;
+    return endIndex < Number(total)
   }
 
   async items() {

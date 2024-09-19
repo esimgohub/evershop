@@ -27,12 +27,14 @@ type CouponCollection {
     items: [Coupon]
     currentPage: Int
     total: Int
+    isCanLoadMore: Boolean
 }
 
 
 input FilterClientInput {
     page: Int
     perPage: Int
+    coupon: String
 }
 
 extend type Query {

@@ -1,6 +1,9 @@
 {
   "type": "object",
   "properties": {
+    "coupon": {
+      "type": "string"
+    },
     "cart_id": {
       "type": "string"
     },
