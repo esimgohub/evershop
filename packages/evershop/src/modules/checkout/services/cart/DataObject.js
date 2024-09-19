@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 const isEqualWith = require('lodash/isEqualWith');
 const { error } = require('@evershop/evershop/src/lib/log/logger');
+const { InvalidPropertyError, PropertyValidationError } = require('@evershop/evershop/src/modules/base/services/customError');
 
 module.exports.DataObject = class DataObject {
   #fields;
@@ -88,7 +89,7 @@ module.exports.DataObject = class DataObject {
     }
     const field = this.#fields.find((f) => f.key === key);
     if (field === undefined) {
-      throw new Error(`Field ${key} not existed`);
+      throw new InvalidPropertyError(key);
     }
 
     if (isEqualWith(this.#data[key], value) && !force) {
@@ -99,9 +100,7 @@ module.exports.DataObject = class DataObject {
     await this.build();
     const result = this.#data[key];
     if (!isEqualWith(result, value)) {
-      throw new Error(
-        `Field resolvers returned different value - ${key}, ${value}, ${result}`
-      );
+      throw new PropertyValidationError(key, value);
     } else {
       return value;
     }

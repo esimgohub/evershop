@@ -5,13 +5,14 @@ const {
   rollback,
   select,
   startTransaction,
-  update,
-  execute
+  update
 } = require('@evershop/postgres-query-builder');
 const { v4: uuidv4 } = require('uuid');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const randomStr = require('@evershop/evershop/src/modules/base/services/randomStr');
+const { OrderCreationError } = require('@evershop/evershop/src/modules/base/services/customError');
+const { ERROR_CODE, errorCodeMapper } = require('@evershop/evershop/src/lib/util/errorCode');
 
 /* Default validation rules */
 let validationServices = [
@@ -181,7 +182,8 @@ exports.createOrder = async function createOrder(cart) {
     return createdOrder.uuid;
   } catch (e) {
     await rollback(connection);
-    throw e;
+    const res = errorCodeMapper(ERROR_CODE.INTERNAL_ERROR)
+    throw new OrderCreationError(res.errorCode, res.message, e)
   }
 };
 
@@ -189,7 +191,7 @@ exports.addCreateOrderValidationRule = function addCreateOrderValidationRule(
   id,
   func
 ) {
-  if (typeof obj !== 'function') {
+  if (typeof func !== 'function') {
     throw new Error('Validator must be a function');
   }
 

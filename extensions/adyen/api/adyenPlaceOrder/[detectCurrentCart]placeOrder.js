@@ -23,14 +23,8 @@ const {
   setContextValue
 } = require('@evershop/evershop/src/modules/graphql/services/contextHelper');
 const { getCountryByIp, parseIp } = require('../../services/utils');
-
-// Custom error classes
-class OrderCreationError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'OrderCreationError';
-  }
-}
+const { PropertyValidationError, OrderCreationError } = require('@evershop/evershop/src/modules/base/services/customError');
+const { errorCodeMapper, ERROR_CODE } = require('@evershop/evershop/src/lib/util/errorCode');
 
 class PaymentIntentCreationError extends Error {
   constructor(message, errorExtraParams) {
@@ -99,10 +93,6 @@ module.exports = async (request, response, delegate, next) => {
         .load(pool);
     }
 
-    if (!order) {
-      throw new OrderCreationError('Order create failed');
-    }
-
     const items = await select()
       .from('order_item')
       .where('order_item_order_id', '=', order.order_id)
@@ -123,12 +113,24 @@ module.exports = async (request, response, delegate, next) => {
     };
     next();
   } catch (e) {
-    if (e instanceof OrderCreationError) {
-      error(e.message);
+    if (e instanceof PropertyValidationError) {
+      error(e);
+      const res = e.property === 'coupon' ? errorCodeMapper(ERROR_CODE.INVALID_COUPON) : errorCodeMapper(ERROR_CODE.INVALID_PAYLOAD);
+      response.status(INVALID_PAYLOAD);
+      response.json({
+        error: {
+          message: res.message,
+          errorCode: res.errorCode,
+          status: INVALID_PAYLOAD
+        }
+      });
+    } else if (e instanceof OrderCreationError) {
+      error(e);
       response.status(INTERNAL_SERVER_ERROR);
       response.json({
         error: {
           message: e.message,
+          errorCode: e.errorCode,
           status: INTERNAL_SERVER_ERROR
         }
       });
