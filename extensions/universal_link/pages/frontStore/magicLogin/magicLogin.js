@@ -6,6 +6,8 @@ module.exports = async (request, response, delegate, next) => {
   try {
     next();
 
+    // TODO: Hold for now, just redirect to gohub application, will be changed later
+
     // const { token } = request.query;
  
     // const md = new MobileDetect(request.headers['user-agent']);

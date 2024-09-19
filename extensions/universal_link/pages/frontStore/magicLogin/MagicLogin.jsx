@@ -10,9 +10,10 @@ function MagicLogin(data) {
   const { googlePlayUrl, appStoreUrl } = appStoreConfig;
 
   // Extract query
-  const { token } = window.location.search
-    ? new URLSearchParams(window.location.search)
-    : {};
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
+
+  console.log('token: ', token);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
