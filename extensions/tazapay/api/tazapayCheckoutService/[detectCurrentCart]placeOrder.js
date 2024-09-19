@@ -20,6 +20,8 @@ const { calculateExpiry } = require('../../services/utils');
 const { createOrder } = require('../../../checkoutApi/services/orderCreator');
 const geoip = require('geoip-lite');
 const { getOrdersBaseQuery } = require('@evershop/evershop/src/modules/oms/services/getOrdersBaseQuery');
+const { PropertyValidationError, OrderCreationError } = require('@evershop/evershop/src/modules/base/services/customError');
+const { ERROR_CODE, errorCodeMapper } = require('@evershop/evershop/src/lib/util/errorCode');
 
 const convertFromUSD = (amount, rate, currentIsoCode) => {
   if (currentIsoCode === 'USD') {
@@ -32,15 +34,6 @@ const generateTxnDescription = (items) => {
   const itemsDescription = items.map((item) => `${item.qty} x ${item.product_sku}\n`);
   return itemsDescription.join('');
 };
-
-// TODO:
-// Custom error classes
-class OrderCreationError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'OrderCreationError';
-  }
-}
 
 class PaymentIntentCreationError extends Error {
   constructor(message, errorExtraParams) {
@@ -183,10 +176,6 @@ module.exports = async (request, response, delegate, next) => {
         .load(pool);
     }
 
-    if (!order) {
-      throw new OrderCreationError('Order create failed');
-    }
-
     const isPaymentFailed = order.payment_status === 'failed';
 
     const paymentIntent = await createPaymentIntent(isPaymentFailed, order, customerCountry, pool);
@@ -200,12 +189,24 @@ module.exports = async (request, response, delegate, next) => {
     };
     next();
   } catch (e) {
-    if (e instanceof OrderCreationError) {
-      error(e.message);
+    if (e instanceof PropertyValidationError) {
+      error(e);
+      const res = e.property === 'coupon' ? errorCodeMapper(ERROR_CODE.INVALID_COUPON) : errorCodeMapper(ERROR_CODE.INVALID_PAYLOAD);
+      response.status(INVALID_PAYLOAD);
+      response.json({
+        error: {
+          message: res.message,
+          errorCode: res.errorCode,
+          status: INVALID_PAYLOAD
+        }
+      });
+    } else if (e instanceof OrderCreationError) {
+      error(e);
       response.status(INTERNAL_SERVER_ERROR);
       response.json({
         error: {
           message: e.message,
+          errorCode: e.errorCode,
           status: INTERNAL_SERVER_ERROR
         }
       });
