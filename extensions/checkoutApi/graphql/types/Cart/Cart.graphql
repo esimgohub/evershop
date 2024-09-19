@@ -3,5 +3,5 @@ extend type Cart {
 }
 
 extend type Query {
-    cartWithOutArg: Cart
+    cartWithOutArg(coupon: String): Cart
 }
