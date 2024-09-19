@@ -9,6 +9,6 @@
     "node": ">= 14.0.0"
   },
   "dependencies": {
-    "mobile-detect": "1.4.5"
+    "device-detector-js": "^3.0.3"
   }
 }
