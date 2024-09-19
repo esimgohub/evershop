@@ -18,6 +18,7 @@ type Coupon {
     coupon: String!
     startDate: DateTime
     endDate: DateTime
+    imageUrl: String
 }
 
 """
