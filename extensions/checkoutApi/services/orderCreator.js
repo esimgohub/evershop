@@ -11,6 +11,7 @@ const {
 const { v4: uuidv4 } = require('uuid');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
+const randomStr = require('@evershop/evershop/src/modules/base/services/randomStr');
 
 /* Default validation rules */
 let validationServices = [
@@ -103,13 +104,13 @@ exports.createOrder = async function createOrder(cart) {
     });
 
     nextCart.total_qty = itemCount;
+    const orderRef = `AP${randomStr(5)}`;
 
     const order = await insert('order')
       .given({
         ...nextCart,
         uuid: uuidv4().replace(/-/g, ''),
-        order_number:
-          10000 + parseInt(previous[0] ? previous[0].order_id : 0, 10) + 1,
+        order_number: orderRef,
         // FIXME: Must be structured
         billing_address_id: billAddr.insertId,
         payment_status: defaultPaymentStatus
