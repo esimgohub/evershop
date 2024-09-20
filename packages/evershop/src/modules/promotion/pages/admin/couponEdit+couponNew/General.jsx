@@ -5,8 +5,9 @@ import { Field } from '@components/common/form/Field';
 import { Toggle } from '@components/common/form/fields/Toggle';
 import { get } from '@evershop/evershop/src/lib/util/get';
 import { Setting } from '@components/admin/promotion/couponEdit/Setting';
+import { CouponImage } from '@components/admin/promotion/couponEdit/Image';
 
-export default function General({ coupon = {} }) {
+export default function General({ coupon = {}, imageUploadUrl }) {
   return (
     <Area
       id="couponFormGeneral"
@@ -66,6 +67,14 @@ export default function General({ coupon = {} }) {
             isChecked: parseInt(get(coupon, 'freeShipping'), 10) === 1
           },
           sortOrder: 50
+        },
+        {
+          component: { default: CouponImage },
+          props: {
+            imageUrl: get(coupon, 'imageUrl', ''),
+            imageUploadUrl
+          },
+          sortOrder: 60
         }
       ]}
     />
@@ -77,12 +86,14 @@ General.propTypes = {
     coupon: PropTypes.string,
     status: PropTypes.number,
     description: PropTypes.string,
+    imageUrl: PropTypes.string,
     discountAmount: PropTypes.number,
     maxUsesTimePerCoupon: PropTypes.number,
     maxUsesTimePerCustomer: PropTypes.number,
     freeShipping: PropTypes.number,
     startDate: PropTypes.string,
-    endDate: PropTypes.string
+    endDate: PropTypes.string,
+    imageUploadUrl: PropTypes.string
   })
 };
 
@@ -97,6 +108,7 @@ export const layout = {
 
 export const query = `
   query Query {
+    imageUploadUrl: url(routeId: "imageUpload", params: [{key: "0", value: ""}])
     coupon(id: getContextValue('couponId', null)) {
       coupon
       status
@@ -105,6 +117,7 @@ export const query = `
       maxUsesTimePerCoupon
       maxUsesTimePerCustomer
       freeShipping
+      imageUrl
       startDate {
         text
       }

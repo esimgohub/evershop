@@ -43,8 +43,9 @@ async function updateCouponData(uuid, data, connection) {
   }
 
   try {
+    const { couponImage: origin_image, ...rest } = data;
     const newCoupon = await update('coupon')
-      .given(data)
+      .given({ ...rest, origin_image })
       .where('uuid', '=', uuid)
       .execute(connection);
 
