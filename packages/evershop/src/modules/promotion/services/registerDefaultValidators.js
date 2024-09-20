@@ -1,5 +1,5 @@
 /* eslint-disable consistent-return */
-const { select } = require('@evershop/postgres-query-builder');
+const { select, execute } = require('@evershop/postgres-query-builder');
 const { DateTime } = require('luxon');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getCartTotalBeforeDiscount } = require('./getCartTotalBeforeDiscount');
@@ -43,17 +43,15 @@ module.exports.registerDefaultValidators =
         if (coupon.max_uses_time_per_customer) {
           const customerId = cart.getData('customer_id');
           if (customerId) {
-            const flag = await select()
-              .from('customer_coupon_use')
-              .where('customer_id', '=', customerId)
-              .andWhere('coupon', '=', coupon.coupon)
-              .andWhere(
-                'used_time',
-                '>=',
-                parseInt(coupon.max_uses_time_per_customer, 10)
-              )
-              .execute(pool);
-            if (flag) {
+            const rawQuery = `
+              select * from customer_coupon_use ccu 
+              where ccu.customer_id  = '${customerId}'
+              and ccu.coupon = '${coupon.coupon}'
+              and ccu.used_time >= '${parseInt(coupon.max_uses_time_per_customer, 10)}'
+            `;
+            const { rows } = await execute(pool, rawQuery);
+            const isMaxUsed = rows.length > 0;
+            if (isMaxUsed) {
               return false;
             }
           }
@@ -308,7 +306,11 @@ module.exports.registerDefaultValidators =
             }
             items.forEach((item) => {
               // eslint-disable-next-line no-eval
-              if (eval(`${item.getData('final_price')} ${operator} ${value}`)) {
+              if (
+                eval(`${item.getData('final_price')}
+              ${operator}
+              ${value}`)
+              ) {
                 qty += item.getData('qty');
               }
             });
