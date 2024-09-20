@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useRef, useState } from 'react';
 import { Field } from '@components/common/form/Field';
-import Button from '@components/common/form/Button';
 import { Card } from '@components/admin/cms/Card';
 import { toast } from 'react-toastify';
 import { get } from '@evershop/evershop/src/lib/util/get';
@@ -9,11 +8,9 @@ import { get } from '@evershop/evershop/src/lib/util/get';
 export function CouponImage({ imageUrl, imageUploadUrl }) {
   // eslint-disable-next-line react/prop-types
   const [loading, setLoading] = useState(false);
-  const [currentImg, setCurrentImg] = useState(imageUploadUrl);
+  const [currentImg, setCurrentImg] = useState(imageUrl);
   const uploadRef = useRef(null);
-  useEffect(() => {
-    setCurrentImg(imageUrl);
-  }, [imageUrl]);
+
   const handleSocialImageChange = (e) => {
     e.persist();
 
@@ -150,7 +147,6 @@ export function CouponImage({ imageUrl, imageUploadUrl }) {
           </div>
         </div>
       </Card.Session>
-
       <div className="invisible" style={{ width: '1px', height: '1px' }}>
         <input
           ref={uploadRef}
@@ -160,7 +156,7 @@ export function CouponImage({ imageUrl, imageUploadUrl }) {
         />
         <Field
           style={{ opacity: 0 }}
-          value={currentImg}
+          value={currentImg ? new URL(currentImg).pathname : ''}
           type="text"
           name="couponImage"
           placeholder="Img"
