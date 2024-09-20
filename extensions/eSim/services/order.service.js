@@ -1,10 +1,10 @@
 const { select } = require('@evershop/postgres-query-builder');
 
 module.exports = {
-  getOrderByUUID: async (uuid, pool) => {
+  getOrderByOrderNum: async (uuid, pool) => {
     const query = select();
     query.from('order');
-    query.andWhere('order.uuid', '=', uuid);
+    query.andWhere('order.order_number', '=', uuid);
     const order = await query.load(pool);
     if (!order) {
       return null;

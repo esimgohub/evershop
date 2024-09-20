@@ -14,6 +14,11 @@ module.exports = {
         }
         return camelCase(cart.exportData());
       } catch (error) {
+        const regex = /\bcoupon\b/i;
+        if (regex.test(error.message)) {
+          const cart = await getCartByUUID(cartId);
+          return camelCase(cart.exportData());
+        }
         return null;
       }
     }

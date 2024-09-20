@@ -26,6 +26,7 @@ module.exports = {
       .select('odr.payment_status', 'payment_status')
       .select('odr.sub_total_old_price', 'sub_total_old_price')
       .select('odr.sub_total_discount_amount', 'sub_total_discount_amount')
+      .select('odr.discount_amount', 'discount_amount')
       .select('odr.grand_total', 'grand_total')
       .select('customer.email', 'customer_email')
       .select('customer.first_name', 'customer_first_name')
@@ -73,7 +74,7 @@ module.exports = {
       paymentStatus: order.payment_status,
       orderDetails: orderDetailsPayload,
       subTotal: parseFloat(order.sub_total_old_price),
-      totalDiscount: parseFloat(order.sub_total_discount_amount),
+      totalDiscount: parseFloat(order.sub_total_discount_amount) + parseFloat(order.discount_amount),
       total: parseFloat(order.grand_total)
     };
 
