@@ -3,7 +3,7 @@ const { insert, update } = require('@evershop/postgres-query-builder');
 const { info } = require('@evershop/evershop/src/lib/log/logger');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const axios = require('axios');
-const { getOrderByUUID, getOrderItemByOrderID } = require('./order.service');
+const { getOrderByOrderNum, getOrderItemByOrderID } = require('./order.service');
 const dayjs = require('dayjs');
 
 module.exports = {
@@ -41,7 +41,7 @@ module.exports = {
       throw new Error('Invalid responseData');
     }
     // todo: get ORDER by order.uuid
-    const order = await getOrderByUUID(referenceOrderCode, pool);
+    const order = await getOrderByOrderNum(referenceOrderCode, pool);
     if (!order) {
       console.error(`Received responseData: ${responseData}`);
       throw new Error('Order not found');

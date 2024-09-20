@@ -15,7 +15,7 @@ const {
 } = require('@evershop/postgres-query-builder');
 const { OK } = require('@evershop/evershop/src/lib/util/httpStatus');
 const {
-  getOrderByUUID,
+  getOrderByOrderNum,
   getOrderItemByOrderID
 } = require('../../services/order.service');
 
@@ -35,7 +35,7 @@ module.exports = async (request, response) => {
       throw new Error('Invalid webhookData');
     }
     // todo: get ORDER by order.uuid
-    const order = await getOrderByUUID(referenceOrderCode, connection);
+    const order = await getOrderByOrderNum(referenceOrderCode, connection);
     if (!order) {
       console.error(
         `Invalid webhookData: ${JSON.stringify(webhookData)} - Order not found`
