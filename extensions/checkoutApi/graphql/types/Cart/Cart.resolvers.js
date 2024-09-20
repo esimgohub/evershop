@@ -9,7 +9,7 @@ module.exports = {
     cartWithOutArg: async (_, { coupon }, { cartId }) => {
       try {
         const cart = await getCartByUUID(cartId);
-        if (coupon) {
+        if (!!coupon === true) {
           await cart.setData('coupon', coupon);
         }
         return camelCase(cart.exportData());

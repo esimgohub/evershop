@@ -15,20 +15,20 @@ const clientFilterDto = (filter) => {
   if (!filter || !Object.keys(filter).length) {
     return [];
   }
-  return Object.keys(filter).map((key) => ({
-    key: FILTER_MAP[key],
-    operation: 'eq',
-    value: filter[key]
-  }));
+  return Object.keys(filter)
+    .filter((ite) => Boolean(filter[ite]))
+    .map((key) => ({
+      key: FILTER_MAP[key],
+      operation: 'eq',
+      value: filter[key]
+    }));
 };
 module.exports = {
   Cart: {
     applyCouponApi: (cart) => buildUrl('couponApply', { cart_id: cart.uuid })
   },
   Coupon: {
-    imageUrl: ({ originImage }, _, { homeUrl }) => {
-      return `${homeUrl}${originImage}`;
-    }
+    imageUrl: ({ originImage }, _, { homeUrl }) => `${homeUrl}${originImage}`
   },
   Query: {
     coupon: async (root, { id }, { pool }) => {
