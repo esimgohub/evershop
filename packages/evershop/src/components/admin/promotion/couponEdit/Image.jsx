@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Field } from '@components/common/form/Field';
 import { Card } from '@components/admin/cms/Card';
 import { toast } from 'react-toastify';
@@ -8,9 +8,16 @@ import { get } from '@evershop/evershop/src/lib/util/get';
 export function CouponImage({ imageUrl, imageUploadUrl }) {
   // eslint-disable-next-line react/prop-types
   const [loading, setLoading] = useState(false);
-  const [currentImg, setCurrentImg] = useState(imageUrl);
+  const handleUrl = (url) => {
+    try {
+      return new URL(url).pathname;
+    } catch (e) {
+      return ""
+    }
+  }
+  const init = handleUrl(imageUrl);
+  const [currentImg, setCurrentImg] = useState(init);
   const uploadRef = useRef(null);
-
   const handleSocialImageChange = (e) => {
     e.persist();
 
@@ -23,7 +30,7 @@ export function CouponImage({ imageUrl, imageUploadUrl }) {
     fetch(
       `${imageUploadUrl}/coupon/${
         Math.floor(Math.random() * (9999 - 1000)) + 1000
-      }`,
+      }/${Math.floor(Math.random() * (9999 - 1000)) + 1000}`,
       {
         method: 'POST',
         body: formData,
@@ -44,7 +51,6 @@ export function CouponImage({ imageUrl, imageUploadUrl }) {
       })
       .then((response) => {
         if (!response.error) {
-          console.log('response', response.data.files[0]);
           setCurrentImg(response?.data?.files[0]?.url);
         } else {
           toast.error(get(response, 'error.message', 'Failed!'));
@@ -156,7 +162,7 @@ export function CouponImage({ imageUrl, imageUploadUrl }) {
         />
         <Field
           style={{ opacity: 0 }}
-          value={currentImg ? new URL(currentImg).pathname : ''}
+          value={currentImg}
           type="text"
           name="couponImage"
           placeholder="Img"
