@@ -33,7 +33,8 @@ module.exports = {
   Query: {
     coupon: async (root, { id }, { pool }) => {
       const query = getCouponsBaseQuery();
-      query.where('coupon_id', '=', id);
+      query.where('coupon_id', '=', id)
+        .andWhere('status', '=', 1);
       const coupon = await query.load(pool);
       return coupon ? camelCase(coupon) : null;
     },
@@ -42,7 +43,8 @@ module.exports = {
         return [];
       }
 
-      const query = getCouponsBaseQuery();
+      const query = getCouponsBaseQuery()
+      query.where('status', '=', 1);
       const root = new CouponCollection(query);
       const dto = clientFilterDto(filters);
       await root.init(filters.page, filters.perPage, dto);
