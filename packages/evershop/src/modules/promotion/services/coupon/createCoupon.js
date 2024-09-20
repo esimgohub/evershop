@@ -7,7 +7,8 @@ const {
   startTransaction,
   commit,
   rollback,
-  insert
+  insert,
+  update
 } = require('@evershop/postgres-query-builder');
 const {
   getConnection
@@ -39,7 +40,11 @@ function validateCouponDataBeforeInsert(data) {
 }
 
 async function insertCouponData(data, connection) {
-  const coupon = await insert('coupon').given(data).execute(connection);
+  const { couponImage: origin_image, ...rest } = data;
+
+  const coupon = await insert('coupon')
+    .given({ ...rest, origin_image })
+    .execute(connection);
   return coupon;
 }
 
