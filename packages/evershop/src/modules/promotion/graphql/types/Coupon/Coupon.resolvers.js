@@ -34,7 +34,6 @@ module.exports = {
     coupon: async (root, { id }, { pool }) => {
       const query = getCouponsBaseQuery();
       query.where('coupon_id', '=', id)
-        .andWhere('status', '=', 1);
       const coupon = await query.load(pool);
       return coupon ? camelCase(coupon) : null;
     },
