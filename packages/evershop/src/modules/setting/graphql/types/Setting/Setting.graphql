@@ -42,12 +42,17 @@ type PaymentConfig {
   cod: CodPaymentConfig
 }
 
+type WhatsappConfig {
+  phoneNumber: String
+}
+
 type Config {
   store: StoreConfig
   payment: PaymentConfig
   social: [Social]
   sliders: [Slider]
   staticPages: [CmsPage]
+  whatsapp: WhatsappConfig
 }
 
 extend type Query {
