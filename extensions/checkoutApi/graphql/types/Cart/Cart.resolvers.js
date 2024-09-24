@@ -6,9 +6,21 @@ const {
 
 module.exports = {
   Query: {
-    cartWithOutArg: async (_, { coupon }, { cartId }) => {
+    cartWithOutArg: async (_, { coupon, isBuyNow }, { cartId }) => {
       try {
         const cart = await getCartByUUID(cartId);
+        if (isBuyNow) {
+          const items = await cart.getBuyNowItems();
+          await cart.setData('items', items, true);
+        } else {
+          const items = await cart.getBuyNowItems();
+          if (items?.length) {
+            // remove buy now items
+            const items = this.getItems();
+            const newItems = items.filter((i) => i.getData('buy_now') !== true);
+            await cart.setData('items', newItems, true);
+          }
+        }
         if (!!coupon === true) {
           await cart.setData('coupon', coupon);
         }

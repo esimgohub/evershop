@@ -60,16 +60,18 @@ module.exports = async (request, response, delegate, next) => {
       return;
     }
 
+    const isBuyNow = action === 'item-buy-now'
+
     // If everything is fine, add the product to the cart
-    const item = await cart.addItem(product.product_id, parseInt(qty, 10));
+    const item = await cart.addItem(product.product_id, parseInt(qty, 10), isBuyNow);
     await item.updateCategoryId(parseInt(categoryId, 10));
     await item.updateTripDate(trip.fromDate.toString(), trip.toDate.toString());
 
     // Buy now options
-    if (action && action === 'item-buy-now') {
-      await cart.updateDeselectAllItems();
-      await cart.updateItemSelection(item.getId(), true);
-    }
+    // if (action && action === 'item-buy-now') {
+    //   await cart.updateDeselectAllItems();
+    //   await cart.updateItemSelection(item.getId(), true);
+    // }
 
     await saveCart(cart);
     // Set the new cart id to the context, so next middleware can use it

@@ -555,6 +555,14 @@ module.exports.registerCartItemBaseFields =
             return value;
           }
         ]
+      },
+      {
+        key: 'buy_now',
+        resolvers: [
+          function resolver(value) {
+            return value;
+          }
+        ]
       }
     ];
   };

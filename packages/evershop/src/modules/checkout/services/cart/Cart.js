@@ -102,6 +102,21 @@ class Cart extends DataObject {
   }
 
   /**
+   * Get cart items mark as *Buy Now*
+   * @returns {Promise<Array<Item>>}
+   */
+  async getBuyNowItems() {
+    const items = await this.getData('items') ?? [];
+    let res;
+    if (items && items.length > 0) {
+      res = items.filter(item => item.getData('buy_now') === true);
+    } else {
+      res = [...items];
+    }
+    return res;
+  }
+
+  /**
    * @returns {Array<Item>}
    */
   getActiveItems() {
@@ -237,36 +252,46 @@ class Cart extends DataObject {
   }
 
   /**
-   *
    * @param {string} productID | product_id, sku, or uuid
    * @param {number} qty
+   * @param {boolean} isBuyNow
    * @returns
    */
-  async addItem(productID, qty) {
-    const item = await this.createItem(productID, parseInt(qty, 10));
+  async addItem(productID, qty, isBuyNow) {
+    const item = await this.createItem(productID, parseInt(qty, 10), isBuyNow);
     if (item.hasError()) {
       // Get the first error from the item.getErrors() object
       throw new Error(Object.values(item.getErrors())[0]);
     } else {
       let items = this.getItems();
       let duplicateItem;
+
       for (let i = 0; i < items.length; i += 1) {
-        if (items[i].getData('product_sku') === item.getData('product_sku')) {
-          // eslint-disable-next-line no-await-in-loop
-          await items[i].setData(
-            'qty',
-            item.getData('qty') + items[i].getData('qty')
-          );
+        // Handle for buy_now cart item
+        if (isBuyNow && items[i].getData('buy_now')) {
+          // Replace the existing buy_now item
+          items[i] = item;
+          duplicateItem = items[i];
+          break;
+        }
+
+        // Handle for normal cart item
+        if (!isBuyNow && items[i].getData('product_sku') === item.getData('product_sku')) {
+          // Update the quantity of the existing item
+          await items[i].setData('qty', item.getData('qty') + items[i].getData('qty'));
           if (items[i].hasError()) {
             throw new Error(Object.values(items[i].getErrors())[0]);
           }
           duplicateItem = items[i];
+          break;
         }
       }
 
       if (!duplicateItem) {
+        // Add the new item to the cart
         items = items.concat(item);
       }
+
       await this.setData('items', items, true);
       return duplicateItem || item;
     }
@@ -289,7 +314,7 @@ class Cart extends DataObject {
     }
   }
 
-  async createItem(productID, qty) {
+  async createItem(productID, qty, isBuyNow) {
     // Make sure the qty is a number and greater than 0
     if (typeof qty !== 'number' || qty <= 0) {
       throw new Error('Invalid quantity');
@@ -310,7 +335,8 @@ class Cart extends DataObject {
     }
     const item = new Item(this, {
       product_id: product.product_id,
-      qty
+      qty,
+      buy_now: isBuyNow
     });
     await item.build();
     if (item.hasError()) {

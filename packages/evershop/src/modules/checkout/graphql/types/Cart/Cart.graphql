@@ -158,6 +158,7 @@ type Cart implements ShoppingCart {
   addShippingMethodApi: String!
   addContactInfoApi: String!
   addAddressApi: String!
+  isBuyNow: Boolean
 }
 
 extend type Query {
