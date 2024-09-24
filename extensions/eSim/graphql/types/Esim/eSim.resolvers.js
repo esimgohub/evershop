@@ -2,7 +2,7 @@ const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 dayjs.extend(utc);
 const { getOrderItemByItemID } = require('../../../services/order.service');
-const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
+const { getEsimDataType } = require('../../../services/eSim.service');
 const { select, insert } = require('@evershop/postgres-query-builder');
 const _ = require('lodash');
 const {
@@ -49,10 +49,6 @@ module.exports = {
   Query: {
     eSimDetails: async (_, { esimUUID }, { pool, homeUrl }) => {
       try {
-        // todo: cac thong tin cho esim details:
-        // 1.) variant prod info: day amount,...
-        // 2.) product detail
-        // 3.) active code + sm
         const esim = await select()
           .from('esim')
           .where('uuid', '=', esimUUID)
@@ -63,7 +59,6 @@ module.exports = {
         }
         const [_, sm_address, code] = esim.lpa.split('$');
 
-        // todo: get product info by order_item_id
         const orderItem = await getOrderItemByItemID(esim.order_item_id, pool);
 
         const queryProduct = select();
@@ -79,6 +74,7 @@ module.exports = {
         const categoryId = orderItem[0]?.category_id;
         let countryImg = null;
         let countryName = null;
+        let dataType = null;
 
         categoryDescriptionQuery.where(
           'category_description_id',
@@ -89,6 +85,8 @@ module.exports = {
         const cateObj = { ...rows[0] };
         countryImg = cateObj.image ? `${homeUrl}${cateObj.image}` : null;
         countryName = cateObj.name ?? null;
+        dataType = await getEsimDataType(orderItem[0]?.product_id, pool);
+
         let variantsOptions = null;
         let tripText = null;
         if (orderItem?.length && orderItem[0]?.variant_options) {
@@ -96,7 +94,6 @@ module.exports = {
             JSON.parse(orderItem[0].variant_options),
             supportedCodes
           );
-          // todo: totalDataAmount
           if (variantsOptions.dataAmount === 'Unlimited') {
             variantsOptions.totalDataAmount = 'Unlimited';
           } else {
@@ -121,6 +118,7 @@ module.exports = {
 
         return {
           ...variantsOptions,
+          dataType,
           countryImg,
           countryName,
           lpaToQrCode: esim.lpa,
@@ -153,7 +151,7 @@ module.exports = {
           return [];
         }
 
-        // todo: pick unique order_item_id
+        // pick unique order_item_id
         const uniqueList = getUniqueVal(esims);
         const seen = {};
 
@@ -161,6 +159,7 @@ module.exports = {
           let variantsOptions = null;
           let countryImg = null;
           let countryName = null;
+          let dataType = null;
 
           const orderItem = await getOrderItemByItemID(
             item.order_item_id,
@@ -182,12 +181,12 @@ module.exports = {
           countryImg = cateObj.image ? `${homeUrl}${cateObj.image}` : null;
           countryName = cateObj.name ?? null;
 
+          dataType = await getEsimDataType(orderItem[0]?.product_id, pool);
           if (orderItem?.length && orderItem[0]?.variant_options) {
             variantsOptions = transformVariantsOptions(
               JSON.parse(orderItem[0].variant_options),
               supportedCodes
             );
-            // todo: totalDataAmount
             if (variantsOptions.dataAmount === 'Unlimited') {
               variantsOptions.totalDataAmount = 'Unlimited';
             } else {
@@ -208,11 +207,12 @@ module.exports = {
           const isExpired = dayjs(item.expiry_date)
             .utc()
             .isBefore(dayjs().utc());
-          // todo: tong hop thong tin ve order_item_id
+          // Summary of order_item_id info
           seen[item.order_item_id] = {
             ...variantsOptions,
             countryImg,
             countryName,
+            dataType,
             expired: isExpired,
             dayLeft: Math.max(dayjs(item.expiry_date).diff(dayjs(), 'day'), 0) // Calculate days left
           };

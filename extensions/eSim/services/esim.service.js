@@ -1,9 +1,12 @@
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
-const { insert, update } = require('@evershop/postgres-query-builder');
+const { insert, update, execute } = require('@evershop/postgres-query-builder');
 const { info } = require('@evershop/evershop/src/lib/log/logger');
 const { getConfig } = require('@evershop/evershop/src/lib/util/getConfig');
 const axios = require('axios');
-const { getOrderByOrderNum, getOrderItemByOrderID } = require('./order.service');
+const {
+  getOrderByOrderNum,
+  getOrderItemByOrderID
+} = require('./order.service');
 const dayjs = require('dayjs');
 
 module.exports = {
@@ -85,5 +88,35 @@ module.exports = {
       .given({ fulfillment_status: 'Completed' })
       .where('order_id', '=', order.order_id)
       .execute(pool);
+  },
+  getEsimDataType: async (productId, pool) => {
+    if (!productId) {
+      return null;
+    }
+    const rawQuery = `
+    select
+      *
+    from
+      product_attribute_value_index pavi
+    where
+      product_id = (
+      select
+      p.parent_product_id
+      from
+      product p
+      where
+      p.product_id = '${productId}'
+    )
+      and attribute_id in (
+      select
+      ao.attribute_id
+      from
+      attribute_option ao
+      where
+      ao.attribute_code = 'data-type'
+    )
+    `;
+    const { rows } = await execute(pool, rawQuery);
+    return rows?.length ? rows[0]?.option_text : null;
   }
 };
