@@ -1,8 +1,7 @@
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 dayjs.extend(utc);
-const { getOrderItemByItemID } = require('../../../services/order.service');
-const { getEsimDataType } = require('../../../services/eSim.service');
+const { getOrderItemByItemID, getEsimDataType } = require('../../../services/order.service');
 const { select, insert } = require('@evershop/postgres-query-builder');
 const _ = require('lodash');
 const {
