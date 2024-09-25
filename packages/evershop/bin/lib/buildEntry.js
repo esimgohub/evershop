@@ -70,22 +70,6 @@ module.exports.buildEntry = async function buildEntry(
 
 
       if (isDeepLinkRoute || isLoginRoute || isMyProfileRoute || isAccountSettingRoute) {
-        if (isDeepLinkRoute) {
-          console.log("to delete body [deep link]", isDeepLinkRoute);
-        }
-
-        if (isLoginRoute) {
-          console.log("to delete body [login]", isLoginRoute);
-        }
-
-        if (isMyProfileRoute) {
-          console.log("to delete body [my profile]",isMyProfileRoute);
-        }
-
-        if (isAccountSettingRoute) {
-          console.log("to delete body [account setting]", isAccountSettingRoute);
-        }
-
         delete areas['body'];
         delete areas['content'];
       }
