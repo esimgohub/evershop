@@ -111,13 +111,22 @@ module.exports = {
           url: `${homeUrl}${buildUrl('cmsPageView', { url_key: page.url_key })}`,
         };
       });
+
+
+      // Whatsapp
+      const foundWhatsappPhoneNumber = setting.find(s => s.name.toLowerCase().includes("whatsappphonenumber"));
+
+      const whatsappSetting = {
+        phoneNumber: foundWhatsappPhoneNumber ? foundWhatsappPhoneNumber.value : null,
+      }
   
       return {
         store,
         payment,
         social: socialResponses.filter((s) => s.visibility === true),
         sliders: sliders.filter((s) => s.visibility === true),
-        staticPages
+        staticPages,
+        whatsapp: whatsappSetting
       }
     }
   },
