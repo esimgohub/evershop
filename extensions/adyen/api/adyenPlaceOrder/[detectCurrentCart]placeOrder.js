@@ -23,6 +23,9 @@ const {
   setContextValue
 } = require('@evershop/evershop/src/modules/graphql/services/contextHelper');
 const { getCountryByIp, parseIp } = require('../../services/utils');
+const {
+  CLIENT_CODE
+} = require('@evershop/evershop/src/modules/base/services/errorCode');
 
 // Custom error classes
 class OrderCreationError extends Error {
@@ -123,12 +126,24 @@ module.exports = async (request, response, delegate, next) => {
     };
     next();
   } catch (e) {
+    const regex = /\bcoupon\b/i;
+    if (regex.test(e.message)) {
+      error(e.message);
+      return response.status(INVALID_PAYLOAD).json({
+        error: {
+          message: e.message,
+          errorCode: CLIENT_CODE.COUPON_INVALID,
+          status: INVALID_PAYLOAD
+        }
+      })
+    }
     if (e instanceof OrderCreationError) {
       error(e.message);
       response.status(INTERNAL_SERVER_ERROR);
       response.json({
         error: {
           message: e.message,
+          errorCode: CLIENT_CODE.CART_ERROR,
           status: INTERNAL_SERVER_ERROR
         }
       });
@@ -141,16 +156,17 @@ module.exports = async (request, response, delegate, next) => {
           adyenData: { error: 'Failed to process payment' }
         }
       };
-      next();
     } else {
       error(e.message);
       response.status(INTERNAL_SERVER_ERROR);
       response.json({
         error: {
           message: e.message,
-          status: INTERNAL_SERVER_ERROR
+          errorCode: CLIENT_CODE.INTERNAL_ERROR,
+          status: INTERNAL_SERVER_ERROR,
         }
       });
     }
+    next();
   }
 };

@@ -4,22 +4,19 @@ const {
 } = require('@evershop/evershop/src/lib/util/httpStatus');
 const { submitPaymentDetails } = require('../../services/adyen.service');
 
-module.exports = async (request, response, _, next) => {
+module.exports = async (request, response) => {
   try {
     const { details } = request.body;
     const adyenResponse = await submitPaymentDetails(details);
     if (!adyenResponse) {
       throw new Error('Failed to handle payment process');
     }
-    response.status(OK);
-    response.$body = {
+    return response.status(OK).json({
       success: true,
       ...adyenResponse
-    };
-    next();
+    });
   } catch (e) {
-    response.status(INTERNAL_SERVER_ERROR);
-    response.json({
+    return response.status(INTERNAL_SERVER_ERROR).json({
       error: {
         message: e.message,
         status: INTERNAL_SERVER_ERROR
