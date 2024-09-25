@@ -1,12 +1,11 @@
 {
-    "applinks": {
+  "applinks": {
       "apps": [],
       "details": [
         {
-          "appID": "TeamID.BundleID",
-          "paths": ["*"]
+          "appID":"CBXVJL99F6.com.gohub.esim",
+          "paths":[ "*" ]
         }
       ]
-    }
   }
-  
+}
