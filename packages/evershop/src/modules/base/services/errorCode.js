@@ -1,0 +1,10 @@
+const CLIENT_CODE = {
+  OK: '000',
+  INTERNAL_ERROR: '001',
+  CART_ERROR: 'CART_001',
+  COUPON_INVALID: 'COUPON_001'
+}
+
+module.exports = {
+  CLIENT_CODE
+}
