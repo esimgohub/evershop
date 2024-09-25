@@ -1,10 +1,11 @@
 {
-    "applinks": {
-      "details" : [
+  "applinks": {
+      "apps": [],
+      "details": [
         {
-          "appID": "8S4WP5KC92.com.app.universalll",
-          "paths": ["*"]
+          "appID":"CBXVJL99F6.com.gohub.esim",
+          "paths":[ "*" ]
         }
       ]
-    }
+  }
 }
