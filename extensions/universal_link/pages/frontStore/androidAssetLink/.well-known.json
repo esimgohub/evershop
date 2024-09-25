@@ -2,17 +2,12 @@
   "relation": ["delegate_permission/common.handle_all_urls"],
   "target": {
     "namespace": "android_app",
-    "package_name": "com.example.puppies.app",
+    "package_name": "com.gohub.esim",
     "sha256_cert_fingerprints":
-    ["14:6D:E9:83:C5:73:06:50:D8:EE:B9:95:2F:34:FC:64:16:A0:83:42:E6:1D:BE:A8:8A:04:96:B2:3F:CF:44:E5"]
-  }
-  },
-  {
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "com.example.monkeys.app",
-    "sha256_cert_fingerprints":
-    ["14:6D:E9:83:C5:73:06:50:D8:EE:B9:95:2F:34:FC:64:16:A0:83:42:E6:1D:BE:A8:8A:04:96:B2:3F:CF:44:E5"]
+    [
+      "45:5e:3c:38:3e:78:b2:18:ec:aa:54:e8:2a:39:2d:c9:90:ca:03:1e:b2:2d:3b:14:9e:be:b7:e2:b1:f2:5c:c8",
+      "fb:ff:7c:4a:39:46:cd:84:1d:ba:24:0e:da:39:4b:8e:68:d0:3c:12:71:3a:80:0b:3a:c1:ec:45:40:ad:a6:25",
+      "6b:34:65:62:62:76:25:f6:18:58:49:81:06:c6:59:37:ba:31:57:24:9e:92:56:39:f8:7d:0a:d3:2a:3d:34:0e"
+    ]
   }
 }]
