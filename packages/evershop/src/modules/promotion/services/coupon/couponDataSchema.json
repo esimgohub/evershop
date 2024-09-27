@@ -16,7 +16,7 @@
       "type": ["string", "number"],
       "pattern": "^\\d*\\.?\\d*$"
     },
-    "free_shipping": {
+    "is_private": {
       "type": ["string", "integer"],
       "enum": ["0", "1", 0, 1]
     },
