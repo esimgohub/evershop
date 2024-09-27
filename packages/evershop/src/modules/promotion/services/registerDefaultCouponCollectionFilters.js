@@ -11,7 +11,7 @@ module.exports = async function registerDefaultCouponCollectionFilters() {
       operation: ['eq', 'like'],
       callback: (query, operation, value, currentFilters) => {
         if (operation === 'eq') {
-          query.andWhere('coupon.coupon', '=', value);
+          query.andWhere('coupon.coupon', '=', value.toUpperCase());
         } else {
           query.andWhere('coupon.coupon', 'ILIKE', `%${value}%`);
         }
