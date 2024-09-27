@@ -8,7 +8,8 @@ const { CouponCollection } = require('../../../services/CouponCollection');
 const FILTER_MAP = {
   page: 'page',
   perPage: 'limit',
-  coupon: 'coupon'
+  coupon: 'coupon',
+  isPrivate: 'is_private'
 };
 
 const clientFilterDto = (filter) => {
@@ -46,8 +47,18 @@ module.exports = {
       query.where('status', '=', 1);
       const root = new CouponCollection(query);
       const dto = clientFilterDto(filters);
+      // default settings
+      if (!filters?.coupon) {
+        dto.push({
+          key: FILTER_MAP.isPrivate,
+          operation: 'eq',
+          value: 0
+        })
+      }
+
       await root.init(filters.page, filters.perPage, dto);
       return root;
+
     }
   }
 };

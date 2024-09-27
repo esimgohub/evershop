@@ -35,12 +35,12 @@ module.exports = async function registerDefaultCouponCollectionFilters() {
       }
     },
     {
-      key: 'free_shipping',
+      key: 'is_private',
       operation: ['eq'],
       callback: (query, operation, value, currentFilters) => {
-        query.andWhere('coupon.free_shipping', OPERATION_MAP[operation], value);
+        query.andWhere('coupon.is_private', OPERATION_MAP[operation], value);
         currentFilters.push({
-          key: 'free_shipping',
+          key: 'is_private',
           operation,
           value
         });
