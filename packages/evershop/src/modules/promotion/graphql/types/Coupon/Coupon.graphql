@@ -13,7 +13,7 @@ type Coupon {
     status: Int!
     description: String!
     discountAmount: Float!
-    freeShipping: Int!
+    isPrivate: Int!
     discountType: String!
     coupon: String!
     startDate: DateTime

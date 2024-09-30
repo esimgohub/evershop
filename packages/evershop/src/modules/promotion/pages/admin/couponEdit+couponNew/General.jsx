@@ -60,11 +60,11 @@ export default function General({ coupon = {}, imageUploadUrl }) {
         {
           component: { default: Field },
           props: {
-            name: 'free_shipping',
+            name: 'is_private',
             value: 1,
             type: 'checkbox',
-            label: 'Free shipping?',
-            isChecked: parseInt(get(coupon, 'freeShipping'), 10) === 1
+            label: 'Private Coupon?',
+            isChecked: parseInt(get(coupon, 'isPrivate'), 10) === 1
           },
           sortOrder: 50
         },
@@ -90,7 +90,7 @@ General.propTypes = {
     discountAmount: PropTypes.number,
     maxUsesTimePerCoupon: PropTypes.number,
     maxUsesTimePerCustomer: PropTypes.number,
-    freeShipping: PropTypes.number,
+    isPrivate: PropTypes.number,
     startDate: PropTypes.string,
     endDate: PropTypes.string,
     imageUploadUrl: PropTypes.string
@@ -116,7 +116,7 @@ export const query = `
       discountAmount
       maxUsesTimePerCoupon
       maxUsesTimePerCustomer
-      freeShipping
+      isPrivate
       imageUrl
       startDate {
         text

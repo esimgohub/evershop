@@ -11,7 +11,7 @@ module.exports = async function registerDefaultCouponCollectionFilters() {
       operation: ['eq', 'like'],
       callback: (query, operation, value, currentFilters) => {
         if (operation === 'eq') {
-          query.andWhere('coupon.coupon', '=', value);
+          query.andWhere('coupon.coupon', '=', value.toUpperCase());
         } else {
           query.andWhere('coupon.coupon', 'ILIKE', `%${value}%`);
         }
@@ -35,12 +35,12 @@ module.exports = async function registerDefaultCouponCollectionFilters() {
       }
     },
     {
-      key: 'free_shipping',
+      key: 'is_private',
       operation: ['eq'],
       callback: (query, operation, value, currentFilters) => {
-        query.andWhere('coupon.free_shipping', OPERATION_MAP[operation], value);
+        query.andWhere('coupon.is_private', OPERATION_MAP[operation], value);
         currentFilters.push({
-          key: 'free_shipping',
+          key: 'is_private',
           operation,
           value
         });

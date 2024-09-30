@@ -7,8 +7,7 @@ const {
   startTransaction,
   commit,
   rollback,
-  insert,
-  update
+  insert
 } = require('@evershop/postgres-query-builder');
 const {
   getConnection
