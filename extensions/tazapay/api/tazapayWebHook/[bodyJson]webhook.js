@@ -36,12 +36,12 @@ module.exports = async (request, response, delegate, next) => {
 
     const order = await select()
       .from('order')
-      .where('uuid', '=', txnData.reference_id)
+      .where('order_number', '=', txnData.reference_id)
       .load(connection);
 
     if (!order) {
-      error(`Tazapay - Order not found with order uuid: ${txnData.reference_id}`);
-      throw new Error(`Tazapay - Order not found with order uuid: ${txnData.reference_id}`);
+      error(`Tazapay - Order not found with order number: ${txnData.reference_id}`);
+      throw new Error(`Tazapay - Order not found with order number: ${txnData.reference_id}`);
     }
 
     // Handle the event
