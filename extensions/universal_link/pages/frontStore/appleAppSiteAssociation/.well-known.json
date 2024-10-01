@@ -1,13 +1,13 @@
 {
   "applinks": {
-      "apps": [],
+      "apps": [
+        "CBXVJL99F6.com.gohub.esim"
+      ],
       "details": [
         {
           "appID":"CBXVJL99F6.com.gohub.esim",
           "paths":[ 
-            {
-              "path": "*"
-            } 
+            "*"
           ]
         }
       ]
