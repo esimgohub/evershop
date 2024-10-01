@@ -4,9 +4,7 @@
       "details": [
         {
           "appID":"CBXVJL99F6.com.gohub.esim",
-          "paths":[
-            "*"
-          ]
+          "paths":["*"]
         }
       ]
   }
