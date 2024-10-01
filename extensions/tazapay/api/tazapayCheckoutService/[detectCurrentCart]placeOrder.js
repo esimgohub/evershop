@@ -270,7 +270,7 @@ const createPaymentIntent = async (isPaymentFailed, order, customerCountry, pool
       const cancelUrl = await getSetting('tazapayCancelUrl', '');
 
       const body = {
-        reference_id: order.uuid,
+        reference_id: order.order_number,
         success_url: `${successUrl}&uuid=${order.uuid}`,
         cancel_url: `${cancelUrl}&uuid=${order.uuid}`,
         invoice_currency: order.currency,

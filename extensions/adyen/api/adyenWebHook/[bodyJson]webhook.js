@@ -56,13 +56,7 @@ module.exports = async (request, response) => {
 
     const order = await select()
       .from('order')
-      .where(
-        'uuid',
-        '=',
-        txnData?.merchantReference?.split('-')[0] === 'PLAYGROUND'
-          ? '531e6eff-c50a-4a9e-8918-e9d52faa5e61'
-          : txnData?.merchantReference
-      )
+      .where('order_number', '=', txnData?.merchantReference)
       .load(connection);
 
     if (!order) {
@@ -103,7 +97,7 @@ module.exports = async (request, response) => {
                 display(txnData?.amount?.value, txnData?.amount?.currency)
               ),
               payment_transaction_order_id: order.order_id,
-              transaction_id: txnData.merchantReference,
+              transaction_id: txnData?.pspReference,
               transaction_type: 'online',
               payment_action: 'Capture'
             })

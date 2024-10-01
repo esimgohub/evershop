@@ -58,7 +58,7 @@ module.exports = {
     shopperIp
   ) {
     try {
-      const reference = order?.uuid; // generate a unique reference id
+      const reference = order?.order_number;
 
       const authenticationData = {
         threeDSRequestData: {
