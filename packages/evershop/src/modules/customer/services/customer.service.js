@@ -1,6 +1,7 @@
 const ShortUniqueId = require('short-unique-id');
+const { select } = require('@evershop/postgres-query-builder');
 
-module.exports = (firstName) => {
+const generateCoupon = (firstName) => {
   // Sanitize the firstName: remove non-alphanumeric characters
   const sanitizedName = firstName.replace(/[^a-zA-Z0-9]/g, '');
 
@@ -16,4 +17,22 @@ module.exports = (firstName) => {
 
   // Combine the prefix, random part, and timestamp part
   return `${sanitizedName}${randomPart}${timestampPart}`.toUpperCase();
+};
+
+module.exports = async (firstName, pool) => {
+  let nextReferralCode;
+  let flag = false;
+  do {
+    const temp = generateCoupon(firstName ?? 'Bear')
+    const foundCoupon = await select()
+      .from('coupon', 'c')
+      .where('c.coupon', '=', temp)
+      .load(pool);
+    if (!foundCoupon) {
+      nextReferralCode = temp;
+      flag = true;
+    }
+  } while (!flag)
+
+  return nextReferralCode;
 };

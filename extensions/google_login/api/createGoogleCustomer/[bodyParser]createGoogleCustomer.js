@@ -16,7 +16,10 @@ const {
 } = require('../../services/mapper/createCurrencyResponse');
 const { info } = require('@evershop/evershop/src/lib/log/logger');
 const createCoupon = require('@evershop/evershop/src/modules/promotion/services/coupon/createCoupon');
-const generateReferralCode = require('@evershop/evershop/src/modules/customer/services/customer.service');
+const {
+  CouponBuilder,
+  generateReferralCode
+} = require('@evershop/evershop/src/modules/promotion/services/coupon/coupon.service');
 
 module.exports = async (request, response, delegate, next) => {
   const { accessToken } = request.body;
@@ -91,34 +94,21 @@ module.exports = async (request, response, delegate, next) => {
     language = defaultLanguage;
     currency = defaultCurrency;
 
-    let nextReferralCode = null;
-    let flag = false;
-    do {
-      const temp = generateReferralCode(googleUserInfo.given_name ?? 'Bear')
-      const foundCoupon = await select()
-        .from('coupon', 'c')
-        .where('c.coupon', '=', temp)
-        .load(pool);
-      if (!foundCoupon) {
-        nextReferralCode = temp;
-        flag = true;
-      }
-    } while (!flag)
+    const referralCode = await generateReferralCode(
+      googleUserInfo.given_name,
+      pool
+    );
 
-    // todo: generate coupon
-    const couponRequest = {
-      coupon: nextReferralCode,
-      status: 1,
-      discount_amount: 30,
-      discount_type: 'percentage_discount_to_entire_order',
-      // 0 || null means dont validate
-      max_uses_time_per_coupon: 0,
-      max_uses_time_per_customer: 1,
-      is_private: 1,
-      user_condition: { emails: '', groups: [''], purchased: '' },
-      condition: { order_qty: '', order_total: '', first_purchase: true },
-      description: `Referral code of ${googleUserInfo.given_name + googleUserInfo.family_name}`
-    };
+    const couponBuilder = new CouponBuilder();
+    const couponRequest = couponBuilder
+      .setCoupon(referralCode)
+      .setDiscount(30, 'percentage')
+      .setMaxUsesPerCoupon(0)
+      .setMaxUsesPerCustomer(1)
+      .setCondition('', '', true)
+      .setDescription(`Referral code of ${googleUserInfo.given_name + googleUserInfo.family_name}`)
+      .build();
+
     const coupon = await createCoupon(couponRequest, {});
     customer = await insert('customer')
       .given({
