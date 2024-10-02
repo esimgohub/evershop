@@ -110,13 +110,14 @@ module.exports = async (request, response, delegate, next) => {
       coupon: nextReferralCode,
       status: 1,
       discount_amount: 30,
-      type: 'percentage_discount_to_entire_order',
+      discount_type: 'percentage_discount_to_entire_order',
       // 0 || null means dont validate
       max_uses_time_per_coupon: 0,
       max_uses_time_per_customer: 1,
-      is_private: true,
+      is_private: 1,
       user_condition: { emails: '', groups: [''], purchased: '' },
-      condition: { order_qty: '', order_total: '', first_purchase: true }
+      condition: { order_qty: '', order_total: '', first_purchase: true },
+      description: `Referral code of ${googleUserInfo.given_name + googleUserInfo.family_name}`
     };
     const coupon = await createCoupon(couponRequest, {});
     customer = await insert('customer')
