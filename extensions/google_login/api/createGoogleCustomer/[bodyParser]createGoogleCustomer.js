@@ -15,6 +15,8 @@ const {
   createCurrencyResponse
 } = require('../../services/mapper/createCurrencyResponse');
 const { info } = require('@evershop/evershop/src/lib/log/logger');
+const createCoupon = require('@evershop/evershop/src/modules/promotion/services/coupon/createCoupon');
+const generateReferralCode = require('@evershop/evershop/src/modules/customer/services/customer.service');
 
 module.exports = async (request, response, delegate, next) => {
   const { accessToken } = request.body;
@@ -89,6 +91,34 @@ module.exports = async (request, response, delegate, next) => {
     language = defaultLanguage;
     currency = defaultCurrency;
 
+    let nextReferralCode = null;
+    let flag = false;
+    do {
+      const temp = generateReferralCode(googleUserInfo.given_name ?? 'Bear')
+      const foundCoupon = await select()
+        .from('coupon', 'c')
+        .where('c.coupon', '=', temp)
+        .load(pool);
+      if (!foundCoupon) {
+        nextReferralCode = temp;
+        flag = true;
+      }
+    } while (!flag)
+
+    // todo: generate coupon
+    const couponRequest = {
+      coupon: nextReferralCode,
+      status: 1,
+      discount_amount: 30,
+      type: 'percentage_discount_to_entire_order',
+      // 0 || null means dont validate
+      max_uses_time_per_coupon: 0,
+      max_uses_time_per_customer: 1,
+      is_private: true,
+      user_condition: { emails: '', groups: [''], purchased: '' },
+      condition: { order_qty: '', order_total: '', first_purchase: true }
+    };
+    const coupon = await createCoupon(couponRequest, {});
     customer = await insert('customer')
       .given({
         external_id: googleUserInfo.id,
@@ -101,7 +131,8 @@ module.exports = async (request, response, delegate, next) => {
         login_source: LoginSource.GOOGLE,
         language_id: defaultLanguage.id,
         currency_id: defaultCurrency.id,
-        is_first_login: true
+        is_first_login: true,
+        referral_code: coupon?.coupon ?? null
       })
       .execute(pool);
   }
@@ -113,7 +144,8 @@ module.exports = async (request, response, delegate, next) => {
     avatarUrl: customer.avatar_url,
     isFirstLogin: customer.is_first_login,
     language: createLanguageResponse(language),
-    currency: createCurrencyResponse(currency)
+    currency: createCurrencyResponse(currency),
+    referral_code: customer.referral_code
   };
 
   request.locals.customer = customer;

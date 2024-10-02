@@ -1,13 +1,15 @@
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getValue } = require('@evershop/evershop/src/lib/util/registry');
+const { select } = require('@evershop/postgres-query-builder');
 
 class CouponCollection {
   constructor(baseQuery) {
     this.baseQuery = baseQuery;
+    this.baseQuery.orderBy('coupon.is_private', 'DESC');
   }
 
-  async init(filters, page, perPage) {
+  async init(filters, context) {
     const currentFilters = [];
 
     // Apply the filters
@@ -30,8 +32,9 @@ class CouponCollection {
       }
     });
 
-    this.page = page;
-    this.perPage = perPage;
+    this.page = context.page;
+    this.perPage = context.perPage;
+    this.customerId = context.customerId;
     // Clone the main query for getting total right before doing the paging
     const totalQuery = this.baseQuery.clone();
     totalQuery.select('COUNT(coupon.coupon_id)', 'total');
@@ -50,7 +53,18 @@ class CouponCollection {
   }
 
   async items() {
+    // todo: or de cuoi cung
+    // todo: if customer have referred_code
+    // OK: check if customer have DONT HAVE order payment_status===paid -> find specific
+    const customerQuery = select('customer.referral_code', 'referred_code')
+      .from('customer');
+    const currentCustomer = await customerQuery.load(pool);
+    if (currentCustomer.referred_code) {
+      this.baseQuery.orWhere('coupon.coupon', '=', currentCustomer.referred_code);
+    }
+
     const items = await this.baseQuery.execute(pool);
+
     return items.map((row) => camelCase(row));
   }
 

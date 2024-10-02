@@ -4,6 +4,7 @@ const {
   getCouponsBaseQuery
 } = require('../../../services/getCouponsBaseQuery');
 const { CouponCollection } = require('../../../services/CouponCollection');
+const { select } = require('@evershop/postgres-query-builder');
 
 const FILTER_MAP = {
   page: 'page',
@@ -39,9 +40,9 @@ module.exports = {
       return coupon ? camelCase(coupon) : null;
     },
     availableCoupons: async (_, { filters = {} }, { customer }) => {
-      if (!customer) {
-        return [];
-      }
+      // if (!customer) {
+      //   return [];
+      // }
 
       const query = getCouponsBaseQuery()
       query.where('status', '=', 1);
@@ -55,10 +56,14 @@ module.exports = {
           value: 0
         })
       }
-
-      await root.init(dto, filters.page, filters.perPage);
+      const context = {
+        // hardcode
+        customerId: 1,
+        page: filters.page,
+        perPage: filters.perPage
+      }
+      await root.init(dto, context);
       return root;
-
     }
   }
 };
