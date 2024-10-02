@@ -6,6 +6,13 @@ const { select } = require('@evershop/postgres-query-builder');
 class CouponCollection {
   constructor(baseQuery) {
     this.baseQuery = baseQuery;
+    this.baseQuery
+      .leftJoin('customer_coupon_use')
+      .on(
+        'coupon.coupon',
+        '=',
+        'customer_coupon_use.coupon'
+      );
     this.baseQuery.orderBy('coupon.is_private', 'DESC');
   }
 
@@ -47,24 +54,28 @@ class CouponCollection {
 
   async isCanLoadMore() {
     const res = await this.totalQuery.execute(pool);
-    const total = res[0]?.total
-    const  endIndex = this.page * this.perPage;
-    return endIndex < Number(total)
+    const total = res[0]?.total;
+    const endIndex = this.page * this.perPage;
+    return endIndex < Number(total);
   }
 
   async items() {
-    // todo: or de cuoi cung
-    // todo: if customer have referred_code
-    // OK: check if customer have DONT HAVE order payment_status===paid -> find specific
-    const customerQuery = select('customer.referral_code', 'referred_code')
-      .from('customer');
-    const currentCustomer = await customerQuery.load(pool);
-    if (currentCustomer.referred_code) {
-      this.baseQuery.orWhere('coupon.coupon', '=', currentCustomer.referred_code);
-    }
+    const where = this.baseQuery.getWhere();
+    where.addRaw('AND', `
+        ((coupon."is_private" = '0') OR (coupon."coupon" IN (
+          SELECT coupon
+          FROM customer_coupon_use
+          WHERE customer_coupon_use."customer_id" = '${this.customerId}'
+          AND customer_coupon_use."used_time" < coupon."max_uses_time_per_customer"
+        ))) AND (coupon."used_time" < coupon."max_uses_time_per_coupon")
+    `)
+    const items = await where.execute(pool);
 
+    return items.map((row) => camelCase(row));
+  }
+
+  async adminItems() {
     const items = await this.baseQuery.execute(pool);
-
     return items.map((row) => camelCase(row));
   }
 

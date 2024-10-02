@@ -92,7 +92,12 @@ module.exports = async (request, response, delegate, next) => {
       const orderId = await createOrder(cart);
       if (customerId && request.locals.sessionID) {
         const unPurchasedItems = cart.getUnActiveItems();
-        await createCartByUnSelectedItems(request, unPurchasedItems, customerId, pool);
+        await createCartByUnSelectedItems(
+          request,
+          unPurchasedItems,
+          customerId,
+          pool
+        );
       }
 
       // Load created order
@@ -135,7 +140,7 @@ module.exports = async (request, response, delegate, next) => {
           errorCode: CLIENT_CODE.COUPON_INVALID,
           status: INVALID_PAYLOAD
         }
-      })
+      });
     }
     if (e instanceof OrderCreationError) {
       error(e.message);
@@ -163,7 +168,7 @@ module.exports = async (request, response, delegate, next) => {
         error: {
           message: e.message,
           errorCode: CLIENT_CODE.INTERNAL_ERROR,
-          status: INTERNAL_SERVER_ERROR,
+          status: INTERNAL_SERVER_ERROR
         }
       });
     }

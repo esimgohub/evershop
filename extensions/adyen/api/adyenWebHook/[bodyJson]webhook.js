@@ -1,5 +1,10 @@
 /* eslint-disable global-require */
 const { hmacValidator: HmacValidator } = require('@adyen/api-library');
+const createCoupon = require('@evershop/evershop/src/modules/promotion/services/coupon/createCoupon');
+const {
+  CouponBuilder,
+  generateReferralCode
+} = require('@evershop/evershop/src/modules/promotion/services/coupon/coupon.service');
 const { error, info } = require('@evershop/evershop/src/lib/log/logger');
 const {
   insert,
@@ -66,13 +71,8 @@ module.exports = async (request, response) => {
       );
     }
 
-    // Handle the event
-    // todo: handle other event types: payment_attempt.failed, payment_attempt.succeeded, payment_method.processing
-    switch (txnData.eventCode) {
+    switch (txnData?.eventCode) {
       case 'AUTHORISATION': {
-        // avoid `checkout.paid` and `payment_attempt.succeeded` to be processed twice on the same order
-        // Update the order
-        // Create payment transaction
         if (order.payment_status === 'paid') {
           break;
         }
@@ -111,6 +111,34 @@ module.exports = async (request, response) => {
             })
             .where('order_id', '=', order.order_id)
             .execute(connection);
+
+          const referralCode = await generateReferralCode(
+            order?.customer_email?.split('@')[0]?.slice(0, 5),
+            connection
+          );
+
+          const couponBuilder = new CouponBuilder();
+          const couponRequest = couponBuilder
+            .setCoupon(referralCode)
+            .setDiscount(30, 'percentage')
+            .setMaxUsesPerCoupon(0)
+            .setMaxUsesPerCustomer(1)
+            .setCondition('', '', true)
+            .setDescription(
+              `Reward coupon code for ${order.customer_full_name}`
+            )
+            .build();
+
+          const coupon = await createCoupon(couponRequest, {});
+          if (coupon.coupon) {
+            await insert('customer_coupon_use')
+              .given({
+                customer_id: order.customer_id,
+                coupon: coupon.coupon,
+                used_time: 0
+              })
+              .execute(connection);
+          }
 
           // Add an activity log
           await insert('order_activity')

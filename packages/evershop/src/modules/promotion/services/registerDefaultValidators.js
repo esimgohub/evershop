@@ -7,6 +7,20 @@ const { getCartTotalBeforeDiscount } = require('./getCartTotalBeforeDiscount');
 module.exports.registerDefaultValidators =
   function registerDefaultValidators() {
     return [
+      async function generalReferralCodeValidator(cart, coupon) {
+        const customerId = cart.getData('customer_id');
+        const query = select();
+        query
+          .from('customer')
+          .select('customer.referral_code')
+          .where('customer_id', '=', customerId)
+        const customer = await query.load(pool);
+
+        if (coupon.coupon === customer.referral_code) {
+          return false;
+        }
+        return true;
+      },
       async function referralCodeValidator(cart, coupon) {
         const conditions = coupon.condition;
         const customerId = cart.getData('customer_id');
@@ -19,7 +33,7 @@ module.exports.registerDefaultValidators =
             .andWhere('payment_status', '=', 'paid');
           const paidOrder = await query.load(pool);
           if (Number(paidOrder.total) > 0) {
-            return false
+            return false;
           }
         }
         return true;
