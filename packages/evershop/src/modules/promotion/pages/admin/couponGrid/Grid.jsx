@@ -158,7 +158,7 @@ Actions.propTypes = {
 };
 
 export default function CouponGrid({
-  coupons: { items: coupons, total, currentFilters = [] }
+  coupons: { adminItems: coupons, total, currentFilters = [] }
 }) {
   const page = currentFilters.find((filter) => filter.key === 'page')
     ? currentFilters.find((filter) => filter.key === 'page').value
@@ -478,7 +478,7 @@ export default function CouponGrid({
 
 CouponGrid.propTypes = {
   coupons: PropTypes.shape({
-    items: PropTypes.arrayOf(
+    adminItems: PropTypes.arrayOf(
       PropTypes.shape({
         couponId: PropTypes.number.isRequired,
         uuid: PropTypes.string.isRequired,
@@ -515,7 +515,7 @@ export const layout = {
 export const query = `
   query Query($filters: [FilterInput]) {
     coupons (filters: $filters) {
-      items {
+      adminItems {
         couponId
         uuid
         coupon
