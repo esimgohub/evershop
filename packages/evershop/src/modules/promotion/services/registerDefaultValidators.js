@@ -7,6 +7,23 @@ const { getCartTotalBeforeDiscount } = require('./getCartTotalBeforeDiscount');
 module.exports.registerDefaultValidators =
   function registerDefaultValidators() {
     return [
+      async function referralCodeValidator(cart, coupon) {
+        const conditions = coupon.condition;
+        const customerId = cart.getData('customer_id');
+        if (conditions?.first_purchase) {
+          const query = select();
+          query
+            .from('order')
+            .select('COUNT(payment_status)', 'total')
+            .where('customer_id', '=', customerId)
+            .andWhere('payment_status', '=', 'paid');
+          const paidOrder = await query.load(pool);
+          if (Number(paidOrder.total) > 0) {
+            return false
+          }
+        }
+        return true;
+      },
       function generalValidator(cart, coupon) {
         if (coupon.status !== true) {
           return false;
@@ -47,7 +64,10 @@ module.exports.registerDefaultValidators =
               select * from customer_coupon_use ccu 
               where ccu.customer_id  = '${customerId}'
               and ccu.coupon = '${coupon.coupon}'
-              and ccu.used_time >= '${parseInt(coupon.max_uses_time_per_customer, 10)}'
+              and ccu.used_time >= '${parseInt(
+                coupon.max_uses_time_per_customer,
+                10
+              )}'
             `;
             const { rows } = await execute(pool, rawQuery);
             const isMaxUsed = rows.length > 0;
@@ -94,7 +114,8 @@ module.exports.registerDefaultValidators =
           ? parseInt(conditions.order_qty, 10)
           : null;
         // todo: fix if check by active_item only
-        if (minimumQty && cart.getData('total_qty') < minimumQty) {
+        const totalQty = cart.getActiveItems()?.length;
+        if (minimumQty && totalQty < minimumQty) {
           return false;
         }
         return true;
@@ -308,8 +329,8 @@ module.exports.registerDefaultValidators =
               // eslint-disable-next-line no-eval
               if (
                 eval(`${item.getData('final_price')}
-              ${operator}
-              ${value}`)
+                ${operator}
+                ${value}`)
               ) {
                 qty += item.getData('qty');
               }

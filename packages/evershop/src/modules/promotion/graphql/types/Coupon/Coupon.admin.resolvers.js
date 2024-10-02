@@ -22,7 +22,7 @@ module.exports = {
       }
       const query = getCouponsBaseQuery();
       const root = new CouponCollection(query);
-      await root.init(filters);
+      await root.init(filters, {});
       return root;
     }
   },
