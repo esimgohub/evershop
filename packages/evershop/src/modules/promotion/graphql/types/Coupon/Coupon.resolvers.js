@@ -46,13 +46,15 @@ module.exports = {
       const query = getCouponsBaseQuery()
       query.where('status', '=', 1);
       const root = new CouponCollection(query);
-      const dto = clientFilterDto(filters);
       const context = {
         customerId: customer.customer_id,
         page: filters.page,
         perPage: filters.perPage,
         coupon: filters.coupon
       }
+      const { coupon, ...rest } = filters;
+      const dto = clientFilterDto({ ...rest });
+
       await root.init(dto, context);
       return root;
     }

@@ -1,6 +1,7 @@
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getValue } = require('@evershop/evershop/src/lib/util/registry');
+const { select } = require('@evershop/postgres-query-builder');
 
 class CouponCollection {
   constructor(baseQuery) {
@@ -36,18 +37,33 @@ class CouponCollection {
     this.specificCoupon = context.coupon;
 
     if (this.customerId) {
-      const where = this.baseQuery.getWhere();
-      where.addRaw(
-        'AND',
-        `
-          ((coupon."coupon" = '${this.specificCoupon}') OR (coupon."is_private" = FALSE) OR (coupon."is_referral_code" = TRUE) OR (coupon."coupon" IN (
-            SELECT coupon
+      const query = select('customer.referral_code');
+      query
+        .from('customer')
+        .select('customer.referral_code')
+        .select('customer.referred_code')
+        .where('customer_id', '=', this.customerId);
+      const customer = await query.load(pool);
+
+      if (this.specificCoupon) {
+        if (this.specificCoupon !== customer.referral_code) {
+          this.baseQuery.where('coupon.coupon', '=', this.specificCoupon.toUpperCase());
+        } else {
+          this.baseQuery.where('coupon.coupon', '=', null);
+        }
+      } else {
+        const where = this.baseQuery.getWhere();
+        where.addRaw(
+          'AND',
+          `
+          ((coupon."is_private" = FALSE AND coupon.is_referral_code = FALSE) OR (coupon."coupon" = '${customer.referred_code}') OR (coupon."coupon" IN (
+            SELECT coupon 
             FROM customer_coupon_use
             WHERE (customer_coupon_use."customer_id" = '${this.customerId}')
-            AND customer_coupon_use."used_time" < coupon."max_uses_time_per_customer"
           ))) AND ((COALESCE(coupon."max_uses_time_per_coupon", 0) = 0) OR (coupon."used_time" < coupon."max_uses_time_per_coupon"))
         `
-      );
+        );
+      }
     }
 
     const totalQuery = this.baseQuery.clone();
