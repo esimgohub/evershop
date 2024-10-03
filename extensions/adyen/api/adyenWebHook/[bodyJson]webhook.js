@@ -1,10 +1,5 @@
 /* eslint-disable global-require */
 const { hmacValidator: HmacValidator } = require('@adyen/api-library');
-const createCoupon = require('@evershop/evershop/src/modules/promotion/services/coupon/createCoupon');
-const {
-  CouponBuilder,
-  generateReferralCode
-} = require('@evershop/evershop/src/modules/promotion/services/coupon/coupon.service');
 const { error, info } = require('@evershop/evershop/src/lib/log/logger');
 const {
   insert,
@@ -15,7 +10,8 @@ const {
   select
 } = require('@evershop/postgres-query-builder');
 const {
-  getConnection
+  getConnection,
+  pool
 } = require('@evershop/evershop/src/lib/postgres/connection');
 const { emit } = require('@evershop/evershop/src/lib/event/emitter');
 const { debug } = require('@evershop/evershop/src/lib/log/logger');
@@ -112,34 +108,6 @@ module.exports = async (request, response) => {
             .where('order_id', '=', order.order_id)
             .execute(connection);
 
-          const referralCode = await generateReferralCode(
-            order?.customer_email?.split('@')[0]?.slice(0, 5),
-            connection
-          );
-
-          const couponBuilder = new CouponBuilder();
-          const couponRequest = couponBuilder
-            .setCoupon(referralCode)
-            .setDiscount(30, 'percentage')
-            .setMaxUsesPerCoupon(0)
-            .setMaxUsesPerCustomer(1)
-            .setCondition('', '', true)
-            .setDescription(
-              `Reward coupon code for ${order.customer_full_name}`
-            )
-            .build();
-
-          const coupon = await createCoupon(couponRequest, {});
-          if (coupon.coupon) {
-            await insert('customer_coupon_use')
-              .given({
-                customer_id: order.customer_id,
-                coupon: coupon.coupon,
-                used_time: 0
-              })
-              .execute(connection);
-          }
-
           // Add an activity log
           await insert('order_activity')
             .given({
@@ -147,6 +115,7 @@ module.exports = async (request, response) => {
               comment: `Customer paid by using Adyen - pspReference: ${txnData.pspReference}`
             })
             .execute(connection);
+          await emit('reward_coupon', { coupon: order.coupon, customer_email: order.customer_email, customer_full_name: order.customer_full_name });
 
           // Emit event to add order placed event
           await emit('payment_status_changed', { orderId: order.order_id });

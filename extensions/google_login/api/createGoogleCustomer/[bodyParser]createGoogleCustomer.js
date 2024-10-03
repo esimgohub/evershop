@@ -15,11 +15,6 @@ const {
   createCurrencyResponse
 } = require('../../services/mapper/createCurrencyResponse');
 const { info } = require('@evershop/evershop/src/lib/log/logger');
-const createCoupon = require('@evershop/evershop/src/modules/promotion/services/coupon/createCoupon');
-const {
-  CouponBuilder,
-  generateReferralCode
-} = require('@evershop/evershop/src/modules/promotion/services/coupon/coupon.service');
 
 module.exports = async (request, response, delegate, next) => {
   const { accessToken } = request.body;
@@ -94,22 +89,6 @@ module.exports = async (request, response, delegate, next) => {
     language = defaultLanguage;
     currency = defaultCurrency;
 
-    const referralCode = await generateReferralCode(
-      googleUserInfo.given_name,
-      pool
-    );
-
-    const couponBuilder = new CouponBuilder();
-    const couponRequest = couponBuilder
-      .setCoupon(referralCode)
-      .setDiscount(30, 'percentage')
-      .setMaxUsesPerCoupon(0)
-      .setMaxUsesPerCustomer(1)
-      .setCondition('', '', true)
-      .setDescription(`Referral code of ${googleUserInfo.given_name + googleUserInfo.family_name}`)
-      .build();
-
-    const coupon = await createCoupon(couponRequest, {});
     customer = await insert('customer')
       .given({
         external_id: googleUserInfo.id,
@@ -122,8 +101,7 @@ module.exports = async (request, response, delegate, next) => {
         login_source: LoginSource.GOOGLE,
         language_id: defaultLanguage.id,
         currency_id: defaultCurrency.id,
-        is_first_login: true,
-        referral_code: coupon?.coupon ?? null
+        is_first_login: true
       })
       .execute(pool);
   }
@@ -135,8 +113,7 @@ module.exports = async (request, response, delegate, next) => {
     avatarUrl: customer.avatar_url,
     isFirstLogin: customer.is_first_login,
     language: createLanguageResponse(language),
-    currency: createCurrencyResponse(currency),
-    referral_code: customer.referral_code
+    currency: createCurrencyResponse(currency)
   };
 
   request.locals.customer = customer;
