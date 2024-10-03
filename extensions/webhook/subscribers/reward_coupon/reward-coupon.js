@@ -1,8 +1,5 @@
-const {
-  pool,
-  select,
-  insert
-} = require('@evershop/evershop/src/lib/postgres/connection');
+const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
+const { select, insert } = require('@evershop/postgres-query-builder');
 const { error, info } = require('@evershop/evershop/src/lib/log/logger');
 const createCoupon = require('@evershop/evershop/src/modules/promotion/services/coupon/createCoupon');
 const {
@@ -12,13 +9,14 @@ const {
 
 module.exports = async function (data) {
   try {
-    const { coupon, customer_email, customer_full_name } = data;
+    const { coupon } = data;
     if (coupon) {
       const query = await select()
         .from('coupon', 'c')
         .where('c.coupon', '=', coupon)
         .andWhere('c.is_referral_code', '=', 1);
       const foundCoupon = await query.load(pool);
+
       if (foundCoupon) {
         // check the referral of current coupon
         const queryCustomer = await select()
@@ -26,9 +24,10 @@ module.exports = async function (data) {
           .where('status', '=', 1)
           .andWhere('referral_code', '=', coupon);
         const foundCustomer = await queryCustomer.load(pool);
+
         if (foundCustomer) {
           const referralCode = await generateReferralCode(
-            customer_email?.split('@')[0]?.slice(0, 5),
+            foundCustomer?.email?.split('@')[0]?.slice(0, 5),
             pool
           );
 
@@ -39,10 +38,11 @@ module.exports = async function (data) {
             .setMaxUsesPerCoupon(1)
             .setMaxUsesPerCustomer(1)
             .setCondition('', '', true)
-            .setDescription(`Reward coupon code for ${customer_full_name}`)
+            .setDescription(`Reward coupon code for ${foundCustomer.first_name}`)
             .build();
 
           const coupon = await createCoupon(couponRequest, {});
+
           if (coupon.coupon) {
             await insert('customer_coupon_use')
               .given({

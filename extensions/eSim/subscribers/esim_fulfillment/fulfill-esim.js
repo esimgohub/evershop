@@ -1,6 +1,5 @@
 const { error, info } = require('@evershop/evershop/src/lib/log/logger');
 const { sendFulfillEsim } = require('../../services/esim.service')
-// todo: manual api call to fulfilment data if error in webhook->avoid workload on GC
 module.exports = async function (data) {
   try {
     await sendFulfillEsim(data.orderUUID);
