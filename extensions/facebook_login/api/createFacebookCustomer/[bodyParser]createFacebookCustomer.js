@@ -59,6 +59,7 @@ module.exports = async (request, response, delegate, next) => {
     .select('customer.email', 'email')
     .select('customer.avatar_url', 'avatar_url')
     .select('customer.is_first_login', 'is_first_login')
+    .select('customer.referral_code', 'referral_code')
     .select('language.code', 'language_code')
     .select('language.name', 'language_name')
     .select('language.icon', 'language_icon')
@@ -159,7 +160,8 @@ module.exports = async (request, response, delegate, next) => {
     avatarUrl: customer.avatar_url,
     isFirstLogin: customer.is_first_login,
     language: createLanguageResponse(language),
-    currency: createCurrencyResponse(currency)
+    currency: createCurrencyResponse(currency),
+    referralCode: customer.referral_code
   };
 
   request.locals.customer = customer;

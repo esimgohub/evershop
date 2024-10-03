@@ -26,7 +26,7 @@ module.exports = async (request, response, delegate, next) => {
     return;
   }
 
-  const { first_name, last_name, email, language_code, currency_code } =
+  const { first_name, last_name, email, language_code, currency_code, referred_code } =
     request.body;
 
   try {
@@ -56,7 +56,8 @@ module.exports = async (request, response, delegate, next) => {
         email,
         language_code,
         currency_code,
-        referral_code: coupon.referral_code
+        referral_code: coupon.coupon,
+        referred_code
       },
       {
         routeId: request.currentRoute.id
