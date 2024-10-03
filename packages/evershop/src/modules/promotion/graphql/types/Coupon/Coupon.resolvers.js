@@ -50,7 +50,8 @@ module.exports = {
       const context = {
         customerId: customer.customer_id,
         page: filters.page,
-        perPage: filters.perPage
+        perPage: filters.perPage,
+        coupon: filters.coupon
       }
       await root.init(dto, context);
       return root;

@@ -44,6 +44,7 @@ module.exports = async (request, response, delegate, next) => {
             .select('customer.last_name', 'last_name')
             .select('customer.email', 'email')
             .select('customer.avatar_url', 'avatar_url')
+            .select('customer.referral_code', 'referral_code')
             .select('language.code', 'language_code')
             .select('language.name', 'language_name')
             .select('language.icon', 'language_icon')
@@ -76,7 +77,8 @@ module.exports = async (request, response, delegate, next) => {
               avatar_url: currentCustomer.avatar_url,
               status: currentCustomer.status,
               language_code: currentCustomer.language_code,
-              currency_code: currentCustomer.currency_code
+              currency_code: currentCustomer.currency_code,
+              referral_code: currentCustomer.referral_code
             };
             setContextValue(request, 'customer', currentCustomer);
           }

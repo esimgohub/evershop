@@ -1,19 +1,10 @@
 const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { getValue } = require('@evershop/evershop/src/lib/util/registry');
-const { select } = require('@evershop/postgres-query-builder');
 
 class CouponCollection {
   constructor(baseQuery) {
     this.baseQuery = baseQuery;
-    this.baseQuery
-      .leftJoin('customer_coupon_use')
-      .on(
-        'coupon.coupon',
-        '=',
-        'customer_coupon_use.coupon'
-      );
-    this.baseQuery.orderBy('coupon.is_private', 'DESC');
   }
 
   async init(filters, context) {
@@ -42,8 +33,25 @@ class CouponCollection {
     this.page = context.page;
     this.perPage = context.perPage;
     this.customerId = context.customerId;
-    // Clone the main query for getting total right before doing the paging
+    this.specificCoupon = context.coupon;
+
+    if (this.customerId) {
+      const where = this.baseQuery.getWhere();
+      where.addRaw(
+        'AND',
+        `
+          ((coupon."coupon" = '${this.specificCoupon}') OR (coupon."is_private" = '0') OR (coupon."coupon" IN (
+            SELECT coupon
+            FROM customer_coupon_use
+            WHERE (customer_coupon_use."customer_id" = '${this.customerId}')
+            AND customer_coupon_use."used_time" < coupon."max_uses_time_per_customer"
+          ))) AND (coupon."used_time" < coupon."max_uses_time_per_coupon")
+        `
+      );
+    }
+
     const totalQuery = this.baseQuery.clone();
+
     totalQuery.select('COUNT(coupon.coupon_id)', 'total');
     totalQuery.removeOrderBy();
     totalQuery.removeLimit();
@@ -60,21 +68,6 @@ class CouponCollection {
   }
 
   async items() {
-    const where = this.baseQuery.getWhere();
-    where.addRaw('AND', `
-        ((coupon."is_private" = '0') OR (coupon."coupon" IN (
-          SELECT coupon
-          FROM customer_coupon_use
-          WHERE customer_coupon_use."customer_id" = '${this.customerId}'
-          AND customer_coupon_use."used_time" < coupon."max_uses_time_per_customer"
-        ))) AND (coupon."used_time" < coupon."max_uses_time_per_coupon")
-    `)
-    const items = await where.execute(pool);
-
-    return items.map((row) => camelCase(row));
-  }
-
-  async adminItems() {
     const items = await this.baseQuery.execute(pool);
     return items.map((row) => camelCase(row));
   }
