@@ -9,7 +9,6 @@ const {
 
 module.exports = async function (data) {
   try {
-    console.log('??datadatadata?', data)
     const { coupon } = data;
     if (coupon) {
       const query = await select()
@@ -17,7 +16,6 @@ module.exports = async function (data) {
         .where('c.coupon', '=', coupon)
         .andWhere('c.is_referral_code', '=', 1);
       const foundCoupon = await query.load(pool);
-      console.log('??foundCoupon?', foundCoupon)
 
       if (foundCoupon) {
         // check the referral of current coupon
@@ -26,7 +24,6 @@ module.exports = async function (data) {
           .where('status', '=', 1)
           .andWhere('referral_code', '=', coupon);
         const foundCustomer = await queryCustomer.load(pool);
-        console.log('??foundCustomer?', foundCustomer)
 
         if (foundCustomer) {
           const referralCode = await generateReferralCode(
@@ -43,10 +40,8 @@ module.exports = async function (data) {
             .setCondition('', '', true)
             .setDescription(`Reward coupon code for ${foundCustomer.first_name}`)
             .build();
-          console.log('??couponRequest?', couponRequest)
 
           const coupon = await createCoupon(couponRequest, {});
-          console.log('??coupon?', coupon)
 
           if (coupon.coupon) {
             await insert('customer_coupon_use')

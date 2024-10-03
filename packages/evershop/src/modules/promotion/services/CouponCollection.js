@@ -40,7 +40,7 @@ class CouponCollection {
       where.addRaw(
         'AND',
         `
-          ((coupon."coupon" = '${this.specificCoupon}') OR (coupon."is_private" = '0') OR (coupon."coupon" IN (
+          ((coupon."coupon" = '${this.specificCoupon}') OR (coupon."is_private" = FALSE) OR (coupon."is_referral_code" = TRUE) OR (coupon."coupon" IN (
             SELECT coupon
             FROM customer_coupon_use
             WHERE (customer_coupon_use."customer_id" = '${this.customerId}')
