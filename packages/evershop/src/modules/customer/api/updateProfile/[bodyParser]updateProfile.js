@@ -26,7 +26,7 @@ module.exports = async (request, response, delegate, next) => {
     return;
   }
 
-  const { first_name, last_name, email, language_code, currency_code, referred_code } =
+  const { first_name, last_name, email, language_code, currency_code } =
     request.body;
 
   try {
