@@ -34,7 +34,7 @@ function validateCustomerDataBeforeInsert(data) {
 
 async function updateCustomerData(data, connection) {
   const query = select().from('customer');
-  const { uuid, first_name, last_name, email, language_code, currency_code, referred_code } =
+  const { uuid, first_name, last_name, email, language_code, currency_code, referral_code, referred_code } =
     data;
 
   const customerQuery = select('customer.customer_id', 'customer_id')
@@ -123,6 +123,7 @@ async function updateCustomerData(data, connection) {
         : customer.last_name,
     email: updatedEmail,
     is_first_login: false,
+    referral_code,
     referred_code
   };
 
@@ -150,8 +151,7 @@ async function updateCustomerData(data, connection) {
         name: customerCurrency.name
       },
       isFirstLogin: newCustomer.is_first_login,
-      // todo: referred_code, referral_code
-      referred_code: newCustomer.referred_code
+      referralCode: newCustomer.referral_code
     };
   } catch (e) {
     if (!e.message.includes('No data was provided')) {

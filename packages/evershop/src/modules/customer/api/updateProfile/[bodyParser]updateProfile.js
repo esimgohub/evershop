@@ -56,7 +56,8 @@ module.exports = async (request, response, delegate, next) => {
         email,
         language_code,
         currency_code,
-        referral_code: coupon.referral_code
+        referral_code: coupon.coupon,
+        referred_code
       },
       {
         routeId: request.currentRoute.id
