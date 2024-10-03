@@ -13,6 +13,7 @@ class CouponBuilder {
     this.couponData = {
       coupon: null, // Required: The coupon code
       status: 1, // Active by default
+      is_referral_code: 0,
       discount_amount: 0, // Default discount amount
       discount_type: 'fixed_discount_to_entire_order', // Default discount type (fixed amount)
       max_uses_time_per_coupon: 1, // Default 1 use per coupon
@@ -33,6 +34,17 @@ class CouponBuilder {
     this.couponData.coupon = couponCode;
     return this;
   }
+
+  /**
+   * Set the type of coupon code.
+   * @param {number} isReferralCode - Whether the coupon is a referral code. Must be 0 (false) or 1 (true). Required.
+   * @returns {CouponBuilder} - The current instance of CouponBuilder for chaining.
+   */
+  setIsReferralCode(isReferralCode) {
+    this.couponData.is_referral_code = isReferralCode;
+    return this;
+  }
+
 
   /**
    * Set the discount amount and type.

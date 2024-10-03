@@ -45,7 +45,7 @@ class CouponCollection {
             FROM customer_coupon_use
             WHERE (customer_coupon_use."customer_id" = '${this.customerId}')
             AND customer_coupon_use."used_time" < coupon."max_uses_time_per_customer"
-          ))) AND (coupon."used_time" < coupon."max_uses_time_per_coupon")
+          ))) AND ((COALESCE(coupon."max_uses_time_per_coupon", 0) = 0) OR (coupon."used_time" < coupon."max_uses_time_per_coupon"))
         `
       );
     }

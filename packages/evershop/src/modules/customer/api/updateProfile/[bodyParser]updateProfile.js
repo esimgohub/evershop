@@ -5,6 +5,12 @@ const {
   INTERNAL_SERVER_ERROR,
   UNAUTHORIZED
 } = require('@evershop/evershop/src/lib/util/httpStatus');
+const createCoupon = require('@evershop/evershop/src/modules/promotion/services/coupon/createCoupon');
+const {
+  CouponBuilder,
+  generateReferralCode
+} = require('@evershop/evershop/src/modules/promotion/services/coupon/coupon.service');
+const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const updateCustomer = require('../../services/customer/updateCustomer');
 
 module.exports = async (request, response, delegate, next) => {
@@ -20,10 +26,28 @@ module.exports = async (request, response, delegate, next) => {
     return;
   }
 
-  const { first_name, last_name, email, language_code, currency_code, referred_code } =
+  const { first_name, last_name, email, language_code, currency_code } =
     request.body;
 
   try {
+    const referralCode = await generateReferralCode(
+      currentCustomer.first_name,
+      pool
+    );
+
+    const couponBuilder = new CouponBuilder();
+    const couponRequest = couponBuilder
+      .setCoupon(referralCode)
+      .setIsReferralCode(1)
+      .setDiscount(30, 'percentage')
+      .setMaxUsesPerCoupon(0)
+      .setMaxUsesPerCustomer(1)
+      .setCondition('', '', true)
+      .setDescription(`Referral code of ${currentCustomer.first_name}`)
+      .build();
+
+    const coupon = await createCoupon(couponRequest, {});
+
     const result = await updateCustomer(
       {
         uuid: currentCustomer.uuid,
@@ -32,7 +56,7 @@ module.exports = async (request, response, delegate, next) => {
         email,
         language_code,
         currency_code,
-        referred_code
+        referral_code: coupon.referral_code
       },
       {
         routeId: request.currentRoute.id
