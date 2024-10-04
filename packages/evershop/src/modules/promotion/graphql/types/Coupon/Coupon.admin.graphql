@@ -50,7 +50,7 @@ type ByXGetY {
 }
 
 type AdminCouponCollection {
-  adminItems: [Coupon]
+  items: [Coupon]
   currentPage: Int
   total: Int
   currentFilters: [Filter]
