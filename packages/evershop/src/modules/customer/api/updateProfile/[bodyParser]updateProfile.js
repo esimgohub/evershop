@@ -26,43 +26,50 @@ module.exports = async (request, response, delegate, next) => {
     return;
   }
 
-  const { first_name, last_name, email, language_code, currency_code } =
-    request.body;
+  const {
+    first_name,
+    last_name,
+    email,
+    language_code,
+    currency_code,
+    referred_code
+  } = request.body;
 
   try {
-    const referralCode = await generateReferralCode(
-      currentCustomer.first_name,
-      pool
-    );
+    const updateCustomerRequest = {
+      uuid: currentCustomer.uuid,
+      first_name,
+      last_name,
+      email,
+      language_code,
+      currency_code
+    };
 
-    const couponBuilder = new CouponBuilder();
-    const couponRequest = couponBuilder
-      .setCoupon(referralCode)
-      .setIsReferralCode(1)
-      .setDiscount(30, 'percentage')
-      .setMaxUsesPerCoupon(0)
-      .setMaxUsesPerCustomer(1)
-      .setCondition('', '', true)
-      .setDescription(`Referral code of ${currentCustomer.first_name}`)
-      .build();
+    if (currentCustomer.is_first_login) {
+      const referralCode = await generateReferralCode(
+        currentCustomer.first_name,
+        pool
+      );
 
-    const coupon = await createCoupon(couponRequest, {});
+      const couponBuilder = new CouponBuilder();
+      const couponRequest = couponBuilder
+        .setCoupon(referralCode)
+        .setIsReferralCode(1)
+        .setDiscount(30, 'percentage')
+        .setMaxUsesPerCoupon(0)
+        .setMaxUsesPerCustomer(1)
+        .setCondition('', '', true)
+        .setDescription(`Referral code of ${currentCustomer.first_name}`)
+        .build();
 
-    const result = await updateCustomer(
-      {
-        uuid: currentCustomer.uuid,
-        first_name,
-        last_name,
-        email,
-        language_code,
-        currency_code,
-        referral_code: coupon.coupon,
-        referred_code
-      },
-      {
-        routeId: request.currentRoute.id
-      }
-    );
+      const coupon = await createCoupon(couponRequest, {});
+      updateCustomerRequest.referral_code = coupon.coupon
+      updateCustomerRequest.referred_code = referred_code
+    }
+
+    const result = await updateCustomer(updateCustomerRequest, {
+      routeId: request.currentRoute.id
+    });
     response.status(OK);
     response.$body = {
       status: OK,
