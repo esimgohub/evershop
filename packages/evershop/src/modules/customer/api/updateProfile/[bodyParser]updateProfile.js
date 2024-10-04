@@ -1,5 +1,5 @@
+const { select } = require('@evershop/postgres-query-builder');
 const { error } = require('@evershop/evershop/src/lib/log/logger');
-
 const {
   OK,
   INTERNAL_SERVER_ERROR,
@@ -15,6 +15,7 @@ const updateCustomer = require('../../services/customer/updateCustomer');
 
 module.exports = async (request, response, delegate, next) => {
   const currentCustomer = request.getCurrentCustomer();
+
   if (!currentCustomer) {
     response.status(UNAUTHORIZED);
     response.json({
@@ -25,6 +26,13 @@ module.exports = async (request, response, delegate, next) => {
     });
     return;
   }
+
+  const query = select();
+  query
+    .from('customer')
+    .select('customer.is_first_login')
+    .where('customer_id', '=', currentCustomer.customer_id)
+  const foundCustomer = await query.load(pool);
 
   const {
     first_name,
@@ -45,7 +53,7 @@ module.exports = async (request, response, delegate, next) => {
       currency_code
     };
 
-    if (currentCustomer.is_first_login) {
+    if (foundCustomer.is_first_login) {
       const referralCode = await generateReferralCode(
         currentCustomer.first_name,
         pool

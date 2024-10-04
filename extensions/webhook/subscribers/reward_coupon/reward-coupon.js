@@ -37,7 +37,6 @@ module.exports = async function (data) {
             .setDiscount(30, 'percentage')
             .setMaxUsesPerCoupon(1)
             .setMaxUsesPerCustomer(1)
-            .setCondition('', '', true)
             .setDescription(`Reward coupon code for ${foundCustomer.first_name}`)
             .build();
 

@@ -128,7 +128,11 @@ module.exports.registerDefaultValidators =
           ? parseInt(conditions.order_qty, 10)
           : null;
         // todo: fix if check by active_item only
-        const totalQty = cart.getActiveItems()?.length;
+        let totalQty = 0;
+        const items = cart.getActiveItems()
+        items.forEach((i) => {
+          totalQty += parseInt(i.getData('qty'), 10);
+        });
         if (minimumQty && totalQty < minimumQty) {
           return false;
         }
