@@ -26,8 +26,9 @@ module.exports = async function (data) {
         const foundCustomer = await queryCustomer.load(pool);
 
         if (foundCustomer) {
+          const splittedEmail = foundCustomer?.email?.split('@')[0]
           const referralCode = await generateReferralCode(
-            foundCustomer?.email?.split('@')[0]?.slice(0, 5),
+            `${splittedEmail}AAAAA`.slice(0, 5),
             pool
           );
 
