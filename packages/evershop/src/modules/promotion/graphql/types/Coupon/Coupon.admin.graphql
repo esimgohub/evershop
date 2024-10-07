@@ -78,5 +78,5 @@ type referralTracking {
 
 extend type Query {
   coupons(filters: [FilterInput]): AdminCouponCollection
-  referrals(filters: FilterReferralTrack): referralTracking
+  referrals(filters: [FilterInput]): referralTracking
 }

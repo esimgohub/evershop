@@ -4,12 +4,30 @@ const { camelCase } = require('@evershop/evershop/src/lib/util/camelCase');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { execute } = require('@evershop/postgres-query-builder');
 const {
+  INTERNAL_SERVER_ERROR
+} = require('@evershop/evershop/src/lib/util/httpStatus');
+const _ = require('lodash');
+const {
   getCouponsBaseQuery
 } = require('../../../services/getCouponsBaseQuery');
 const { CouponCollection } = require('../../../services/CouponCollection');
-const {
-  INTERNAL_SERVER_ERROR
-} = require('@evershop/evershop/src/lib/util/httpStatus');
+
+const filtersDto = (filters) => {
+  return _.reduce(
+    filters,
+    (result, filter) => {
+      // Create a shallow copy of the result object to avoid mutating the parameter
+      const newResult = { ...result };
+
+      // Only include month and year keys in the result
+      if (filter.key === 'month' || filter.key === 'year') {
+        newResult[filter.key] = parseInt(filter.value, 10); // Convert value to an integer
+      }
+      return newResult; // Return the new result object
+    },
+    {}
+  );
+}
 
 module.exports = {
   JSON: GraphQLJSON,
@@ -30,12 +48,13 @@ module.exports = {
       await root.init(filters, {});
       return root;
     },
-    referrals: async (_, { filters = {} }, { user }) => {
+    referrals: async (_, { filters = [] }, { user }) => {
       try {
         // if (!user) {
         //   return [];
         // }
-        const { month, year } = filters;
+        const parsedFilter = filtersDto(filters)
+        const { month, year } = parsedFilter;
 
         const rawQuery = `
         with CTE as
