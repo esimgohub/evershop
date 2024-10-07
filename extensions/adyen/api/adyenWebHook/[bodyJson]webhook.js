@@ -61,9 +61,9 @@ module.exports = async (request, response) => {
       .load(connection);
 
     if (!order) {
-      error(`Adyen - Order not found with order uuid: ${txnData.reference_id}`);
+      error(`Adyen - Order not found with order uuid: ${txnData.merchantReference}`);
       throw new Error(
-        `Adyen - Order not found with order uuid: ${txnData.reference_id}`
+        `Adyen - Order not found with order uuid: ${txnData.merchantReference}`
       );
     }
 
@@ -115,7 +115,7 @@ module.exports = async (request, response) => {
               comment: `Customer paid by using Adyen - pspReference: ${txnData.pspReference}`
             })
             .execute(connection);
-          await emit('reward_coupon', { coupon: order.coupon, customer_email: order.customer_email, customer_full_name: order.customer_full_name });
+          await emit('reward_coupon', { coupon: order.coupon });
 
           // Emit event to add order placed event
           await emit('payment_status_changed', { orderId: order.order_id });

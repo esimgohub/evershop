@@ -1,6 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import PropTypes from 'prop-types';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Area from '@components/common/Area';
 import Pagination from '@components/common/grid/Pagination';
@@ -157,8 +157,64 @@ Actions.propTypes = {
   ).isRequired
 };
 
+const checkUsageByDate = () => {
+  // Define state for month and year
+  const [month, setMonth] = useState(new Date().getMonth() + 1); // Default to current month
+  const [year, setYear] = useState(new Date().getFullYear()); // Default to current year
+
+  // Extract month and year from URL on component mount
+  useEffect(() => {
+    const url = new URL(window.location);
+    const urlMonth = parseInt(url.searchParams.get('month'), 10);
+    const urlYear = parseInt(url.searchParams.get('year'), 10);
+
+    // Set state only if values are valid
+    if (!Number.isNaN(urlMonth) && urlMonth >= 1 && urlMonth <= 12) {
+      setMonth(urlMonth);
+    }
+    if (!Number.isNaN(urlYear) && urlYear >= 2000) {
+      setYear(urlYear);
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const url = new URL(window.location);
+    url.searchParams.set('month', month); // Update month
+    url.searchParams.set('year', year); // Update year
+    window.location.href = url.href; // Redirect to the new URL
+  };
+  return (
+    <form onSubmit={handleSubmit} className="mb-1">
+      <label>
+        Month:
+        <input
+          type="number"
+          min="1"
+          max="12"
+          value={month}
+          onChange={(e) => setMonth(parseInt(e.target.value))}
+          required
+        />
+      </label>
+      <label>
+        Year:
+        <input
+          type="number"
+          min="2000"
+          value={year}
+          onChange={(e) => setYear(parseInt(e.target.value))}
+          required
+        />
+      </label>
+      <button type="submit">Submit</button>
+    </form>
+  );
+};
+
 export default function CouponGrid({
-  coupons: { items: coupons, total, currentFilters = [] }
+  coupons: { items: coupons, total, currentFilters = [] },
+  referrals: { qtyByMonth, discountAmountByMonth, newRegisterByMonth }
 }) {
   const page = currentFilters.find((filter) => filter.key === 'page')
     ? currentFilters.find((filter) => filter.key === 'page').value
@@ -169,255 +225,202 @@ export default function CouponGrid({
   const [selectedRows, setSelectedRows] = useState([]);
 
   return (
-    <Card>
-      <Card.Session
-        title={
-          <Form submitBtn={false}>
-            <div className="flex gap-2 justify-center items-center">
-              <Area
-                id="couponGridFilter"
-                noOuter
-                coreComponents={[
-                  {
-                    component: {
-                      default: () => (
-                        <Field
-                          type="text"
-                          id="coupon"
-                          placeholder="Search"
-                          value={
-                            currentFilters.find((f) => f.key === 'coupon')
-                              ?.value
-                          }
-                          onKeyPress={(e) => {
-                            // If the user press enter, we should submit the form
-                            if (e.key === 'Enter') {
-                              const url = new URL(document.location);
-                              const coupon =
-                                document.getElementById('coupon')?.value;
-                              if (coupon) {
-                                url.searchParams.set(
-                                  'coupon[operation]',
-                                  'like'
-                                );
-                                url.searchParams.set('coupon[value]', coupon);
-                              } else {
-                                url.searchParams.delete('coupon[operation]');
-                                url.searchParams.delete('coupon[value]');
-                              }
-                              window.location.href = url;
-                            }
-                          }}
-                        />
-                      )
-                    },
-                    sortOrder: 5
-                  },
-                  {
-                    component: {
-                      default: () => (
-                        <Filter
-                          options={[
-                            {
-                              label: 'Enabled',
-                              value: '1',
-                              onSelect: () => {
-                                const url = new URL(document.location);
-                                url.searchParams.set('status', 1);
-                                window.location.href = url;
-                              }
-                            },
-                            {
-                              label: 'Disabled',
-                              value: '0',
-                              onSelect: () => {
-                                const url = new URL(document.location);
-                                url.searchParams.set('status', 0);
-                                window.location.href = url;
-                              }
-                            }
-                          ]}
-                          selectedOption={
-                            currentFilters.find((f) => f.key === 'status')
-                              ? currentFilters.find((f) => f.key === 'status')
-                                  .value === '1'
-                                ? 'Enabled'
-                                : 'Disabled'
-                              : undefined
-                          }
-                          title="Status"
-                        />
-                      )
-                    },
-                    sortOrder: 10
-                  },
-                  {
-                    component: {
-                      default: () => (
-                        <Filter
-                          options={[
-                            {
-                              label: 'Free shipping',
-                              value: '1',
-                              onSelect: () => {
-                                const url = new URL(document.location);
-                                url.searchParams.set('free_shipping', 1);
-                                window.location.href = url;
-                              }
-                            },
-                            {
-                              label: 'No free shipping',
-                              value: '0',
-                              onSelect: () => {
-                                const url = new URL(document.location);
-                                url.searchParams.set('free_shipping', 0);
-                                window.location.href = url;
-                              }
-                            }
-                          ]}
-                          selectedOption={
-                            currentFilters.find(
-                              (f) => f.key === 'free_shipping'
-                            )
-                              ? currentFilters.find(
-                                  (f) => f.key === 'free_shipping'
-                                ).value === '1'
-                                ? 'Free shipping'
-                                : 'No free shipping'
-                              : undefined
-                          }
-                          title="Free shipping?"
-                        />
-                      )
-                    },
-                    sortOrder: 10
-                  }
-                ]}
-                currentFilters={currentFilters}
-              />
+    <>
+      <div className="referral-tracking-container mb-1">
+        <Card contentClassName="px-1">
+          <Card.Session>
+            <div>
+              {checkUsageByDate()}
+              <ul className="list-disc hover:list-disc">
+                <li>
+                  <span className="font-bold">{qtyByMonth}</span> referral codes
+                  used
+                </li>
+                <li>
+                  <span className="font-bold">
+                    {new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: 'USD'
+                    }).format(discountAmountByMonth)}
+                  </span>{' '}
+                  total discount from referrals
+                </li>
+                <li>
+                  <span className="font-bold">{newRegisterByMonth}</span> new
+                  users used a referral code
+                </li>
+              </ul>
             </div>
-          </Form>
-        }
-        actions={[
-          {
-            variant: 'interactive',
-            name: 'Clear filter',
-            onAction: () => {
-              // Just get the url and remove all query params
-              const url = new URL(document.location);
-              url.search = '';
-              window.location.href = url.href;
-            }
-          }
-        ]}
-      />
-      <table className="listing sticky">
-        <thead>
-          <tr>
-            <th className="align-bottom">
-              <Checkbox
-                onChange={(e) => {
-                  if (e.target.checked)
-                    setSelectedRows(coupons.map((c) => c.uuid));
-                  else setSelectedRows([]);
-                }}
-              />
-            </th>
-            <Area
-              id="couponGridHeader"
-              noOuter
-              coreComponents={[
-                {
-                  // eslint-disable-next-line react/no-unstable-nested-components
-                  component: {
-                    default: () => (
-                      <SortableHeader
-                        title="Coupon Code"
-                        name="coupon"
-                        currentFilters={currentFilters}
-                      />
-                    )
-                  },
-                  sortOrder: 10
-                },
-                {
-                  // eslint-disable-next-line react/no-unstable-nested-components
-                  component: {
-                    default: () => <DummyColumnHeader title="State Date" />
-                  },
-                  sortOrder: 20
-                },
-                {
-                  // eslint-disable-next-line react/no-unstable-nested-components
-                  component: {
-                    default: () => <DummyColumnHeader title="End Date" />
-                  },
-                  sortOrder: 30
-                },
-                {
-                  // eslint-disable-next-line react/no-unstable-nested-components
-                  component: {
-                    default: () => (
-                      <SortableHeader
-                        title="Status"
-                        name="status"
-                        currentFilters={currentFilters}
-                      />
-                    )
-                  },
-                  sortOrder: 40
-                },
-                {
-                  // eslint-disable-next-line react/no-unstable-nested-components
-                  component: {
-                    default: () => (
-                      <SortableHeader
-                        title="Used Times"
-                        name="used_time"
-                        currentFilters={currentFilters}
-                      />
-                    )
-                  },
-                  sortOrder: 50
-                }
-              ]}
-            />
-          </tr>
-        </thead>
-        <tbody>
-          <Actions
-            coupons={coupons}
-            selectedIds={selectedRows}
-            setSelectedRows={setSelectedRows}
-          />
-          {coupons.map((c) => (
-            <tr key={c.couponId}>
-              <td>
-                <Checkbox
-                  isChecked={selectedRows.includes(c.uuid)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedRows(selectedRows.concat([c.uuid]));
-                    } else {
-                      setSelectedRows(
-                        selectedRows.filter((row) => row !== c.uuid)
-                      );
+          </Card.Session>
+        </Card>
+      </div>
+      <Card>
+        <Card.Session
+          title={
+            <Form submitBtn={false}>
+              <div className="flex gap-2 justify-center items-center">
+                <Area
+                  id="couponGridFilter"
+                  noOuter
+                  coreComponents={[
+                    {
+                      component: {
+                        default: () => (
+                          <Field
+                            type="text"
+                            id="coupon"
+                            placeholder="Search"
+                            value={
+                              currentFilters.find((f) => f.key === 'coupon')
+                                ?.value
+                            }
+                            onKeyPress={(e) => {
+                              // If the user press enter, we should submit the form
+                              if (e.key === 'Enter') {
+                                const url = new URL(document.location);
+                                const coupon =
+                                  document.getElementById('coupon')?.value;
+                                if (coupon) {
+                                  url.searchParams.set(
+                                    'coupon[operation]',
+                                    'like'
+                                  );
+                                  url.searchParams.set('coupon[value]', coupon);
+                                } else {
+                                  url.searchParams.delete('coupon[operation]');
+                                  url.searchParams.delete('coupon[value]');
+                                }
+                                window.location.href = url;
+                              }
+                            }}
+                          />
+                        )
+                      },
+                      sortOrder: 5
+                    },
+                    {
+                      component: {
+                        default: () => (
+                          <Filter
+                            options={[
+                              {
+                                label: 'Enabled',
+                                value: '1',
+                                onSelect: () => {
+                                  const url = new URL(document.location);
+                                  url.searchParams.set('status', 1);
+                                  window.location.href = url;
+                                }
+                              },
+                              {
+                                label: 'Disabled',
+                                value: '0',
+                                onSelect: () => {
+                                  const url = new URL(document.location);
+                                  url.searchParams.set('status', 0);
+                                  window.location.href = url;
+                                }
+                              }
+                            ]}
+                            selectedOption={
+                              currentFilters.find((f) => f.key === 'status')
+                                ? currentFilters.find((f) => f.key === 'status')
+                                    .value === '1'
+                                  ? 'Enabled'
+                                  : 'Disabled'
+                                : undefined
+                            }
+                            title="Status"
+                          />
+                        )
+                      },
+                      sortOrder: 10
+                    },
+                    {
+                      component: {
+                        default: () => (
+                          <Filter
+                            options={[
+                              {
+                                label: 'Free shipping',
+                                value: '1',
+                                onSelect: () => {
+                                  const url = new URL(document.location);
+                                  url.searchParams.set('free_shipping', 1);
+                                  window.location.href = url;
+                                }
+                              },
+                              {
+                                label: 'No free shipping',
+                                value: '0',
+                                onSelect: () => {
+                                  const url = new URL(document.location);
+                                  url.searchParams.set('free_shipping', 0);
+                                  window.location.href = url;
+                                }
+                              }
+                            ]}
+                            selectedOption={
+                              currentFilters.find(
+                                (f) => f.key === 'free_shipping'
+                              )
+                                ? currentFilters.find(
+                                    (f) => f.key === 'free_shipping'
+                                  ).value === '1'
+                                  ? 'Free shipping'
+                                  : 'No free shipping'
+                                : undefined
+                            }
+                            title="Free shipping?"
+                          />
+                        )
+                      },
+                      sortOrder: 10
                     }
+                  ]}
+                  currentFilters={currentFilters}
+                />
+              </div>
+            </Form>
+          }
+          actions={[
+            {
+              variant: 'interactive',
+              name: 'Clear filter',
+              onAction: () => {
+                // Just get the url and remove all query params
+                const url = new URL(document.location);
+                url.search = '';
+                window.location.href = url.href;
+              }
+            }
+          ]}
+        />
+        <table className="listing sticky">
+          <thead>
+            <tr>
+              <th className="align-bottom">
+                <Checkbox
+                  onChange={(e) => {
+                    if (e.target.checked)
+                      setSelectedRows(coupons.map((c) => c.uuid));
+                    else setSelectedRows([]);
                   }}
                 />
-              </td>
+              </th>
               <Area
-                id="couponGridRow"
-                row={c}
+                id="couponGridHeader"
                 noOuter
-                selectedRows={selectedRows}
-                setSelectedRows={setSelectedRows}
                 coreComponents={[
                   {
                     // eslint-disable-next-line react/no-unstable-nested-components
                     component: {
                       default: () => (
-                        <CouponName url={c.editUrl} name={c.coupon} />
+                        <SortableHeader
+                          title="Coupon Code"
+                          name="coupon"
+                          currentFilters={currentFilters}
+                        />
                       )
                     },
                     sortOrder: 10
@@ -425,27 +428,25 @@ export default function CouponGrid({
                   {
                     // eslint-disable-next-line react/no-unstable-nested-components
                     component: {
-                      default: () => (
-                        <TextRow text={c.startDate?.text || '--'} />
-                      )
+                      default: () => <DummyColumnHeader title="State Date" />
                     },
                     sortOrder: 20
                   },
                   {
                     // eslint-disable-next-line react/no-unstable-nested-components
                     component: {
-                      default: () => <TextRow text={c.endDate?.text || '--'} />
+                      default: () => <DummyColumnHeader title="End Date" />
                     },
                     sortOrder: 30
                   },
                   {
                     // eslint-disable-next-line react/no-unstable-nested-components
                     component: {
-                      default: ({ areaProps }) => (
-                        <StatusRow
+                      default: () => (
+                        <SortableHeader
                           title="Status"
-                          id="status"
-                          areaProps={areaProps}
+                          name="status"
+                          currentFilters={currentFilters}
                         />
                       )
                     },
@@ -454,8 +455,12 @@ export default function CouponGrid({
                   {
                     // eslint-disable-next-line react/no-unstable-nested-components
                     component: {
-                      default: ({ areaProps }) => (
-                        <BasicRow id="usedTime" areaProps={areaProps} />
+                      default: () => (
+                        <SortableHeader
+                          title="Used Times"
+                          name="used_time"
+                          currentFilters={currentFilters}
+                        />
                       )
                     },
                     sortOrder: 50
@@ -463,20 +468,108 @@ export default function CouponGrid({
                 ]}
               />
             </tr>
-          ))}
-        </tbody>
-      </table>
-      {coupons.length === 0 && (
-        <div className="flex w-full justify-center">
-          There is no coupon to display
-        </div>
-      )}
-      <Pagination total={total} limit={limit} page={page} />
-    </Card>
+          </thead>
+          <tbody>
+            <Actions
+              coupons={coupons}
+              selectedIds={selectedRows}
+              setSelectedRows={setSelectedRows}
+            />
+            {coupons.map((c) => (
+              <tr key={c.couponId}>
+                <td>
+                  <Checkbox
+                    isChecked={selectedRows.includes(c.uuid)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedRows(selectedRows.concat([c.uuid]));
+                      } else {
+                        setSelectedRows(
+                          selectedRows.filter((row) => row !== c.uuid)
+                        );
+                      }
+                    }}
+                  />
+                </td>
+                <Area
+                  id="couponGridRow"
+                  row={c}
+                  noOuter
+                  selectedRows={selectedRows}
+                  setSelectedRows={setSelectedRows}
+                  coreComponents={[
+                    {
+                      // eslint-disable-next-line react/no-unstable-nested-components
+                      component: {
+                        default: () => (
+                          <CouponName url={c.editUrl} name={c.coupon} />
+                        )
+                      },
+                      sortOrder: 10
+                    },
+                    {
+                      // eslint-disable-next-line react/no-unstable-nested-components
+                      component: {
+                        default: () => (
+                          <TextRow text={c.startDate?.text || '--'} />
+                        )
+                      },
+                      sortOrder: 20
+                    },
+                    {
+                      // eslint-disable-next-line react/no-unstable-nested-components
+                      component: {
+                        default: () => (
+                          <TextRow text={c.endDate?.text || '--'} />
+                        )
+                      },
+                      sortOrder: 30
+                    },
+                    {
+                      // eslint-disable-next-line react/no-unstable-nested-components
+                      component: {
+                        default: ({ areaProps }) => (
+                          <StatusRow
+                            title="Status"
+                            id="status"
+                            areaProps={areaProps}
+                          />
+                        )
+                      },
+                      sortOrder: 40
+                    },
+                    {
+                      // eslint-disable-next-line react/no-unstable-nested-components
+                      component: {
+                        default: ({ areaProps }) => (
+                          <BasicRow id="usedTime" areaProps={areaProps} />
+                        )
+                      },
+                      sortOrder: 50
+                    }
+                  ]}
+                />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {coupons.length === 0 && (
+          <div className="flex w-full justify-center">
+            There is no coupon to display
+          </div>
+        )}
+        <Pagination total={total} limit={limit} page={page} />
+      </Card>
+    </>
   );
 }
 
 CouponGrid.propTypes = {
+  referrals: PropTypes.shape({
+    qtyByMonth: PropTypes.number.isRequired,
+    discountAmountByMonth: PropTypes.number.isRequired,
+    newRegisterByMonth: PropTypes.number.isRequired
+  }).isRequired,
   coupons: PropTypes.shape({
     items: PropTypes.arrayOf(
       PropTypes.shape({
@@ -537,6 +630,11 @@ export const query = `
         operation
         value
       }
+    }
+    referrals(filters: $filters) {
+        qtyByMonth
+        discountAmountByMonth
+        newRegisterByMonth
     }
   }
 `;

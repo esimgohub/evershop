@@ -65,6 +65,18 @@ type UserCondition {
   purchased: String
 }
 
+input FilterReferralTrack {
+  month: Int,
+  year: Int
+}
+
+type referralTracking {
+  qtyByMonth: Int,
+  discountAmountByMonth: Float,
+  newRegisterByMonth: Int
+}
+
 extend type Query {
   coupons(filters: [FilterInput]): AdminCouponCollection
+  referrals(filters: [FilterInput]): referralTracking
 }
