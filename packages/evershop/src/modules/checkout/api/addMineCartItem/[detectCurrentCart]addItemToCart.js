@@ -19,17 +19,16 @@ const { createNewCart } = require('../../services/createNewCart');
 
 module.exports = async (request, response, delegate, next) => {
   try {
-    let cartId = getContextValue(request, 'cartId');
+    const { sku, qty, is_buy_now } = request.body;
+    const { sessionID, customer } = request.locals;
+    const cartId = getContextValue(request, 'cartId');
     let cart;
     if (!cartId) {
       // Create a new cart
-      const { sessionID, customer } = request.locals;
-      cart = await createNewCart(sessionID, request.cookies.isoCode || getConfig('shop.currency', 'USD'), customer || {});
-      cartId = cart.getData('uuid');
+      cart = await createNewCart(sessionID, request.cookies.isoCode || getConfig('shop.currency', 'USD'), customer || {}, is_buy_now);
     } else {
       cart = await getCartByUUID(cartId); // Cart object
     }
-    const { sku, qty } = request.body;
 
     // Load the product by sku
     const product = await select()

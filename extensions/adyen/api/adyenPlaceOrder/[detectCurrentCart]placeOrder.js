@@ -86,11 +86,13 @@ module.exports = async (request, response, delegate, next) => {
 
       // Save payment method
       await cart.setData('payment_method', method_code);
-      await saveCart(cart);
+      const isBuyNowCart = cart.getData('is_buy_now');
       const customerId = cart.getData('customer_id');
 
+      await saveCart(cart);
+
       const orderId = await createOrder(cart);
-      if (customerId && request.locals.sessionID) {
+      if (!isBuyNowCart && customerId && request.locals.sessionID) {
         const unPurchasedItems = cart.getUnActiveItems();
         await createCartByUnSelectedItems(request, unPurchasedItems, customerId, pool);
       }

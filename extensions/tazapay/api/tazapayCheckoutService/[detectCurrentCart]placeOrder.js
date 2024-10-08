@@ -128,13 +128,14 @@ module.exports = async (request, response, delegate, next) => {
         await cart.setData('coupon', coupon);
       }
 
+      const isBuyNowCart = cart.getData('is_buy_now');
       await saveCart(cart);
 
       const orderId = await createOrder(cart);
 
       const customerId = cart.getData('customer_id');
 
-      if (customerId && request.locals.sessionID) {
+      if (!isBuyNowCart && customerId && request.locals.sessionID) {
         // Load the customer from the database
         const customer = await select()
           .from('customer')

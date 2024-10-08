@@ -10,6 +10,7 @@ const { v4: uuidv4, validate } = require('uuid');
 const {
   translate
 } = require('@evershop/evershop/src/lib/locale/translate/translate');
+const assert = require('assert');
 const { DataObject } = require('./DataObject');
 const {
   getProductsBaseQuery
@@ -249,10 +250,18 @@ class Cart extends DataObject {
       throw new Error(Object.values(item.getErrors())[0]);
     } else {
       let items = this.getItems();
+
+      // replace if the type of cart is buy now
+      if (this.getData('is_buy_now')) {
+        assert(items.length > 1, `wrong data shape: \n ${items}`)
+        items[0] = item;
+        await this.setData('items', items, true);
+        return item;
+      }
+
       let duplicateItem;
       for (let i = 0; i < items.length; i += 1) {
         if (items[i].getData('product_sku') === item.getData('product_sku')) {
-          // eslint-disable-next-line no-await-in-loop
           await items[i].setData(
             'qty',
             item.getData('qty') + items[i].getData('qty')

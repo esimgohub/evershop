@@ -607,6 +607,15 @@ module.exports.registerCartBaseFields = function registerCartBaseFields() {
         }
       ],
       dependencies: ['cart_id', 'currency']
+    },
+    {
+      key: 'is_buy_now',
+      resolvers: [
+        async function resolver(isBuyNow = false) {
+          return isBuyNow;
+        }
+      ],
+      dependencies: ['cart_id']
     }
   ];
 };
