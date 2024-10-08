@@ -93,8 +93,12 @@ module.exports.registerDefaultValidators =
         const minimumQty = !Number.isNaN(parseInt(conditions.order_qty, 10))
           ? parseInt(conditions.order_qty, 10)
           : null;
-        // todo: fix if check by active_item only
-        if (minimumQty && cart.getData('total_qty') < minimumQty) {
+        let totalQty = 0;
+        const items = cart.getActiveItems()
+        items.forEach((i) => {
+          totalQty += parseInt(i.getData('qty'), 10);
+        });
+        if (minimumQty && totalQty < minimumQty) {
           return false;
         }
         return true;
