@@ -1,12 +1,8 @@
 extend type Cart {
     updateCartItemApi: String!
-}
-
-type CartResponse {
-    errorCode: String!
-    cart: Cart
+    errorCode: String
 }
 
 extend type Query {
-    cartWithOutArg(coupon: String): CartResponse
+    cartWithOutArg(coupon: String): Cart
 }
