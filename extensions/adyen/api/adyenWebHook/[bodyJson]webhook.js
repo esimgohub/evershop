@@ -60,9 +60,9 @@ module.exports = async (request, response) => {
       .load(connection);
 
     if (!order) {
-      error(`Adyen - Order not found with order uuid: ${txnData.reference_id}`);
+      error(`Adyen - Order not found with order uuid: ${txnData.merchantReference}`);
       throw new Error(
-        `Adyen - Order not found with order uuid: ${txnData.reference_id}`
+        `Adyen - Order not found with order uuid: ${txnData.merchantReference}`
       );
     }
 
