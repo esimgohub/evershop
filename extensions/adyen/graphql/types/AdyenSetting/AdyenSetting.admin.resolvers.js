@@ -45,10 +45,7 @@ module.exports = {
     adyenApiKey: (setting, _, { user }) => {
       const adyenConfig = getConfig('system.adyen', {});
       if (adyenConfig.apiKey) {
-        return `${adyenConfig.apiKey.substring(
-          0,
-          5
-        )}*******************************`;
+        return adyenConfig.apiKey;
       }
       const adyenApiKey = setting.find((s) => s.name === 'adyenApiKey');
       if (adyenApiKey) {
