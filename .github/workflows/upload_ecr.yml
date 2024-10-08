@@ -3,7 +3,7 @@ name: Publish to ECR
 on:
   pull_request:
   push:
-    branches: [master, develop]
+    branches: [master, develop, release/0.0.1]
 env:
   ECR_REPOSITORY: ${{ vars.AWS_ECR_REPO }}
   ENV_S3_CONFIG: "${{github.ref == 'refs/heads/master' && 'production' || 'dev'}}"
