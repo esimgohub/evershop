@@ -52,7 +52,7 @@ type ProductCollection {
 
 extend type Query {
   product(id: ID): Product
-  productByUrlKey(urlKey: String): Product
+  productByUrlKey(urlKey: String, categoryId: Int): Product
   products(
     filters: [FilterInput]
     productFilter: ProductFilterInput

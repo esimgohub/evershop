@@ -34,36 +34,25 @@ module.exports = async (request, response, delegate, next) => {
     await startTransaction(connection);
 
     try {
-      console.log(`=== Start prepare product image data ===\n`);
+      console.log(`=== Start prepare product banner image data ===\n`);
 
-      const variableProducts = await select()
-          .from('product')
-          .where('type', '=', ProductType.variable.value)
+      for (const file of files) {
+        const { name, url } = file;
+        const [code, ext] = name.split('.');
+
+        await update('category_description')
+          .given({
+            banner_image: url
+          })
+          .where('url_key', '=', code.toUpperCase())
           .execute(connection);
 
-
-      const insertingRecords = [];
-      for (const product of variableProducts) {
-        insertingRecords.push({
-          product_image_product_id: product.product_id,
-          origin_image: files[0].url,
-          is_main: true
-        })
-      }
-
-      console.log(`=== Prepare product image data finished ===\n\n`);
-
-      console.log(`=== Start to save product image to DB ===\n`);
-
-      for (const insertingRecord of insertingRecords) {
-        await insert('product_image')
-          .given(insertingRecord)
-          .execute(connection);
+        console.log("+ processed file on code: ", code);
       }
 
       await commit(connection);
 
-      console.log(`=== Save product image to DB finished ===\n\n`);
+      console.log(`=== Save product banner image to DB finished ===\n\n`);
 
       console.log("=== DONE ===");
     } catch (e) {

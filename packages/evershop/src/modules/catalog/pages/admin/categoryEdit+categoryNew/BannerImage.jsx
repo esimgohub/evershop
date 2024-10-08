@@ -7,8 +7,8 @@ import Button from '@components/common/form/Button';
 import './Image.scss';
 import { Card } from '@components/admin/cms/Card';
 
-export default function Image({ category, imageUploadUrl }) {
-  const [image, setImage] = useState(category?.image);
+export default function BannerImage({ category, imageUploadUrl }) {
+  const [image, setImage] = useState(category?.bannerImage);
   const [loading, setLoading] = useState(false);
   const ref = useRef();
 
@@ -59,7 +59,7 @@ export default function Image({ category, imageUploadUrl }) {
 
   return (
     <Card
-      title="Logo Image"
+      title="Banner"
       actions={
         image
           ? [
@@ -77,7 +77,7 @@ export default function Image({ category, imageUploadUrl }) {
         <div className="relative">
           {!image && (
             <label
-              htmlFor="categoryImageUpload"
+              htmlFor="categoryBannerImageUpload"
               className="flex flex-col justify-center image-uploader"
             >
               <div className="uploader-icon flex justify-center">
@@ -113,11 +113,13 @@ export default function Image({ category, imageUploadUrl }) {
               <img src={image.url} alt={' '} />
             </div>
           )}
-          {image && <input type="hidden" value={image.url} name="image" />}
-          {!image && <input type="hidden" value="" name="image" />}
+          {image && (
+            <input type="hidden" value={image.url} name="banner_image" />
+          )}
+          {!image && <input type="hidden" value="" name="banner_image" />}
           <div className="invisible" style={{ width: '1px', height: '1px' }}>
             <input
-              id="categoryImageUpload"
+              id="categoryBannerImageUpload"
               type="file"
               onChange={onChange}
               ref={ref}
@@ -159,28 +161,28 @@ export default function Image({ category, imageUploadUrl }) {
   );
 }
 
-Image.propTypes = {
+BannerImage.propTypes = {
   category: PropTypes.shape({
-    image: PropTypes.shape({
+    bannerImage: PropTypes.shape({
       url: PropTypes.string
     })
   }),
   imageUploadUrl: PropTypes.string.isRequired
 };
 
-Image.defaultProps = {
+BannerImage.defaultProps = {
   category: undefined
 };
 
 export const layout = {
   areaId: 'rightSide',
-  sortOrder: 10
+  sortOrder: 9
 };
 
 export const query = `
   query Query {
     category(id: getContextValue("categoryId", null)) {
-      image {
+      bannerImage {
         url
       }
     }

@@ -20,12 +20,18 @@ type Category {
   url: String
   availableAttributes: [FilterAttribute]
   priceRange: PriceRange
+  bannerImage: CategoryBannerImage
 }
 
 """
 The `CategoryImage` type represents a category image object.
 """
 type CategoryImage {
+  alt: String!
+  url: String!
+}
+
+type CategoryBannerImage {
   alt: String!
   url: String!
 }

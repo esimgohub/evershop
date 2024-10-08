@@ -146,6 +146,17 @@ module.exports = {
         };
       }
     },
+    bannerImage: (category) => {
+      const { bannerImage, name } = category;
+      if (!bannerImage) {
+        return null;
+      } else {
+        return {
+          alt: name,
+          url: bannerImage
+        };
+      }
+    },
     children: async (category, _, { pool }) => {
       const query = select().from('category');
       query

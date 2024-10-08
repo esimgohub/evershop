@@ -8,6 +8,7 @@ const {
 const { ProductCollection } = require('../../../services/ProductCollection');
 const { CategoryStatus } = require('../../../utils/enums/category-status');
 const { ProductType } = require('../../../utils/enums/product-type');
+const { getCategoriesBaseQuery } = require('../../../services/getCategoriesBaseQuery');
 
 module.exports = {
   Product: {
@@ -28,7 +29,7 @@ module.exports = {
       }
     },
     categories: async (product, _, { homeUrl, pool }) => {
-      const foundedProduct = await select()
+      const foundProduct = await select()
         .from('product')
         .where('product_id', '=', product.productId)
         .load(pool);
@@ -48,7 +49,7 @@ module.exports = {
       query.innerJoin('product_category')
         .on('product_category.category_id', '=', 'category.uuid');
 
-      const isSimpleProduct = foundedProduct.type === ProductType.simple.value;
+      const isSimpleProduct = foundProduct.type === ProductType.simple.value;
       if (isSimpleProduct) {
         query.where('product_category.product_id', '=', product.parentProductUuid);
       }
@@ -106,7 +107,6 @@ module.exports = {
       productCategoryQuery.where('product_category.product_id', '=', product.uuid);
 
       const categories = await productCategoryQuery.execute(pool);
-
 
       const foundDataType = attributes.find((a) => a.attribute_code === 'data-type');
       const foundExpiration = attributes.find((a) => a.attribute_code === 'expiration');
@@ -174,29 +174,60 @@ module.exports = {
 
       return camelCase(result);
     },
-    productByUrlKey: async (_, { urlKey }, { pool }) => {
+    productByUrlKey: async (_, { urlKey, categoryId }, { homeUrl, pool }) => {
       const query = getProductsBaseQuery();
       query.where('product_description.url_key', '=', urlKey);
-      const foundedProduct = await query.load(pool);
-      if (!foundedProduct) {
+      const foundProduct = await query.load(pool);
+      if (!foundProduct) {
         return null;
       }
 
-      const isVariableProduct = foundedProduct.type === ProductType.variable.value;
+      let bannerImage = null;
+
+
+      const categoryDescription = await select().from('category_description').where('category_description_category_id', '=', categoryId).load(pool);
+
+      console.log("categoryDescription: ", categoryDescription);
+
+      if (categoryDescription) {
+        bannerImage = categoryDescription.banner_image ?? null;
+      }
+
+      const isVariableProduct = foundProduct.type === ProductType.variable.value;
       if (isVariableProduct) {
+        console.log("variable product: ", camelCase({
+          ...foundProduct,
+          description: foundProduct.description.replace(/\r\n|\n|\r/gm, '<br />'),
+          bannerImage: {
+            url: `${homeUrl}${bannerImage}`,
+            alt: foundProduct.name
+          },
+        }))
+
         return camelCase({
-          ...foundedProduct,
-          description: foundedProduct.description.replaceAll(/\r\n|\n|\r/gm, '<br />'),
+          ...foundProduct,
+          description: foundProduct.description.replace(/\r\n|\n|\r/gm, '<br />'),
+          bannerImage: {
+            url: `${homeUrl}${bannerImage}`,
+            alt: foundProduct.name
+          },
         });
       }
 
       const parentProductQuery = getProductsBaseQuery();
-      parentProductQuery.where('product.uuid', '=', foundedProduct.parent_product_uuid);
+      parentProductQuery.where('product.uuid', '=', foundProduct.parent_product_uuid);
+
       const parentProduct = await parentProductQuery.load(pool);
+
+      console.log("parent product: ", parentProduct)
 
       return camelCase({
         ...parentProduct,
-        description: parentProduct.description.replaceAll(/\r\n|\n|\r/gm, '<br />'),
+        description: parentProduct.description.replace(/\r\n|\n|\r/gm, '<br />'),
+        bannerImage: {
+          url: bannerImage,
+          alt: foundProduct.name
+        },
       });
     },
     products: async (_, { filters = [], productFilter }, { user }) => {

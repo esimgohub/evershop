@@ -17,6 +17,9 @@ module.exports = {
           }
         : null;
     },
+    bannerImage: (product, _, {}) => {
+      return product.bannerImage;
+    },
     gallery: async (product, _, { pool }) => {
       const gallery = await select()
         .from('product_image')
