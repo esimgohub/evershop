@@ -12,7 +12,17 @@ type Image {
   origin: String
 }
 
+type BannerImage {
+  alt: String
+  url: String
+  listing: String
+  single: String
+  thumb: String
+  origin: String
+}
+
 extend type Product {
   image: Image
+  bannerImage: BannerImage
   gallery: [Image]
 }
