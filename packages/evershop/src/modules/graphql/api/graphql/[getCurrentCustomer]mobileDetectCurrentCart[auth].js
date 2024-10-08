@@ -1,16 +1,17 @@
 const { select, update } = require('@evershop/postgres-query-builder');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
-const { setContextValue } = require('@evershop/evershop/src/modules/graphql/services/contextHelper');
+const {
+  setContextValue
+} = require('@evershop/evershop/src/modules/graphql/services/contextHelper');
 
 module.exports = async (request, response, delegate, next) => {
   // Check if any cart is associated with the session id
   const { sessionID, customer } = request.locals;
 
-  const cart = await select()
-    .from('cart')
-    .where('sid', '=', sessionID)
-    .andWhere('status', '=', 1)
-    .load(pool);
+  const cartQuery = select().from('cart').where('sid', '=', sessionID);
+  cartQuery.andWhere('is_buy_now', '=', 0);
+  cartQuery.andWhere('status', '=', 1);
+  const cart = await cartQuery.load(pool);
 
   if (cart) {
     setContextValue(request, 'cartId', cart.uuid);
@@ -19,11 +20,12 @@ module.exports = async (request, response, delegate, next) => {
     const customerID = customer?.customer_id || null;
     if (customerID) {
       // Check if any cart is associated with the customer id
-      const customerCart = await select()
+      const queryCustomerCart = select()
         .from('cart')
-        .where('customer_id', '=', customerID)
-        .andWhere('status', '=', 1)
-        .load(pool);
+        .where('customer_id', '=', customerID);
+      queryCustomerCart.andWhere('is_buy_now', '=', 0);
+      queryCustomerCart.andWhere('status', '=', 1);
+      const customerCart = await queryCustomerCart.load(pool);
 
       if (customerCart) {
         // Update the cart with the session id
