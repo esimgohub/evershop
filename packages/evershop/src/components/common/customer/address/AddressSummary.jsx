@@ -17,7 +17,7 @@ export function AddressSummary({ address }) {
             )
           },
           props: {
-            fullName: address.fullName
+            fullName: address?.fullName
           },
           sortOrder: 10,
           id: 'fullName'
@@ -29,7 +29,7 @@ export function AddressSummary({ address }) {
             )
           },
           props: {
-            address1: address.address1
+            address1: address?.address1
           },
           sortOrder: 20,
           id: 'address1'
@@ -40,17 +40,17 @@ export function AddressSummary({ address }) {
               <div className="city-province-postcode">
                 <div>{`${postcode}, ${city}`}</div>
                 <div>
-                  {province && <span>{province.name}, </span>}{' '}
-                  <span>{country.name}</span>
+                  {province && <span>{province?.name}, </span>}{' '}
+                  <span>{country?.name}</span>
                 </div>
               </div>
             )
           },
           props: {
-            city: address.city,
-            province: address.province,
-            postcode: address.postcode,
-            country: address.country
+            city: address?.city,
+            province: address?.province,
+            postcode: address?.postcode,
+            country: address?.country
           },
           sortOrder: 40,
           id: 'cityProvincePostcode'
@@ -62,7 +62,7 @@ export function AddressSummary({ address }) {
             )
           },
           props: {
-            telephone: address.telephone
+            telephone: address?.telephone
           },
           sortOrder: 60,
           id: 'telephone'

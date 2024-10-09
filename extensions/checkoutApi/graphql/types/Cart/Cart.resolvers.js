@@ -16,13 +16,19 @@ module.exports = {
           await cart.setData('coupon', coupon);
         }
         const cartObj = camelCase(cart.exportData());
-        return { ...cartObj, errorCode: CLIENT_CODE.OK };
+        return {
+          ...cartObj,
+          errorCode: CLIENT_CODE.OK
+        };
       } catch (error) {
         const regex = /\bcoupon\b/i;
         if (regex.test(error.message)) {
           const cart = await getCartByUUID(cartId);
           const cartObj = camelCase(cart.exportData());
-          return { ...cartObj, errorCode: CLIENT_CODE.COUPON_INVALID };
+          return {
+            ...cartObj,
+            errorCode: CLIENT_CODE.COUPON_INVALID
+          };
         }
         return null;
       }

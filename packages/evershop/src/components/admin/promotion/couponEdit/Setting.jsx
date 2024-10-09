@@ -29,7 +29,7 @@ export function Setting({
             value={maxUsesTimePerCoupon}
             placeholder="Max uses time per coupon"
             validationRules={['notEmpty']}
-            label="Max uses time per coupon"
+            label="Max uses time per coupon (0 is unlimited)"
           />
         </div>
       </div>
@@ -66,7 +66,7 @@ export function Setting({
             value={maxUsesTimePerCustomer}
             placeholder="Max uses time per customer"
             validationRules={['notEmpty']}
-            label="Max uses time per customer"
+            label="Max uses time per customer (0 is unlimited)"
           />
         </div>
       </div>

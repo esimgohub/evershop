@@ -75,10 +75,7 @@ module.exports = {
     tazapaySecretKey: (setting, _, { user }) => {
       const tazapayConfig = getConfig('system.tazapay', {});
       if (tazapayConfig.secretKey) {
-        return `${tazapayConfig.secretKey.substr(
-          0,
-          5
-        )}*******************************`;
+        return tazapayConfig.secretKey;
       }
       if (user) {
         const tazapaySecretKey = setting.find(
@@ -96,10 +93,7 @@ module.exports = {
     tazapayEndpointSecret: (setting, _, { user }) => {
       const tazapayConfig = getConfig('system.tazapay', {});
       if (tazapayConfig.endpointSecret) {
-        return `${tazapayConfig.endpointSecret.substr(
-          0,
-          5
-        )}*******************************`;
+        return tazapayConfig.endpointSecret;
       }
       if (user) {
         const tazapayEndpointSecret = setting.find(

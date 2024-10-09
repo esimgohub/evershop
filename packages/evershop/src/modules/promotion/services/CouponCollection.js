@@ -8,7 +8,7 @@ class CouponCollection {
     this.baseQuery = baseQuery;
   }
 
-  async init(filters, context) {
+  async init(filters, page, perPage) {
     const currentFilters = [];
 
     // Apply the filters

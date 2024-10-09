@@ -55,7 +55,7 @@ module.exports = {
       const { coupon, ...rest } = filters;
       const dto = clientFilterDto({ ...rest });
 
-      await root.init(dto, context);
+      await root.init(dto, filters.page, filters.perPage);
       return root;
     }
   }

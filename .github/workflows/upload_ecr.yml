@@ -3,7 +3,7 @@ name: Publish to ECR
 on:
   pull_request:
   push:
-    branches: [master, develop]
+    branches: [master, develop, release/0.0.1]
 env:
   ECR_REPOSITORY: ${{ vars.AWS_ECR_REPO }}
   ENV_S3_CONFIG: "${{github.ref == 'refs/heads/master' && 'production' || 'dev'}}"
@@ -56,3 +56,15 @@ jobs:
         run: |
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Push Image release
+        if: startsWith(github.ref, 'refs/heads/release/')
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ env.sha_short }}
+        run: |
+          docker tag gohub-ecommerce:latest $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG-release-latest
+          docker tag gohub-ecommerce:latest $ECR_REGISTRY/$ECR_REPOSITORY:release-latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG-release-latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:release-latest
+

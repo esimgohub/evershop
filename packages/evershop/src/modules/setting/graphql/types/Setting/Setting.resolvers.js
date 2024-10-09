@@ -126,7 +126,8 @@ module.exports = {
         social: socialResponses.filter((s) => s.visibility === true),
         sliders: sliders.filter((s) => s.visibility === true),
         staticPages,
-        whatsapp: whatsappSetting
+        whatsapp: whatsappSetting,
+        version: '1.0.1'
       }
     }
   },

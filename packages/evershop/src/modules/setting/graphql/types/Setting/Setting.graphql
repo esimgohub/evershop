@@ -53,6 +53,7 @@ type Config {
   sliders: [Slider]
   staticPages: [CmsPage]
   whatsapp: WhatsappConfig
+  version: String
 }
 
 extend type Query {
