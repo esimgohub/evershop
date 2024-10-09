@@ -129,6 +129,7 @@ module.exports = {
       const client = new Client({
         apiKey: adyenApiKey,
         environment: getConfig('system.adyen.environment', 'TEST'),
+        liveEndpointUrlPrefix: getConfig('system.adyen.liveEndpointUrlPrefix', 'd5a161077869886e-GoHubGroup'),
         config: {
           connectionTimeoutMillis: 10000
         }
@@ -229,6 +230,7 @@ module.exports = {
       const client = new Client({
         apiKey: adyenApiKey,
         environment: getConfig('system.adyen.environment', 'TEST'),
+        liveEndpointUrlPrefix: getConfig('system.adyen.liveEndpointUrlPrefix', 'd5a161077869886e-GoHubGroup'),
         config: {
           connectionTimeoutMillis: 10000
         }
@@ -255,6 +257,7 @@ module.exports = {
       const client = new Client({
         apiKey: adyenApiKey,
         environment: getConfig('system.adyen.environment', 'TEST'),
+        liveEndpointUrlPrefix: getConfig('system.adyen.liveEndpointUrlPrefix', 'd5a161077869886e-GoHubGroup'),
         config: {
           connectionTimeoutMillis: 10000
         }
