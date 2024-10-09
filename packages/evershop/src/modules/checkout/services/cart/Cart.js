@@ -242,7 +242,7 @@ class Cart extends DataObject {
    * @param {number} qty
    * @returns
    */
-  async addItem(productID, qty) {
+  async addItem(productID, qty, isBuyNowFlag = false) {
     const item = await this.createItem(productID, parseInt(qty, 10));
     if (item.hasError()) {
       // Get the first error from the item.getErrors() object
@@ -253,10 +253,14 @@ class Cart extends DataObject {
       for (let i = 0; i < items.length; i += 1) {
         if (items[i].getData('product_sku') === item.getData('product_sku')) {
           // eslint-disable-next-line no-await-in-loop
-          await items[i].setData(
-            'qty',
-            item.getData('qty') + items[i].getData('qty')
-          );
+          if (isBuyNowFlag) {
+            await items[i].setData('qty', item.getData('qty'));
+          } else {
+            await items[i].setData(
+              'qty',
+              item.getData('qty') + items[i].getData('qty')
+            );
+          }
           if (items[i].hasError()) {
             throw new Error(Object.values(items[i].getErrors())[0]);
           }

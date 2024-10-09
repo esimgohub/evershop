@@ -61,12 +61,13 @@ module.exports = async (request, response, delegate, next) => {
     }
 
     // If everything is fine, add the product to the cart
-    const item = await cart.addItem(product.product_id, parseInt(qty, 10));
+    const isBuyNowFlag = action === 'item-buy-now'
+    const item = await cart.addItem(product.product_id, parseInt(qty, 10), isBuyNowFlag);
     await item.updateCategoryId(parseInt(categoryId, 10));
     await item.updateTripDate(trip.fromDate.toString(), trip.toDate.toString());
 
     // Buy now options
-    if (action && action === 'item-buy-now') {
+    if (action && isBuyNowFlag) {
       await cart.updateDeselectAllItems();
       await cart.updateItemSelection(item.getId(), true);
     }
