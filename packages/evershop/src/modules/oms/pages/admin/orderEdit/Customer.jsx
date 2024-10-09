@@ -32,7 +32,7 @@ export default function Customer({
           </a>
         </div>
         <div>
-          <span>{shippingAddress.telephone}</span>
+          <span>{shippingAddress?.telephone}</span>
         </div>
       </Card.Session>
       <Card.Session title="Shipping Address">
@@ -51,34 +51,34 @@ Customer.propTypes = {
     customerEmail: PropTypes.string.isRequired,
     customerUrl: PropTypes.string,
     shippingAddress: PropTypes.shape({
-      fullName: PropTypes.string.isRequired,
-      address1: PropTypes.string.isRequired,
-      city: PropTypes.string.isRequired,
-      postcode: PropTypes.string.isRequired,
-      telephone: PropTypes.string.isRequired,
+      fullName: PropTypes.string,
+      address1: PropTypes.string,
+      city: PropTypes.string,
+      postcode: PropTypes.string,
+      telephone: PropTypes.string,
       province: PropTypes.shape({
-        code: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired
-      }).isRequired,
+        code: PropTypes.string,
+        name: PropTypes.string
+      }),
       country: PropTypes.shape({
-        code: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired
-      }).isRequired
+        code: PropTypes.string,
+        name: PropTypes.string
+      })
     }).isRequired,
     billingAddress: PropTypes.shape({
-      fullName: PropTypes.string.isRequired,
-      address1: PropTypes.string.isRequired,
-      city: PropTypes.string.isRequired,
-      postcode: PropTypes.string.isRequired,
-      telephone: PropTypes.string.isRequired,
+      fullName: PropTypes.string,
+      address1: PropTypes.string,
+      city: PropTypes.string,
+      postcode: PropTypes.string,
+      telephone: PropTypes.string,
       province: PropTypes.shape({
-        code: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired
-      }).isRequired,
+        code: PropTypes.string,
+        name: PropTypes.string
+      }),
       country: PropTypes.shape({
-        code: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired
-      }).isRequired
+        code: PropTypes.string,
+        name: PropTypes.string
+      })
     }).isRequired
   }).isRequired
 };

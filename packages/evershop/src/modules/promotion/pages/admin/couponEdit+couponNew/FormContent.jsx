@@ -29,7 +29,7 @@ export default function FormContent({ gridUrl }) {
               </Card.Session>
             </Card>
           </div>
-          <div className="col-span-1 grid grid-cols-1 gap-2 auto-rows-max">
+          <div className="hidden col-span-1 grid grid-cols-1 gap-2 auto-rows-max">
             <Card title="Customer conditions">
               <Card.Session>
                 <Area id="couponEditRight" className="col-4" noOuter />

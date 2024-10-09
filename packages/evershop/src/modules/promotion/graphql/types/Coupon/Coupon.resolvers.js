@@ -56,7 +56,7 @@ module.exports = {
         })
       }
 
-      await root.init(filters.page, filters.perPage, dto);
+      await root.init(dto, filters.page, filters.perPage);
       return root;
 
     }

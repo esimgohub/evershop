@@ -9,6 +9,7 @@ type Customer {
   lastName: String
   createdAt: Date!
   avatarUrl: String
+  status: Boolean
 }
 
 extend type Query {
